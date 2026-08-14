@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.yourcompany.innernetwork"],
+        "components": [
+          {
+            "/": "/e/*",
+            "comment": "Matches share links like /e/abc123 -> opens the InnerNetwork app"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAMID.com.yourcompany.innernetwork"]
+  }
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InnerNetwork</title>
+<link rel="icon" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<style>
+  :root {
+    --navy: #2f354a;
+    --navy-dark: #262b3d;
+    --cream: #ece5d4;
+    --cream-card: #f7f3ea;
+    --cream-line: #d9d0ba;
+    --muted: #6b7180;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--cream); color: var(--navy);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap {
+    min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .card {
+    width: 100%; max-width: 460px; background: var(--cream-card); border: 1px solid var(--cream-line);
+    border-radius: 24px; padding: 44px 32px; text-align: center;
+    box-shadow: 0 20px 40px -20px rgba(47, 53, 74, 0.25);
+  }
+  .logo {
+    width: 88px; height: 88px; border-radius: 50%; margin: 0 auto 24px;
+    display: block; box-shadow: 0 8px 20px -6px rgba(47, 53, 74, 0.35);
+  }
+  h1 {
+    font-size: 24px; margin: 0 0 10px; font-weight: 700; letter-spacing: -0.01em;
+  }
+  p { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0 0 28px; }
+  .btn {
+    display: block; width: 100%; padding: 14px 16px; border-radius: 12px; font-size: 15px;
+    font-weight: 600; text-decoration: none; margin-bottom: 12px; border: 1px solid transparent;
+    background: var(--navy); color: var(--cream);
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--navy-dark); }
+  .btn-secondary {
+    background: transparent; color: var(--navy); border: 1px solid var(--navy);
+  }
+  .btn-secondary:hover { background: rgba(47, 53, 74, 0.06); }
+  .footer-note {
+    margin-top: 24px; font-size: 12px; color: var(--muted); letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <img class="logo" src="/assets/logo.png" alt="InnerNetwork">
+      <h1>InnerNetwork</h1>
+      <p>Get the InnerNetwork app to view shared content, connect, and stay in sync.</p>
+      <!-- Replace YOUR_APP_STORE_ID and the package name below once your app is live -->
+      <a class="btn" href="https://apps.apple.com/app/idYOUR_APP_STORE_ID">Download on the App Store</a>
+      <a class="btn btn-secondary" href="https://play.google.com/store/apps/details?id=com.yourcompany.innernetwork">Get it on Google Play</a>
+      <div class="footer-note">innernetwork.app</div>
+    </div>
+  </div>
+</body>
+</html>
