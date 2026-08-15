@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["R885A34426.com.innernetwork.app"],
+        "components": [
+          {
+            "/": "/e/*",
+            "comment": "Matches share links like /e/abc123 -> opens the InnerNetwork app"
+          }
+        ]
+      }
+    ]
+  }
+}
