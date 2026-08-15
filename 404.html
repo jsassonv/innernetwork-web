@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Open in InnerNetwork</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<style>
+  :root {
+    --navy: #2f354a;
+    --navy-dark: #262b3d;
+    --cream: #ece5d4;
+    --cream-card: #f7f3ea;
+    --cream-line: #d9d0ba;
+    --muted: #6b7180;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--cream);
+    color: var(--navy);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap {
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--cream-card);
+    border: 1px solid var(--cream-line);
+    border-radius: 24px;
+    padding: 36px 28px;
+    text-align: center;
+    box-shadow: 0 20px 40px -20px rgba(47, 53, 74, 0.25);
+  }
+  .logo {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: block;
+    box-shadow: 0 8px 20px -6px rgba(47, 53, 74, 0.35);
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 8px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  p.sub {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 24px;
+  }
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 12px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: var(--navy);
+    color: var(--cream);
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--navy-dark); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--navy);
+    border: 1px solid var(--navy);
+  }
+  .btn-secondary:hover { background: rgba(47, 53, 74, 0.06); }
+  .status {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 16px;
+  }
+  .id-pill {
+    display: inline-block;
+    background: var(--cream);
+    border: 1px solid var(--cream-line);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+    word-break: break-all;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <img class="logo" src="/assets/logo.png" alt="InnerNetwork">
+      <h1>Open this in the InnerNetwork app</h1>
+      <p class="sub">We're trying to open this link in the app. If nothing happens, get InnerNetwork below.</p>
+      <div id="idPill" class="id-pill" style="display:none;"></div>
+
+      <a id="storeBtn" class="btn" href="#">Get InnerNetwork</a>
+      <a id="secondaryBtn" class="btn btn-secondary" href="#" style="display:none;">Get it on Google Play</a>
+
+      <div class="status" id="statusText">Checking for the app…</div>
+      <div style="margin-top: 12px;"><a href="/privacy-policy.html" style="color: var(--muted); font-size: 12px; text-decoration: underline;">Privacy Policy</a></div>
+    </div>
+  </div>
+
+  <script>
+    // ---- CONFIGURATION: replace these placeholder values once your app is live ----
+    var CONFIG = {
+      // Custom URL scheme your app registers, used to attempt opening it directly.
+      customScheme: "innernetwork://",
+      // Apple App Store URL. Replace YOUR_APP_STORE_ID with your numeric App Store ID.
+      appStoreUrl: "https://apps.apple.com/app/idYOUR_APP_STORE_ID",
+      // Google Play URL. Replace com.yourcompany.innernetwork with your real package name.
+      playStoreUrl: "https://play.google.com/store/apps/details?id=com.yourcompany.innernetwork",
+      // How long (ms) to wait before assuming the app didn't open and showing the store links.
+      redirectTimeoutMs: 1200
+    };
+    // --------------------------------------------------------------------------------
+
+    function getPathAndId() {
+      var path = window.location.pathname; // e.g. /e/abc123
+      var parts = path.split("/").filter(Boolean); // ["e", "abc123"]
+      var id = parts.length >= 2 ? parts[parts.length - 1] : null;
+      return { path: path, id: id };
+    }
+
+    function isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    }
+    function isAndroid() {
+      return /Android/.test(navigator.userAgent);
+    }
+
+    (function init() {
+      var info = getPathAndId();
+      var idPill = document.getElementById("idPill");
+      var storeBtn = document.getElementById("storeBtn");
+      var secondaryBtn = document.getElementById("secondaryBtn");
+      var statusText = document.getElementById("statusText");
+
+      if (info.id) {
+        idPill.style.display = "inline-block";
+        idPill.textContent = "ID: " + info.id;
+      }
+
+      var android = isAndroid();
+      var ios = isIOS();
+
+      if (android) {
+        storeBtn.textContent = "Get it on Google Play";
+        storeBtn.href = CONFIG.playStoreUrl;
+      } else {
+        // default to iOS / desktop -> App Store as primary
+        storeBtn.textContent = "Download on the App Store";
+        storeBtn.href = CONFIG.appStoreUrl;
+        if (!ios) {
+          // desktop/unknown: also show Play link as secondary
+          secondaryBtn.style.display = "block";
+          secondaryBtn.href = CONFIG.playStoreUrl;
+        }
+      }
+
+      // Attempt to open the native app via custom URL scheme, passing the id along.
+      if (info.id && (ios || android)) {
+        var deepLink = CONFIG.customScheme + "e/" + encodeURIComponent(info.id);
+        var attemptedAt = Date.now();
+
+        window.location.href = deepLink;
+
+        setTimeout(function () {
+          // If we're still here after the timeout, the app almost certainly isn't
+          // installed (or the scheme didn't resolve) -- show the store CTA clearly.
+          statusText.textContent = "Don't have the app yet? Tap below to get it.";
+        }, CONFIG.redirectTimeoutMs);
+      } else {
+        statusText.textContent = "Continue on the web, or get the app below.";
+      }
+    })();
+  </script>
+</body>
+</html>
