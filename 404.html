@@ -15,62 +15,138 @@
     --cream-card: #f7f3ea;
     --cream-line: #d9d0ba;
     --muted: #6b7180;
+    --accent: #E4572E;
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
+    min-height: 100%;
     background: var(--cream);
     color: var(--navy);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
-  .wrap {
-    min-height: 100%;
+
+  /* ---- Sticky "open in app" banner ---- */
+  .banner {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--navy);
+    color: var(--cream);
+  }
+  .banner img {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .banner-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .banner-text .t1 {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .banner-text .t2 {
+    font-size: 11px;
+    color: rgba(236, 229, 212, 0.7);
+    line-height: 1.2;
+  }
+  .banner-btn {
+    flex-shrink: 0;
+    background: var(--cream);
+    color: var(--navy);
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .wrap {
+    display: flex;
+    align-items: flex-start;
     justify-content: center;
-    padding: 24px;
+    padding: 28px 20px 40px;
   }
   .card {
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
     background: var(--cream-card);
     border: 1px solid var(--cream-line);
     border-radius: 24px;
-    padding: 36px 28px;
-    text-align: center;
+    overflow: hidden;
     box-shadow: 0 20px 40px -20px rgba(47, 53, 74, 0.25);
   }
-  .logo {
-    width: 76px;
-    height: 76px;
-    border-radius: 50%;
-    margin: 0 auto 20px;
-    display: block;
-    box-shadow: 0 8px 20px -6px rgba(47, 53, 74, 0.35);
+
+  /* ---- Event preview card ---- */
+  .event-accent {
+    height: 8px;
   }
-  h1 {
-    font-size: 20px;
-    margin: 0 0 8px;
+  .event-body {
+    padding: 28px 26px 26px;
+  }
+  .event-name {
+    font-size: 21px;
     font-weight: 700;
     letter-spacing: -0.01em;
+    margin: 0 0 10px;
+    line-height: 1.25;
   }
-  p.sub {
+  .organizer-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .organizer-row img {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .organizer-row span {
+    font-size: 13px;
     color: var(--muted);
+    font-weight: 600;
+  }
+  .detail-block {
+    background: var(--cream);
+    border: 1px solid var(--cream-line);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+  }
+  .detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
     font-size: 14px;
-    line-height: 1.5;
-    margin: 0 0 24px;
+    padding: 6px 0;
+  }
+  .detail-row .icon {
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
   }
   .btn {
     display: block;
     width: 100%;
+    text-align: center;
     padding: 14px 16px;
     border-radius: 12px;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     border: 1px solid transparent;
     cursor: pointer;
     background: var(--navy);
@@ -78,42 +154,73 @@
     transition: background 0.15s ease;
   }
   .btn:hover { background: var(--navy-dark); }
-  .btn-secondary {
-    background: transparent;
-    color: var(--navy);
-    border: 1px solid var(--navy);
-  }
-  .btn-secondary:hover { background: rgba(47, 53, 74, 0.06); }
   .status {
     font-size: 12px;
     color: var(--muted);
-    margin-top: 16px;
+    text-align: center;
+    margin-top: 6px;
   }
-  .id-pill {
-    display: inline-block;
-    background: var(--cream);
-    border: 1px solid var(--cream-line);
+
+  /* ---- Generic fallback card (no event id, or fetch failed) ---- */
+  .fallback-body {
+    padding: 36px 28px;
+    text-align: center;
+  }
+  .fallback-body .logo {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: block;
+    box-shadow: 0 8px 20px -6px rgba(47, 53, 74, 0.35);
+  }
+  .fallback-body h1 {
+    font-size: 20px;
+    margin: 0 0 8px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .fallback-body p {
     color: var(--muted);
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    margin-bottom: 20px;
-    word-break: break-all;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 24px;
   }
+
+  /* ---- Loading skeleton ---- */
+  .skeleton {
+    background: linear-gradient(90deg, var(--cream) 25%, var(--cream-line) 37%, var(--cream) 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+  }
+
+  .footer-note {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .footer-note a { color: var(--muted); text-decoration: underline; }
 </style>
 </head>
 <body>
+  <div class="banner">
+    <img src="/assets/logo.png" alt="InnerNetwork">
+    <div class="banner-text">
+      <div class="t1">InnerNetwork</div>
+      <div class="t2">Open this in the app</div>
+    </div>
+    <button class="banner-btn" id="bannerBtn">Open</button>
+  </div>
+
   <div class="wrap">
-    <div class="card">
-      <img class="logo" src="/assets/logo.png" alt="InnerNetwork">
-      <h1>Open this in the InnerNetwork app</h1>
-      <p class="sub">We're trying to open this link in the app. If nothing happens, get InnerNetwork below.</p>
-      <div id="idPill" class="id-pill" style="display:none;"></div>
-
-      <a id="storeBtn" class="btn" href="#">Get InnerNetwork</a>
-
-      <div class="status" id="statusText">Checking for the app…</div>
-      <div style="margin-top: 12px;"><a href="/privacy-policy.html" style="color: var(--muted); font-size: 12px; text-decoration: underline;">Privacy Policy</a></div>
+    <div class="card" id="card">
+      <!-- filled in by JS: event preview, generic fallback, or loading skeleton -->
     </div>
   </div>
 
@@ -124,55 +231,163 @@
       customScheme: "com.innernetwork.app://",
       // Apple App Store URL. TODO: replace YOUR_APP_STORE_ID once the app is submitted and has a real numeric ID.
       appStoreUrl: "https://apps.apple.com/app/idYOUR_APP_STORE_ID",
-      // How long (ms) to wait before assuming the app didn't open and showing the store link.
-      redirectTimeoutMs: 1200
+      // How long (ms) to wait after trying the custom scheme before falling back to the store.
+      redirectTimeoutMs: 1200,
+      supabaseUrl: "https://dwfuvfcjptvycqyedetb.supabase.co",
+      supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3ZnV2ZmNqcHR2eWNxeWVkZXRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzMjE4OTMsImV4cCI6MjEwMTg5Nzg5M30.AmVhhln9z3C2QxRZJm9LlNG1pBUm-7Y6NowcsV75brg"
     };
     // -----------------------
 
-    function getPathAndId() {
-      var path = window.location.pathname; // e.g. /e/abc123
-      var parts = path.split("/").filter(Boolean); // ["e", "abc123"]
-      var id = parts.length >= 2 ? parts[parts.length - 1] : null;
-      return { path: path, id: id };
+    function getEventId() {
+      var parts = window.location.pathname.split("/").filter(Boolean); // e.g. ["e", "abc123"]
+      return parts.length >= 2 && parts[parts.length - 2] === "e" ? parts[parts.length - 1] : null;
     }
 
     function isIOS() {
       return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     }
 
+    function openApp(eventId) {
+      var deepLink = eventId
+        ? CONFIG.customScheme + "e/" + encodeURIComponent(eventId)
+        : CONFIG.customScheme;
+      window.location.href = deepLink;
+      setTimeout(function () {
+        // Still here after the timeout -> the app almost certainly isn't installed.
+        window.location.href = CONFIG.appStoreUrl;
+      }, CONFIG.redirectTimeoutMs);
+    }
+
+    function esc(s) {
+      var d = document.createElement("div");
+      d.textContent = s == null ? "" : String(s);
+      return d.innerHTML;
+    }
+
+    function formatDateRange(startIso, endIso) {
+      try {
+        var start = new Date(startIso);
+        var end = endIso ? new Date(endIso) : null;
+        var dateFmt = { weekday: "short", month: "short", day: "numeric" };
+        var timeFmt = { hour: "numeric", minute: "2-digit" };
+        var dateStr = start.toLocaleDateString(undefined, dateFmt);
+        var startTime = start.toLocaleTimeString(undefined, timeFmt);
+        if (end) {
+          var endTime = end.toLocaleTimeString(undefined, timeFmt);
+          return dateStr + " · " + startTime + " – " + endTime;
+        }
+        return dateStr + " · " + startTime;
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function formatPrice(amountDollars) {
+      // price_amount is stored as whole dollars (not cents) throughout
+      // this app's schema and Swift model (EventPrice.amount) -- dividing
+      // by 100 here was showing e.g. a $50 event as $0.50.
+      if (!amountDollars || amountDollars <= 0) return "Free";
+      return "$" + amountDollars;
+    }
+
+    function renderLoading() {
+      document.getElementById("card").innerHTML =
+        '<div class="event-body">' +
+        '  <div class="skeleton" style="height:24px;width:80%;margin-bottom:10px;"></div>' +
+        '  <div class="skeleton" style="height:16px;width:50%;margin-bottom:20px;"></div>' +
+        '  <div class="skeleton" style="height:80px;width:100%;"></div>' +
+        '</div>';
+    }
+
+    function renderEvent(event, eventId) {
+      var accent = event.accent_color_hex ? ("#" + event.accent_color_hex) : "#E4572E";
+      var dateRange = formatDateRange(event.start_date, event.end_date);
+      var venue = [event.venue_name, event.venue_address].filter(Boolean).join(", ");
+
+      var organizerRow = event.organizer_name
+        ? '<div class="organizer-row">' +
+          (event.organizer_logo_url ? '<img src="' + esc(event.organizer_logo_url) + '" alt="">' : '') +
+          '<span>Hosted by ' + esc(event.organizer_name) + '</span>' +
+          '</div>'
+        : '';
+
+      var detailRows = '';
+      if (dateRange) {
+        detailRows += '<div class="detail-row"><span class="icon">📅</span><span>' + esc(dateRange) + '</span></div>';
+      }
+      if (venue) {
+        detailRows += '<div class="detail-row"><span class="icon">📍</span><span>' + esc(venue) + '</span></div>';
+      }
+      detailRows += '<div class="detail-row"><span class="icon">💲</span><span>' + esc(formatPrice(event.price_amount)) + '</span></div>';
+
+      document.getElementById("card").innerHTML =
+        '<div class="event-accent" style="background:' + esc(accent) + ';"></div>' +
+        '<div class="event-body">' +
+        '  <h1 class="event-name">' + esc(event.name) + '</h1>' +
+        organizerRow +
+        '  <div class="detail-block">' + detailRows + '</div>' +
+        '  <a class="btn" href="#" id="openAppBtn2">Open in InnerNetwork</a>' +
+        '  <div class="status">Don’t have the app? Tapping above will take you to the App Store.</div>' +
+        '</div>';
+
+      document.getElementById("openAppBtn2").addEventListener("click", function (e) {
+        e.preventDefault();
+        openApp(eventId);
+      });
+    }
+
+    function renderGenericFallback() {
+      document.getElementById("card").innerHTML =
+        '<div class="fallback-body">' +
+        '  <img class="logo" src="/assets/logo.png" alt="InnerNetwork">' +
+        '  <h1>Get the InnerNetwork app</h1>' +
+        '  <p>View shared events, connect, and stay in sync with South Florida’s construction &amp; CRE community.</p>' +
+        '  <a class="btn" href="' + esc(CONFIG.appStoreUrl) + '">Download on the App Store</a>' +
+        '</div>';
+    }
+
     (function init() {
-      var info = getPathAndId();
-      var idPill = document.getElementById("idPill");
-      var storeBtn = document.getElementById("storeBtn");
-      var secondaryBtn = document.getElementById("secondaryBtn");
-      var statusText = document.getElementById("statusText");
+      var eventId = getEventId();
 
-      if (info.id) {
-        idPill.style.display = "inline-block";
-        idPill.textContent = "ID: " + info.id;
+      document.getElementById("bannerBtn").addEventListener("click", function () {
+        openApp(eventId);
+      });
+
+      if (!eventId) {
+        renderGenericFallback();
+        return;
       }
 
-      var ios = isIOS();
+      renderLoading();
 
-      storeBtn.textContent = "Download on the App Store";
-      storeBtn.href = CONFIG.appStoreUrl;
-
-      // Attempt to open the native app via custom URL scheme, passing the id along.
-      if (info.id && ios) {
-        var deepLink = CONFIG.customScheme + "e/" + encodeURIComponent(info.id);
-        var attemptedAt = Date.now();
-
-        window.location.href = deepLink;
-
-        setTimeout(function () {
-          // If we're still here after the timeout, the app almost certainly isn't
-          // installed (or the scheme didn't resolve) -- show the store CTA clearly.
-          statusText.textContent = "Don't have the app yet? Tap below to get it.";
-        }, CONFIG.redirectTimeoutMs);
-      } else {
-        statusText.textContent = "Continue on the web, or get the app below.";
-      }
+      fetch(CONFIG.supabaseUrl + "/rest/v1/rpc/get_public_event_preview", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": CONFIG.supabaseAnonKey,
+          "Authorization": "Bearer " + CONFIG.supabaseAnonKey
+        },
+        body: JSON.stringify({ p_event_id: eventId })
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error("preview fetch failed: " + res.status);
+          return res.json();
+        })
+        .then(function (rows) {
+          if (!rows || !rows.length) {
+            renderGenericFallback();
+            return;
+          }
+          renderEvent(rows[0], eventId);
+        })
+        .catch(function () {
+          renderGenericFallback();
+        });
     })();
   </script>
+
+  <div style="text-align:center; padding-bottom: 24px;">
+    <a href="/privacy-policy.html" style="color: var(--muted); font-size: 12px; text-decoration: underline;">Privacy Policy</a>
+  </div>
 </body>
 </html>
