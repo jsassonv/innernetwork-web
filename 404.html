@@ -325,8 +325,15 @@
       try {
         var start = new Date(startIso);
         var end = endIso ? new Date(endIso) : null;
-        var dateFmt = { weekday: "short", month: "short", day: "numeric" };
-        var timeFmt = { hour: "numeric", minute: "2-digit" };
+        // Previously rendered in the *viewer's* browser timezone, which is
+        // wrong for anyone outside Florida (audit 1.16) -- get_public_event_preview
+        // doesn't return which of Florida's two timezones an event's
+        // territory is in, so this pins to Eastern, correct for 9 of the
+        // app's 10 Florida territories (only the Panhandle's
+        // emerald-coast-northwest-florida is Central). Still a real
+        // improvement over "whatever zone the visitor happens to be in."
+        var dateFmt = { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" };
+        var timeFmt = { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" };
         var dateStr = start.toLocaleDateString(undefined, dateFmt);
         var startTime = start.toLocaleTimeString(undefined, timeFmt);
         if (end) {
