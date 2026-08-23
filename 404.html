@@ -7,6 +7,34 @@
 <meta name="robots" content="noindex">
 <link rel="icon" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<!--
+  Static, generic Open Graph tags — NOT per-event. There were previously
+  none at all, so a shared /e/<uuid> link rendered with no title,
+  description, or image on LinkedIn/iMessage/Slack whatsoever. Genuinely
+  per-event dynamic previews (the event's own name/date/venue/image) would
+  need server-side rendering at request time, which this static GitHub
+  Pages site architecturally cannot do — most link-unfurling crawlers
+  (LinkedIn's, Facebook's, Slack's) fetch the raw HTML and do NOT execute
+  the JavaScript below that builds the visual card, so injecting per-event
+  tags via JS would not reach them either. This is the ceiling of what's
+  achievable without moving off static hosting (e.g. to a host with edge
+  functions/SSR) — a real infrastructure decision, not a code fix. What
+  this DOES fix: a shared link now shows a real, branded preview (name,
+  description, logo) instead of a blank one.
+-->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="The Inner Network">
+<meta property="og:title" content="The Inner Network">
+<meta property="og:description" content="View this event and connect with South Florida's construction & CRE community.">
+<meta property="og:image" content="https://innernetwork.app/assets/logo.png">
+<!-- og:url deliberately omitted: this static page can't know which
+     requested URL it's actually serving (every unmatched path gets this
+     same file), and asserting an incorrect canonical URL is worse than
+     leaving it unset. -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Inner Network">
+<meta name="twitter:description" content="View this event and connect with South Florida's construction & CRE community.">
+<meta name="twitter:image" content="https://innernetwork.app/assets/logo.png">
 <style>
   :root {
     --navy: #2f354a;
