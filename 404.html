@@ -257,7 +257,7 @@
     var CONFIG = {
       // Custom URL scheme the app registers (must match CFBundleURLSchemes in Xcode).
       customScheme: "com.innernetwork.app://",
-      // Apple App Store URL. TODO: replace YOUR_APP_STORE_ID once the app is submitted and has a real numeric ID.
+      // Apple App Store URL — the app's real numeric id, already filled in.
       appStoreUrl: "https://apps.apple.com/app/id6804337610",
       // How long (ms) to wait after trying the custom scheme before falling back to the store.
       redirectTimeoutMs: 1200,
@@ -276,14 +276,43 @@
     }
 
     function openApp(eventId) {
+      // isIOS() previously existed but was never called — every visitor,
+      // including Android/desktop ones with no way to open an
+      // com.innernetwork.app:// link, still attempted the custom scheme
+      // and waited out the full timeout below before landing on the App
+      // Store. Skips straight there for non-iOS instead of the pointless
+      // delay (there's no Android build to send them to instead, so the
+      // App Store is still the most useful thing to show — this only
+      // removes the wasted wait, not the destination).
+      if (!isIOS()) {
+        window.location.href = CONFIG.appStoreUrl;
+        return;
+      }
+
       var deepLink = eventId
         ? CONFIG.customScheme + "e/" + encodeURIComponent(eventId)
         : CONFIG.customScheme;
-      window.location.href = deepLink;
-      setTimeout(function () {
-        // Still here after the timeout -> the app almost certainly isn't installed.
+
+      // The fallback timer previously fired unconditionally: a visitor for
+      // whom the custom scheme DID successfully open the app (the common
+      // case when it's installed) still got redirected to the App Store
+      // a moment later once they switched back to Safari, since nothing
+      // ever cancelled the pending setTimeout. Cancel it the moment the
+      // tab is backgrounded/hidden — the only way that happens right after
+      // triggering the deep link is the OS actually switching to the app.
+      var redirectTimer = setTimeout(function () {
         window.location.href = CONFIG.appStoreUrl;
       }, CONFIG.redirectTimeoutMs);
+
+      function cancelRedirectIfAppOpened() {
+        if (document.hidden) {
+          clearTimeout(redirectTimer);
+        }
+      }
+      document.addEventListener("visibilitychange", cancelRedirectIfAppOpened);
+      window.addEventListener("pagehide", function () { clearTimeout(redirectTimer); });
+
+      window.location.href = deepLink;
     }
 
     function esc(s) {

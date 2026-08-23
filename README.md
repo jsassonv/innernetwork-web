@@ -11,11 +11,6 @@ Static fallback site for the InnerNetwork app, deployed at **https://innernetwor
 - `privacy-policy.html` - linked from App Store Connect.
 - `CNAME` - tells GitHub Pages to serve this repo at `innernetwork.app`.
 
-## Remaining placeholder
-
-In `404.html` and `index.html`:
-- `YOUR_APP_STORE_ID` -> fill in once the app is submitted to App Store Connect and has a real numeric App Store ID.
-
 ## Deploying (GitHub Pages)
 
 Push to `main` — GitHub Pages serves directly from the repo root.
