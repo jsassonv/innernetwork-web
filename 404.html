@@ -299,36 +299,103 @@
         '</div>';
     }
 
+    // Only #rrggbb is accepted for an accent color coming from the
+    // database — anything else (e.g. a value crafted to close the `style`
+    // attribute and inject arbitrary CSS/markup) falls back to the
+    // default rather than being rendered at all.
+    function safeHexColor(value) {
+      return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value) ? value : "#E4572E";
+    }
+
+    // Only an https(s) URL is accepted for a logo — any authenticated user
+    // can create an organizer and set its logo_url over the API, so this
+    // is untrusted input. Building the element via the DOM (below) rather
+    // than string-concatenated innerHTML already prevents attribute
+    // breakout regardless of content, but this additionally refuses to
+    // even attempt loading a non-http(s) URL at all.
+    function safeImageUrl(value) {
+      try {
+        var url = new URL(value, window.location.href);
+        return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Builds the card via DOM APIs rather than innerHTML string
+    // concatenation — assigning to .textContent/.src/.style.background
+    // can't be broken out of the way a concatenated HTML attribute can,
+    // so this closes the injection class outright rather than just
+    // patching individual escaping gaps.
     function renderEvent(event, eventId) {
-      var accent = event.accent_color_hex ? ("#" + event.accent_color_hex) : "#E4572E";
+      var accent = safeHexColor(event.accent_color_hex ? "#" + event.accent_color_hex : null);
       var dateRange = formatDateRange(event.start_date, event.end_date);
       var venue = [event.venue_name, event.venue_address].filter(Boolean).join(", ");
 
-      var organizerRow = event.organizer_name
-        ? '<div class="organizer-row">' +
-          (event.organizer_logo_url ? '<img src="' + esc(event.organizer_logo_url) + '" alt="">' : '') +
-          '<span>Hosted by ' + esc(event.organizer_name) + '</span>' +
-          '</div>'
-        : '';
+      var card = document.getElementById("card");
+      card.innerHTML = "";
 
-      var detailRows = '';
-      if (dateRange) {
-        detailRows += '<div class="detail-row"><span class="icon">📅</span><span>' + esc(dateRange) + '</span></div>';
-      }
-      if (venue) {
-        detailRows += '<div class="detail-row"><span class="icon">📍</span><span>' + esc(venue) + '</span></div>';
-      }
-      detailRows += '<div class="detail-row"><span class="icon">💲</span><span>' + esc(formatPrice(event.price_amount)) + '</span></div>';
+      var accentBar = document.createElement("div");
+      accentBar.className = "event-accent";
+      accentBar.style.background = accent;
+      card.appendChild(accentBar);
 
-      document.getElementById("card").innerHTML =
-        '<div class="event-accent" style="background:' + esc(accent) + ';"></div>' +
-        '<div class="event-body">' +
-        '  <h1 class="event-name">' + esc(event.name) + '</h1>' +
-        organizerRow +
-        '  <div class="detail-block">' + detailRows + '</div>' +
-        '  <a class="btn" href="#" id="openAppBtn2">Open in InnerNetwork</a>' +
-        '  <div class="status">Don’t have the app? Tapping above will take you to the App Store.</div>' +
-        '</div>';
+      var body = document.createElement("div");
+      body.className = "event-body";
+
+      var heading = document.createElement("h1");
+      heading.className = "event-name";
+      heading.textContent = event.name == null ? "" : String(event.name);
+      body.appendChild(heading);
+
+      if (event.organizer_name) {
+        var organizerRow = document.createElement("div");
+        organizerRow.className = "organizer-row";
+        var logoUrl = safeImageUrl(event.organizer_logo_url);
+        if (logoUrl) {
+          var img = document.createElement("img");
+          img.src = logoUrl;
+          img.alt = "";
+          organizerRow.appendChild(img);
+        }
+        var organizerLabel = document.createElement("span");
+        organizerLabel.textContent = "Hosted by " + String(event.organizer_name);
+        organizerRow.appendChild(organizerLabel);
+        body.appendChild(organizerRow);
+      }
+
+      var detailBlock = document.createElement("div");
+      detailBlock.className = "detail-block";
+      function addDetailRow(icon, text) {
+        var row = document.createElement("div");
+        row.className = "detail-row";
+        var iconSpan = document.createElement("span");
+        iconSpan.className = "icon";
+        iconSpan.textContent = icon;
+        var textSpan = document.createElement("span");
+        textSpan.textContent = text;
+        row.appendChild(iconSpan);
+        row.appendChild(textSpan);
+        detailBlock.appendChild(row);
+      }
+      if (dateRange) addDetailRow("📅", dateRange);
+      if (venue) addDetailRow("📍", venue);
+      addDetailRow("💲", formatPrice(event.price_amount));
+      body.appendChild(detailBlock);
+
+      var openBtn = document.createElement("a");
+      openBtn.className = "btn";
+      openBtn.href = "#";
+      openBtn.id = "openAppBtn2";
+      openBtn.textContent = "Open in InnerNetwork";
+      body.appendChild(openBtn);
+
+      var statusLine = document.createElement("div");
+      statusLine.className = "status";
+      statusLine.textContent = "Don’t have the app? Tapping above will take you to the App Store.";
+      body.appendChild(statusLine);
+
+      card.appendChild(body);
 
       document.getElementById("openAppBtn2").addEventListener("click", function (e) {
         e.preventDefault();
