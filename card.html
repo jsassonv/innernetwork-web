@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Business Card — The Inner Network</title>
+<!--
+  Renders a member's public digital business card, for the link/QR code
+  on their Account screen. Previously this page's job was done directly
+  by the public-profile-card Edge Function returning HTML -- but Supabase
+  silently rewrites an Edge Function's Content-Type: text/html to
+  text/plain on the shared *.supabase.co domain (a platform limitation,
+  confirmed by other developers hitting the same thing:
+  github.com/orgs/supabase/discussions/35627), so visitors saw the raw
+  HTML source instead of a rendered card. This static page instead fetches
+  JSON from that same function (?format=json) and builds the card here in
+  the browser -- the same pattern 404.html already uses for shared-event
+  previews, and it sidesteps the header-rewrite issue entirely since
+  nothing here depends on Supabase's declared Content-Type for a fetch()
+  call the way a direct navigation does.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=EB+Garamond:wght@400;500&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #F3EEE4;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+  .download-banner {
+    width: 100%;
+    max-width: 420px;
+    background: #2B2A28;
+    color: #FFFFFF;
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .download-banner span { font-weight: 600; font-size: 15px; }
+  .download-banner a {
+    background: #FFFFFF;
+    color: #2B2A28;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    border-radius: 20px;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 24px;
+    background: #F3EEE4;
+  }
+  .header { display: flex; align-items: flex-start; gap: 12px; }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+  .avatar-placeholder { background: rgba(128,128,128,0.3); }
+  .name-block { flex: 1; min-width: 0; }
+  .name { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; margin: 0; }
+  .role-title { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 15px; margin: 2px 0 0; }
+  .headline { font-family: 'EB Garamond', serif; font-weight: 500; font-size: 16px; margin: 16px 0 0; }
+  .role-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .role-pill {
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.66px;
+    background: rgba(0,0,0,0.12);
+    padding: 6px 12px; border-radius: 999px;
+  }
+  .years { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 13px; }
+  .bio { font-family: 'EB Garamond', serif; font-weight: 400; font-size: 16px; margin: 16px 0 0; white-space: pre-wrap; }
+  .contact { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+  .row { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
+  .row-icon { width: 18px; text-align: center; }
+  .interests { margin-top: 16px; }
+  .interests-label { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.66px;
+    background: rgba(0,0,0,0.08);
+    padding: 5px 10px; border-radius: 999px;
+  }
+  .social-row { margin-top: 16px; display: flex; gap: 12px; }
+  .social { font-size: 13px; font-weight: 600; text-decoration: underline; }
+  .add-contact {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 20px;
+    display: block;
+    text-align: center;
+    background: #B8894A;
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 16px;
+    text-decoration: none;
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .add-contact.hidden { display: none; }
+  .status-message {
+    max-width: 420px;
+    text-align: center;
+    font-family: 'EB Garamond', serif;
+    font-size: 18px;
+    color: rgba(0,0,0,0.6);
+    padding: 48px 16px;
+  }
+</style>
+</head>
+<body>
+  <div class="download-banner">
+    <span>Get The Inner Network app</span>
+    <a href="https://apps.apple.com/app/id6804337610">Download</a>
+  </div>
+
+  <div id="content">
+    <p class="status-message">Loading…</p>
+  </div>
+
+  <a id="addContactLink" class="add-contact hidden" href="#">Add to Contacts</a>
+
+  <script>
+    var CONFIG = {
+      functionUrl: "https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card"
+    };
+
+    function esc(s) {
+      var d = document.createElement("div");
+      d.textContent = s == null ? "" : String(s);
+      return d.innerHTML;
+    }
+
+    function getProfileId() {
+      var params = new URLSearchParams(window.location.search);
+      return params.get("id");
+    }
+
+    function legibleTextColor(hex) {
+      var clean = (hex || "").replace("#", "");
+      var r = parseInt(clean.substring(0, 2), 16) || 0;
+      var g = parseInt(clean.substring(2, 4), 16) || 0;
+      var b = parseInt(clean.substring(4, 6), 16) || 0;
+      var brightness = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
+      return brightness > 0.6 ? "#000000" : "#FFFFFF";
+    }
+
+    function contactRow(icon, text) {
+      return '<div class="row"><span class="row-icon">' + icon + '</span><span>' + esc(text) + '</span></div>';
+    }
+
+    function renderCard(profile) {
+      var textColor = profile.textColor || legibleTextColor(profile.backgroundColor);
+      var secondaryTextColor = textColor === "#000000" ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.65)";
+
+      var nameLine = profile.nameSuffix ? esc(profile.fullName) + ", " + esc(profile.nameSuffix) : esc(profile.fullName);
+
+      var titleCompanyLines = [];
+      if (profile.title) titleCompanyLines.push(esc(profile.title));
+      if (profile.company) {
+        titleCompanyLines.push(profile.department ? esc(profile.company) + " · " + esc(profile.department) : esc(profile.company));
+      }
+
+      var avatarHTML = profile.avatarUrl
+        ? '<img class="avatar" src="' + esc(profile.avatarUrl) + '" alt="" />'
+        : '<div class="avatar avatar-placeholder"></div>';
+
+      var headlineHTML = profile.headline ? '<p class="headline">' + esc(profile.headline) + "</p>" : "";
+      var yearsHTML = profile.yearsInIndustry
+        ? '<span class="years">' + profile.yearsInIndustry + " year" + (profile.yearsInIndustry === 1 ? "" : "s") + " in the industry</span>"
+        : "";
+      var bioHTML = profile.bio ? '<p class="bio">' + esc(profile.bio) + "</p>" : "";
+
+      var contactRows = [
+        profile.email ? contactRow("&#9993;", profile.email) : "",
+        profile.phone ? contactRow("&#9742;", profile.phone) : "",
+        profile.companyEmail ? contactRow("&#127970;", profile.companyEmail) : "",
+        profile.officePhone ? contactRow("&#9742;", profile.officePhone) : "",
+        profile.website ? contactRow("&#127760;", profile.website) : "",
+        profile.companyWebsite ? contactRow("&#127760;", profile.companyWebsite) : ""
+      ].filter(Boolean).join("\n");
+
+      var interestTags = (profile.interests || []).map(function (role) {
+        return '<span class="tag">' + esc(role) + "</span>";
+      }).join("\n");
+      var interestsHTML = interestTags
+        ? '<div class="interests"><div class="interests-label">Looking to connect with</div><div class="tag-row">' + interestTags + "</div></div>"
+        : "";
+
+      var socialLinks = [];
+      if (profile.linkedinUrl) socialLinks.push('<a class="social" style="color:' + textColor + '" href="' + esc(profile.linkedinUrl) + '" target="_blank" rel="noopener">LinkedIn</a>');
+      if (profile.instagramUrl) socialLinks.push('<a class="social" style="color:' + textColor + '" href="' + esc(profile.instagramUrl) + '" target="_blank" rel="noopener">Instagram</a>');
+      var socialHTML = socialLinks.length ? '<div class="social-row">' + socialLinks.join("\n") + "</div>" : "";
+
+      var card = document.createElement("div");
+      card.className = "card";
+      card.style.background = profile.backgroundColor || "#F3EEE4";
+      card.style.color = textColor;
+      card.innerHTML =
+        '<div class="header">' + avatarHTML +
+        '<div class="name-block"><p class="name">' + nameLine + "</p>" +
+        titleCompanyLines.map(function (l) { return '<p class="role-title" style="color:' + secondaryTextColor + '">' + l + "</p>"; }).join("\n") +
+        "</div></div>" +
+        headlineHTML +
+        '<div class="role-row"><span class="role-pill" style="color:' + textColor + '">' + esc(profile.role) + "</span>" + yearsHTML + "</div>" +
+        bioHTML +
+        (contactRows ? '<div class="contact" style="color:' + secondaryTextColor + '">' + contactRows + "</div>" : "") +
+        interestsHTML +
+        socialHTML;
+
+      // Recolor the secondary-text elements that were built before the
+      // card's own background color was known (contactRows/interests use
+      // a shared secondaryTextColor already; role-pill/tag backgrounds
+      // stay a fixed translucent black regardless of card color, matching
+      // the native app's own rendering).
+      var content = document.getElementById("content");
+      content.innerHTML = "";
+      content.appendChild(card);
+
+      var addContactLink = document.getElementById("addContactLink");
+      addContactLink.href = profile.vcardUrl;
+      addContactLink.classList.remove("hidden");
+
+      document.title = profile.fullName + " — The Inner Network";
+    }
+
+    function renderError(message) {
+      document.getElementById("content").innerHTML = '<p class="status-message">' + esc(message) + "</p>";
+    }
+
+    (function init() {
+      var id = getProfileId();
+      if (!id) {
+        renderError("No profile specified.");
+        return;
+      }
+      fetch(CONFIG.functionUrl + "?id=" + encodeURIComponent(id) + "&format=json")
+        .then(function (res) {
+          if (!res.ok) throw new Error("fetch failed: " + res.status);
+          return res.json();
+        })
+        .then(renderCard)
+        .catch(function () {
+          renderError("This business card couldn't be found.");
+        });
+    })();
+  </script>
+</body>
+</html>
