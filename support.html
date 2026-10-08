@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inner Network Support</title>
+<meta name="description" content="Help, contact details, and frequently asked questions for the Inner Network app.">
 <link rel="icon" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <style>
@@ -13,7 +14,7 @@
     --cream: #ece5d4;
     --cream-card: #f7f3ea;
     --cream-line: #d9d0ba;
-    --muted: #6b7180;
+    --muted: #525a6b;
   }
   * { box-sizing: border-box; }
   body {
@@ -25,6 +26,13 @@
     color: var(--navy);
     background: var(--cream);
   }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+  .skip-link {
+    position: absolute; left: 8px; top: -100px; z-index: 100;
+    background: var(--navy); color: var(--cream); padding: 10px 14px; border-radius: 8px;
+    font-weight: 600; text-decoration: none;
+  }
+  .skip-link:focus { top: 8px; }
   .top-nav {
     display: flex;
     align-items: center;
@@ -95,6 +103,9 @@
     margin-bottom: 0;
     color: var(--muted);
   }
+  .faq-item a {
+    color: var(--muted);
+  }
   hr {
     border: none;
     border-top: 1px solid var(--cream-line);
@@ -105,22 +116,39 @@
     margin-top: 8px;
     font-size: 14px;
   }
+  .site-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--cream-line);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .site-footer a { color: var(--muted); }
+  .site-footer nav a { margin-right: 12px; display: inline-block; }
+  .site-footer p { margin: 8px 0 0; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 
 <div class="top-nav">
-  <img src="/assets/logo.png" alt="InnerNetwork">
-  <span>InnerNetwork</span>
+  <img src="/assets/logo.png" alt="">
+  <span>Inner Network</span>
 </div>
 
+<main id="main">
 <h1>Inner Network Support</h1>
 <p class="subtitle">Need help with Inner Network? You're in the right place.</p>
 
 <h2>Contact Us</h2>
 <p>For any questions, issues, or feedback about the App, email us at:</p>
 <div class="contact-block">
-  <p><strong>Email:</strong> <a href="mailto:jsassonv@gmail.com">jsassonv@gmail.com</a></p>
+  <p><strong>Email:</strong> <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a></p>
+  <p><strong>Mail:</strong> Wavecode LLC, 5937 NW 1st Ave, Miami, FL 33127</p>
 </div>
 <p>We aim to respond within 2 business days.</p>
 
@@ -133,17 +161,32 @@
 
 <div class="faq-item">
   <h3>How do I delete my account?</h3>
-  <p>Go to Account settings within the App and select "Delete Account." This permanently removes your profile and personal information, subject to the retention terms described in our Privacy Policy. You can also request account deletion by emailing us at <a href="mailto:jsassonv@gmail.com">jsassonv@gmail.com</a>.</p>
+  <p>Go to Account settings within the App and select "Delete Account." This permanently removes your profile and personal information, subject to the retention terms described in our <a href="/privacy-policy.html">Privacy Policy</a>. You can also request account deletion by emailing us at <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a>.</p>
 </div>
 
 <div class="faq-item">
-  <h3>How do I turn off location or push notifications?</h3>
-  <p>Location and notification permissions can be managed at any time in your device's Settings app, under Inner Network. Turning these off only limits distance-based event sorting, event check-in, and reminders; the rest of the App continues to work normally.</p>
+  <h3>How do I request a copy of my data?</h3>
+  <p>Email <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a> from the address on your account and ask for a copy of your data. We will verify the request and respond within 45 days, as described in our <a href="/privacy-policy.html">Privacy Policy</a>.</p>
+</div>
+
+<div class="faq-item">
+  <h3>How does the App use my location, and how do I turn off location or push notifications?</h3>
+  <p>Location is used only while the App is open, to sort nearby events and to confirm event check-in; we never store your GPS coordinates. Location and notification permissions can be managed at any time in your device's Settings app, under Inner Network. Turning these off only limits distance-based event sorting, event check-in, and reminders; the rest of the App continues to work normally.</p>
 </div>
 
 <div class="faq-item">
   <h3>How do I report a user or inappropriate content?</h3>
-  <p>Email us at <a href="mailto:jsassonv@gmail.com">jsassonv@gmail.com</a> with details, including the user's name or the content in question, and we'll investigate promptly.</p>
+  <p>Email us at <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a> with details, including the user's name or the content in question, and we'll investigate promptly.</p>
+</div>
+
+<div class="faq-item">
+  <h3>How do I report an event or organizer listing, or ask for my organization to be removed?</h3>
+  <p>Use the Report option on any event or organizer inside the App, or follow the steps on our <a href="/takedown.html">Removal &amp; Corrections</a> page. We acknowledge every request within 2 business days and tell you what we did about it.</p>
+</div>
+
+<div class="faq-item">
+  <h3>Is Inner Network affiliated with the organizers it lists?</h3>
+  <p>No. Inner Network lists publicly announced industry events so members can plan and compare attendance. Organizer, venue, and publisher names and logos belong to their respective owners and are used only to identify them; we are not affiliated with or endorsed by them unless stated. See the disclaimer in the footer below.</p>
 </div>
 
 <div class="faq-item">
@@ -155,13 +198,29 @@
 <ul>
   <li><a href="/privacy-policy.html">Privacy Policy</a></li>
   <li><a href="/terms.html">Terms of Service</a></li>
+  <li><a href="/takedown.html">Removal &amp; Corrections</a></li>
+  <li><a href="/accessibility.html">Accessibility</a></li>
 </ul>
 
 <div class="contact-block">
   <p><strong>App:</strong> Inner Network</p>
+  <p><strong>Publisher:</strong> Wavecode LLC</p>
 </div>
 
 <hr>
 <a class="back-link" href="/">&larr; Back to innernetwork.app</a>
+</main>
+
+<footer class="site-footer">
+  <nav aria-label="Legal">
+    <a href="/privacy-policy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="/takedown.html">Removal &amp; Corrections</a>
+    <a href="/accessibility.html">Accessibility</a>
+    <a href="/support.html" aria-current="page">Support</a>
+  </nav>
+  <p>&copy; 2026 Wavecode LLC. All rights reserved. &middot; 5937 NW 1st Ave, Miami, FL 33127 &middot; <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a></p>
+  <p>Organizer, venue, and publisher names and logos are trademarks of their respective owners and are used only to identify them. Inner Network is not affiliated with or endorsed by them unless stated.</p>
+</footer>
 </body>
 </html>

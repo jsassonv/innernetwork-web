@@ -4,17 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Download Inner Network</title>
+<meta name="description" content="Get Inner Network for iPhone. Android is coming soon.">
 <link rel="icon" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Inner Network">
 <meta property="og:title" content="Download Inner Network">
-<meta property="og:description" content="Get Inner Network on iPhone or Android.">
+<meta property="og:description" content="Get Inner Network for iPhone. Android is coming soon.">
 <meta property="og:image" content="https://innernetwork.app/assets/logo.png">
 <meta property="og:url" content="https://innernetwork.app/download">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Download Inner Network">
-<meta name="twitter:description" content="Get Inner Network on iPhone or Android.">
+<meta name="twitter:description" content="Get Inner Network for iPhone. Android is coming soon.">
 <meta name="twitter:image" content="https://innernetwork.app/assets/logo.png">
 <style>
   :root {
@@ -23,7 +24,7 @@
     --cream: #ece5d4;
     --cream-card: #f7f3ea;
     --cream-line: #d9d0ba;
-    --muted: #6b7180;
+    --muted: #525a6b;
   }
   * { box-sizing: border-box; }
   html, body {
@@ -31,8 +32,15 @@
     background: var(--cream); color: var(--navy);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+  .skip-link {
+    position: absolute; left: 8px; top: -100px; z-index: 100;
+    background: var(--navy); color: var(--cream); padding: 10px 14px; border-radius: 8px;
+    font-weight: 600; text-decoration: none;
+  }
+  .skip-link:focus { top: 8px; }
   .wrap {
-    min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px;
+    min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px;
   }
   .card {
     width: 100%; max-width: 460px; background: var(--cream-card); border: 1px solid var(--cream-line);
@@ -70,34 +78,39 @@
   .store-badge:hover { background: var(--navy-dark); }
   .store-badge svg { flex-shrink: 0; }
   .store-badge .badge-text { text-align: left; line-height: 1.15; }
-  .store-badge .badge-text .small { display: block; font-size: 10px; opacity: 0.85; }
+  .store-badge .badge-text .small { display: block; font-size: 12px; opacity: 0.85; }
   .store-badge .badge-text .big { display: block; font-size: 17px; font-weight: 600; }
 
   .store-badge.coming-soon {
     background: transparent;
     color: var(--navy);
     border: 1px solid var(--navy);
-    opacity: 0.7;
     cursor: default;
   }
-  .store-badge.coming-soon:hover { background: rgba(47, 53, 74, 0.06); }
 
-  .footer-note {
-    margin-top: 24px; font-size: 12px; color: var(--muted); letter-spacing: 0.02em;
+  .site-footer {
+    width: 100%; max-width: 460px; margin-top: 24px; font-size: 12px; color: var(--muted);
+    letter-spacing: 0.02em; text-align: center; line-height: 1.6;
   }
-  .footer-note a { color: var(--muted); text-decoration: underline; }
+  .site-footer a { color: var(--muted); text-decoration: underline; }
+  .site-footer nav a { margin: 0 6px; display: inline-block; }
+  .site-footer p { color: var(--muted); font-size: 12px; margin: 8px 0 0; line-height: 1.6; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
 </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <div class="wrap">
-    <div class="card">
-      <img class="logo" src="/assets/logo.png" alt="Inner Network">
+    <main id="main" class="card">
+      <img class="logo" src="/assets/logo.png" alt="">
       <h1>Get Inner Network</h1>
       <p>Available on iPhone now, with Android on the way — both connect to the same network.</p>
 
       <div class="store-badges">
-        <a class="store-badge" href="https://apps.apple.com/app/id6804337610" aria-label="Download on the App Store">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <a class="store-badge" href="https://apps.apple.com/app/id6804337610">
+          <svg aria-hidden="true" focusable="false" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fill="currentColor" d="M17.05 12.536c-.02-2.11 1.723-3.126 1.802-3.174-.982-1.435-2.51-1.632-3.05-1.653-1.298-.132-2.534.764-3.192.764-.658 0-1.674-.745-2.753-.724-1.417.021-2.723.823-3.452 2.09-1.472 2.553-.376 6.33 1.058 8.402.702 1.014 1.538 2.152 2.633 2.111 1.058-.041 1.457-.684 2.734-.684 1.277 0 1.634.684 2.753.663 1.138-.02 1.858-1.034 2.552-2.052.804-1.177 1.135-2.318 1.156-2.376-.025-.011-2.217-.85-2.24-3.367Zm-2.104-6.192c.581-.703.973-1.681.866-2.656-.837.034-1.85.559-2.451 1.26-.539.622-1.011 1.62-.884 2.575.933.073 1.888-.475 2.47-1.179Z"/>
           </svg>
           <span class="badge-text">
@@ -107,21 +120,31 @@
         </a>
 
         <!-- Placeholder until the Android app is published to Google Play —
-             swap this href for the real Play Store listing URL once it's live,
-             and remove the "coming-soon" class / .disabled styling. -->
-        <span class="store-badge coming-soon" aria-disabled="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+             turn this into an <a href="..."> with the real Play Store listing
+             URL once it's live, and remove the "coming-soon" class. -->
+        <div class="store-badge coming-soon">
+          <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <polygon fill="currentColor" points="5,3 19,12 5,21"/>
           </svg>
           <span class="badge-text">
             <span class="small">Coming soon to</span>
             <span class="big">Google Play</span>
           </span>
-        </span>
+        </div>
       </div>
+    </main>
 
-      <div class="footer-note">innernetwork.app &middot; <a href="/privacy-policy.html">Privacy Policy</a> &middot; <a href="/terms.html">Terms</a></div>
-    </div>
+    <footer class="site-footer">
+      <nav aria-label="Legal">
+        <a href="/privacy-policy.html">Privacy Policy</a>
+        <a href="/terms.html">Terms of Service</a>
+        <a href="/takedown.html">Removal &amp; Corrections</a>
+        <a href="/accessibility.html">Accessibility</a>
+        <a href="/support.html">Support</a>
+      </nav>
+      <p>&copy; 2026 Wavecode LLC. All rights reserved. &middot; 5937 NW 1st Ave, Miami, FL 33127 &middot; <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a></p>
+      <p>Organizer, venue, and publisher names and logos are trademarks of their respective owners and are used only to identify them. Inner Network is not affiliated with or endorsed by them unless stated.</p>
+    </footer>
   </div>
 </body>
 </html>

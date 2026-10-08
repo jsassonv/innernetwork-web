@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!-- GENERATED FILE — DO NOT EDIT. Source: App/legal/ (doc id: accessibility) · python3 App/scripts/generate_legal.py -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accessibility Statement — Inner Network</title>
+<meta name="description" content="Accessibility Statement for the Inner Network app and website, operated by Wavecode LLC.">
+<link rel="icon" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<style>
+  :root {
+    --navy: #2f354a;
+    --navy-dark: #262b3d;
+    --cream: #ece5d4;
+    --cream-card: #f7f3ea;
+    --cream-line: #d9d0ba;
+    /* 4.5:1+ on both creams (the old #6b7180 was 3.9:1 on --cream) */
+    --muted: #525a6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+    line-height: 1.6;
+    color: var(--navy);
+    background: var(--cream);
+    font-size: 16px;
+  }
+  .skip-link { position: absolute; left: -999px; top: 8px; background: var(--navy); color: var(--cream); padding: 8px 12px; border-radius: 8px; }
+  .skip-link:focus { left: 8px; z-index: 10; }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+  .top-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+  .top-nav img { width: 36px; height: 36px; border-radius: 50%; }
+  .top-nav a { font-weight: 700; font-size: 15px; color: var(--navy); text-decoration: none; }
+  h1 { font-size: 2rem; margin-bottom: 4px; color: var(--navy); line-height: 1.2; }
+  .effective-date { color: var(--muted); margin-bottom: 32px; }
+  h2 { font-size: 1.35rem; color: var(--navy); margin-top: 40px; margin-bottom: 12px; }
+  h3 { font-size: 1.1rem; color: var(--navy); margin-top: 24px; margin-bottom: 8px; }
+  p { margin: 0 0 16px; }
+  ul, ol { margin: 0 0 16px; padding-left: 24px; }
+  li { margin-bottom: 8px; }
+  a { color: var(--navy); text-decoration: underline; }
+  .table-wrap { overflow-x: auto; margin: 0 0 16px; }
+  table { border-collapse: collapse; width: 100%; background: var(--cream-card); border: 1px solid var(--cream-line); border-radius: 12px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--cream-line); font-size: 15px; }
+  th { background: #efe9da; }
+  tr:last-child td { border-bottom: none; }
+  hr { border: none; border-top: 1px solid var(--cream-line); margin: 40px 0; }
+  footer { font-size: 14px; color: var(--muted); }
+  footer nav a { margin-right: 12px; }
+  footer p { margin: 6px 0; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="top-nav">
+  <img src="/assets/logo.png" alt="" width="36" height="36">
+  <a href="/">Inner Network</a>
+</div>
+
+<main id="main">
+<h1>Accessibility Statement</h1>
+<p class="effective-date">Last updated: October 8, 2026 · Version 2026-10-08</p>
+
+<p>Wavecode LLC wants Inner Network to be usable by everyone, including people who use assistive technologies. This statement describes where we are today, what we know still needs work, and how to tell us about barriers you run into.</p>
+<h2>1. Our target</h2>
+<p>We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.1 at Level AA for the <a href="https://innernetwork.app">innernetwork.app</a> website, and to follow Apple's Human Interface Guidelines for accessibility in the iPhone app, including support for VoiceOver, Dynamic Type, Reduce Motion, and sufficient color contrast.</p>
+<h2>2. Current status</h2>
+<p><strong>Honest summary:</strong> Inner Network is <em>partially conformant</em>. Some parts of the app and website do not yet fully meet the guidelines. In October 2026 we audited both and began fixing the issues listed below. We will update this page as work lands.</p>
+<h3>Website (<a href="https://innernetwork.app">innernetwork.app</a>)</h3>
+<p>What works: every page has a language declaration, a descriptive title, and a logical heading order; images have text alternatives; the site has no forms, no auto-playing media, and no content that flashes; pages reflow for small screens and allow zooming; and keyboard focus is visible using the browser's default focus ring.</p>
+<p>Known issues being fixed: some secondary text and the "Add to Contacts" button on shared business-card pages did not meet the 4.5:1 contrast ratio; loading animations did not respect the "reduce motion" preference; some decorative icons were read aloud by screen readers; and some text was smaller than we would like.</p>
+<h3>iPhone app</h3>
+<p>What works: standard iOS controls, navigation, and text fields are used throughout, so VoiceOver can read and operate most screens; the app works in portrait on all iPhone sizes; and most primary buttons have spoken labels.</p>
+<p>Known issues being fixed: text did not scale with the iOS Text Size setting (Dynamic Type); several gold-colored text labels and white-on-gold buttons did not meet contrast guidelines, especially in dark mode; some icon-only buttons (for example, send, share, bookmark, and clear-search buttons) lacked VoiceOver labels; the star rating control had no VoiceOver alternative; some tap targets were smaller than Apple's recommended 44 points; and loading animations did not respect Reduce Motion. The Terms and Privacy checkboxes on the sign-up screen were not clearly labeled for VoiceOver.</p>
+<p>Members can choose a background color for their business card. We constrain the text color on the card to keep it readable, but very light or very dark custom colors may still reduce contrast for people viewing the card.</p>
+<h2>3. Compatibility</h2>
+<p>The website is designed to work with current versions of Safari, Chrome, Firefox, and Edge, and with screen readers such as VoiceOver, NVDA, and JAWS. The app supports iOS 26 and later with VoiceOver, Zoom, Bold Text, Increase Contrast, and Reduce Motion. We have not tested with every assistive technology, and we welcome reports.</p>
+<h2>4. Tell us about a barrier</h2>
+<p>If you cannot access part of Inner Network, or you have a suggestion, please contact us. We will reply within 5 business days, tell you what we can do, and offer the information or service another way in the meantime where possible (for example, by email).</p>
+<ul><li>Email: <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a> (subject "Accessibility")</li><li>Mail: Wavecode LLC, 5937 NW 1st Ave, Miami, FL 33127, United States</li><li>In the app: Account &gt; Send Feedback</li></ul>
+<h2>5. Enforcement and formal complaints</h2>
+<p>If you are not satisfied with our response, you may contact the U.S. Department of Justice, Civil Rights Division, at <a href="https://ada.gov">ada.gov</a>. This statement is provided voluntarily and is not an admission that any particular law applies to Inner Network.</p>
+<h2>6. How this statement was prepared</h2>
+<p>This statement is based on an internal audit of the website's HTML and CSS and the app's source code performed in October 2026, including automated contrast calculations and a manual review of controls and labels. It has not yet been validated by an external accessibility consultant or by testing with users of assistive technology. We intend to do both as the app grows.</p>
+</main>
+
+<hr>
+<footer>
+  <nav aria-label="Legal"><a href="/privacy-policy.html">Privacy Policy</a> <a href="/terms.html">Terms of Service</a> <a href="/takedown.html">Removal &amp; Corrections</a> <a href="/accessibility.html" aria-current="page">Accessibility</a> <a href="/support.html">Support</a></nav>
+  <p>&copy; 2026 Wavecode LLC. All rights reserved. · 5937 NW 1st Ave, Miami, FL 33127 · <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a></p>
+  <p>Organizer, venue, and publisher names and logos are trademarks of their respective owners and are used only to identify them. Inner Network is not affiliated with or endorsed by them unless stated.</p>
+  <p><a href="/">&larr; Back to innernetwork.app</a></p>
+</footer>
+</body>
+</html>

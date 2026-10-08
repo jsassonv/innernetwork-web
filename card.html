@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex, nofollow" />
 <title>Business Card — Inner Network</title>
+<link rel="icon" href="/assets/favicon.png">
 <!--
   Renders a member's public digital business card, for the link/QR code
   on their Account screen. Previously this page's job was done directly
@@ -20,25 +21,75 @@
   nothing here depends on Supabase's declared Content-Type for a fetch()
   call the way a direct navigation does.
 -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=EB+Garamond:wght@400;500&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<!-- Fonts: Inter, EB Garamond, Playfair Display — SIL Open Font License 1.1, see /assets/fonts/OFL.txt -->
 <style>
-  :root { color-scheme: light; }
+  @font-face {
+    font-family: 'Inter';
+    src: url('/assets/fonts/Inter-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'EB Garamond';
+    src: url('/assets/fonts/EBGaramond-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'EB Garamond';
+    src: url('/assets/fonts/EBGaramond-Italic-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Playfair Display';
+    src: url('/assets/fonts/PlayfairDisplay-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Playfair Display';
+    src: url('/assets/fonts/PlayfairDisplay-Italic-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+  }
+
+  :root {
+    color-scheme: light;
+    --ink: #2B2A28;
+    --paper: #F3EEE4;
+    --muted: #525a6b;
+    --brass: #8A6534;
+    --navy: #2f354a;
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: #F3EEE4;
+    background: var(--paper);
+    color: var(--ink);
     font-family: 'Inter', sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 24px 16px 48px;
   }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+  .skip-link {
+    position: absolute; left: 8px; top: -100px; z-index: 100;
+    background: var(--ink); color: #FFFFFF; padding: 10px 14px; border-radius: 8px;
+    font-weight: 600; text-decoration: none;
+  }
+  .skip-link:focus { top: 8px; }
+  main { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; }
   .download-banner {
     width: 100%;
     max-width: 420px;
-    background: #2B2A28;
+    background: var(--ink);
     color: #FFFFFF;
     border-radius: 16px;
     padding: 16px 20px;
@@ -51,7 +102,7 @@
   .download-banner span { font-weight: 600; font-size: 15px; }
   .download-banner a {
     background: #FFFFFF;
-    color: #2B2A28;
+    color: var(--ink);
     text-decoration: none;
     font-weight: 700;
     font-size: 13px;
@@ -59,24 +110,28 @@
     border-radius: 999px;
     white-space: nowrap;
   }
+  .download-banner a:focus-visible { outline-color: #FFFFFF; }
   .card {
     width: 100%;
     max-width: 420px;
     border-radius: 20px;
     border: 1px solid rgba(0,0,0,0.08);
-    padding: 24px;
-    background: #F3EEE4;
+    background: var(--paper);
+    overflow: hidden;
   }
+  /* The scrim is only given a background when the best available text
+     color still fails 4.5:1 against the member's chosen card color. */
+  .card-inner { padding: 24px; border-radius: 20px; }
   .header { display: flex; align-items: flex-start; gap: 12px; }
   .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
   .avatar-placeholder { background: rgba(128,128,128,0.3); }
   .name-block { flex: 1; min-width: 0; }
-  .name { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; margin: 0; }
+  .name { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; margin: 0; line-height: 1.25; }
   .role-title { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 15px; margin: 2px 0 0; }
   .headline { font-family: 'EB Garamond', serif; font-weight: 500; font-size: 16px; margin: 16px 0 0; }
   .role-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
   .role-pill {
-    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
     text-transform: uppercase; letter-spacing: 0.66px;
     background: rgba(0,0,0,0.12);
     padding: 6px 12px; border-radius: 999px;
@@ -90,20 +145,20 @@
   .interests-label { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
   .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag {
-    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px;
+    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
     text-transform: uppercase; letter-spacing: 0.66px;
     background: rgba(0,0,0,0.08);
     padding: 5px 10px; border-radius: 999px;
   }
   .social-row { margin-top: 16px; display: flex; gap: 12px; }
-  .social { font-size: 13px; font-weight: 600; text-decoration: underline; }
+  .social { font-size: 13px; font-weight: 600; text-decoration: underline; color: inherit; }
   .add-contact {
     width: 100%;
     max-width: 420px;
     margin-top: 20px;
     display: block;
     text-align: center;
-    background: #B8894A;
+    background: var(--brass);
     color: #FFFFFF;
     font-weight: 700;
     font-size: 16px;
@@ -117,26 +172,61 @@
     text-align: center;
     font-family: 'EB Garamond', serif;
     font-size: 18px;
-    color: rgba(0,0,0,0.6);
+    color: var(--muted);
     padding: 48px 16px;
+    margin: 0;
+  }
+  .site-footer {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 32px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .site-footer a { color: var(--muted); text-decoration: underline; }
+  .site-footer nav a { margin: 0 6px; display: inline-block; }
+  .site-footer p { margin: 8px 0 0; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
 </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <div class="download-banner">
     <span>Get the Inner Network app</span>
     <a href="https://apps.apple.com/app/id6804337610">Download</a>
   </div>
 
-  <div id="content">
-    <p class="status-message">Loading…</p>
-  </div>
+  <main id="main">
+    <div id="content" role="status" aria-live="polite">
+      <p class="status-message">Loading…</p>
+    </div>
 
-  <a id="addContactLink" class="add-contact hidden" href="#">Add to Contacts</a>
+    <a id="addContactLink" class="add-contact hidden" href="#">Add to Contacts</a>
+  </main>
+
+  <footer class="site-footer">
+    <nav aria-label="Legal">
+      <a href="/privacy-policy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Service</a>
+      <a href="/takedown.html">Removal &amp; Corrections</a>
+      <a href="/accessibility.html">Accessibility</a>
+      <a href="/support.html">Support</a>
+    </nav>
+    <p>&copy; 2026 Wavecode LLC. All rights reserved. &middot; 5937 NW 1st Ave, Miami, FL 33127 &middot; <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a></p>
+    <p>Organizer, venue, and publisher names and logos are trademarks of their respective owners and are used only to identify them. Inner Network is not affiliated with or endorsed by them unless stated.</p>
+  </footer>
 
   <script>
     var CONFIG = {
-      functionUrl: "https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card"
+      functionUrl: "https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card",
+      defaultBackground: "#F3EEE4",
+      lightText: "#FFFFFF",
+      darkText: "#2B2A28",
+      minContrast: 4.5
     };
 
     function esc(s) {
@@ -150,24 +240,150 @@
       return params.get("id");
     }
 
-    function legibleTextColor(hex) {
-      var clean = (hex || "").replace("#", "");
-      var r = parseInt(clean.substring(0, 2), 16) || 0;
-      var g = parseInt(clean.substring(2, 4), 16) || 0;
-      var b = parseInt(clean.substring(4, 6), 16) || 0;
-      var brightness = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
-      return brightness > 0.6 ? "#000000" : "#FFFFFF";
+    // ---- Untrusted-input guards -------------------------------------
+    // Everything in the profile JSON was typed by a member, so colors and
+    // URLs are validated before they reach a style attribute, href or src.
+
+    // Only #rrggbb is accepted; anything else returns null so the caller
+    // can fall back rather than interpolate it into a style attribute.
+    function safeHexColor(value) {
+      return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value : null;
+    }
+
+    // Links may be http: or https:. Same approach as 404.html's safeImageUrl.
+    function safeLinkUrl(value) {
+      if (typeof value !== "string" || !value) return null;
+      try {
+        var url = new URL(value, window.location.href);
+        return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Images must be https: so the page never mixes in insecure content.
+    function safeImageUrl(value) {
+      if (typeof value !== "string" || !value) return null;
+      try {
+        var url = new URL(value, window.location.href);
+        return url.protocol === "https:" ? url.href : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // ---- WCAG 2.x contrast helpers -----------------------------------
+    function hexToRgb(hex) {
+      var clean = hex.replace("#", "");
+      return [
+        parseInt(clean.substring(0, 2), 16),
+        parseInt(clean.substring(2, 4), 16),
+        parseInt(clean.substring(4, 6), 16)
+      ];
+    }
+
+    function rgbToHex(rgb) {
+      return "#" + rgb.map(function (c) {
+        var v = Math.max(0, Math.min(255, Math.round(c))).toString(16);
+        return v.length === 1 ? "0" + v : v;
+      }).join("");
+    }
+
+    function relativeLuminance(rgb) {
+      var channels = rgb.map(function (c) {
+        var s = c / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+    }
+
+    function contrastRatio(hexA, hexB) {
+      var la = relativeLuminance(hexToRgb(hexA));
+      var lb = relativeLuminance(hexToRgb(hexB));
+      var hi = Math.max(la, lb), lo = Math.min(la, lb);
+      return (hi + 0.05) / (lo + 0.05);
+    }
+
+    // Composites `overlayHex` at `alpha` over the opaque `baseHex`.
+    function blend(overlayHex, baseHex, alpha) {
+      var o = hexToRgb(overlayHex), b = hexToRgb(baseHex);
+      return rgbToHex([0, 1, 2].map(function (i) { return o[i] * alpha + b[i] * (1 - alpha); }));
+    }
+
+    // Picks whichever of white / near-black has the higher WCAG contrast
+    // against the card background. If even the better one falls short of
+    // 4.5:1 (mid-tone backgrounds), a translucent scrim in the opposite
+    // tone is layered behind the text block, stepping up its opacity until
+    // the pair passes. Returns the text color, the scrim CSS (or null) and
+    // the effective background the text actually sits on.
+    function pickTextScheme(backgroundHex) {
+      var candidates = [CONFIG.lightText, CONFIG.darkText];
+      var best = candidates[0];
+      var bestRatio = contrastRatio(best, backgroundHex);
+      for (var i = 1; i < candidates.length; i++) {
+        var r = contrastRatio(candidates[i], backgroundHex);
+        if (r > bestRatio) { best = candidates[i]; bestRatio = r; }
+      }
+      if (bestRatio >= CONFIG.minContrast) {
+        return { textColor: best, scrim: null, effectiveBackground: backgroundHex };
+      }
+      // Scrim tone is the opposite of the text: darken for light text,
+      // lighten for dark text.
+      var scrimBase = best === CONFIG.lightText ? "#000000" : "#FFFFFF";
+      var alphas = [0.35, 0.5, 0.65, 0.8];
+      for (var j = 0; j < alphas.length; j++) {
+        var effective = blend(scrimBase, backgroundHex, alphas[j]);
+        if (contrastRatio(best, effective) >= CONFIG.minContrast) {
+          var rgb = hexToRgb(scrimBase);
+          return {
+            textColor: best,
+            scrim: "rgba(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "," + alphas[j] + ")",
+            effectiveBackground: effective
+          };
+        }
+      }
+      // Unreachable in practice (an 80% scrim always passes), but keep the
+      // text readable rather than throwing.
+      return { textColor: best, scrim: scrimBase === "#000000" ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)", effectiveBackground: blend(scrimBase, backgroundHex, 0.8) };
+    }
+
+    // Secondary text is a slightly faded version of the primary color, but
+    // only as far as it can fade while still meeting 4.5:1.
+    function pickSecondaryColor(textColor, effectiveBackground) {
+      var faded = blend(textColor, effectiveBackground, 0.8);
+      return contrastRatio(faded, effectiveBackground) >= CONFIG.minContrast ? faded : textColor;
+    }
+
+    // The role pill / interest tags sit on a translucent overlay; pick the
+    // overlay tone that keeps the text passing.
+    function pickChipBackground(textColor, effectiveBackground, alpha) {
+      var darkChip = blend("#000000", effectiveBackground, alpha);
+      if (contrastRatio(textColor, darkChip) >= CONFIG.minContrast) return "rgba(0,0,0," + alpha + ")";
+      return "rgba(255,255,255," + alpha + ")";
     }
 
     function contactRow(icon, text) {
-      return '<div class="row"><span class="row-icon">' + icon + '</span><span>' + esc(text) + '</span></div>';
+      return '<div class="row"><span class="row-icon" aria-hidden="true">' + icon + '</span><span>' + esc(text) + '</span></div>';
     }
 
     function renderCard(profile) {
-      var textColor = profile.textColor || legibleTextColor(profile.backgroundColor);
-      var secondaryTextColor = textColor === "#000000" ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.65)";
+      var backgroundColor = safeHexColor(profile.backgroundColor) || CONFIG.defaultBackground;
+      var scheme = pickTextScheme(backgroundColor);
 
-      var nameLine = profile.nameSuffix ? esc(profile.fullName) + ", " + esc(profile.nameSuffix) : esc(profile.fullName);
+      // profile.textColor is a hint only: it must be a #RRGGBB hex AND it
+      // must actually pass 4.5:1 on the effective background; otherwise the
+      // computed scheme wins.
+      var hintedText = safeHexColor(profile.textColor);
+      var textColor = scheme.textColor;
+      if (hintedText && contrastRatio(hintedText, scheme.effectiveBackground) >= CONFIG.minContrast) {
+        textColor = hintedText;
+      }
+      var secondaryTextColor = pickSecondaryColor(textColor, scheme.effectiveBackground);
+      var pillBackground = pickChipBackground(textColor, scheme.effectiveBackground, 0.12);
+      var tagBackground = pickChipBackground(textColor, scheme.effectiveBackground, 0.08);
+
+      var fullName = profile.fullName == null ? "" : String(profile.fullName);
+      var nameLine = profile.nameSuffix ? esc(fullName) + ", " + esc(profile.nameSuffix) : esc(fullName);
 
       var titleCompanyLines = [];
       if (profile.title) titleCompanyLines.push(esc(profile.title));
@@ -175,13 +391,16 @@
         titleCompanyLines.push(profile.department ? esc(profile.company) + " · " + esc(profile.department) : esc(profile.company));
       }
 
-      var avatarHTML = profile.avatarUrl
-        ? '<img class="avatar" src="' + esc(profile.avatarUrl) + '" alt="" />'
-        : '<div class="avatar avatar-placeholder"></div>';
+      var avatarUrl = safeImageUrl(profile.avatarUrl);
+      var avatarAlt = fullName ? "Photo of " + fullName : "";
+      var avatarHTML = avatarUrl
+        ? '<img class="avatar" src="' + esc(avatarUrl) + '" alt="' + esc(avatarAlt) + '" />'
+        : '<div class="avatar avatar-placeholder" aria-hidden="true"></div>';
 
       var headlineHTML = profile.headline ? '<p class="headline">' + esc(profile.headline) + "</p>" : "";
-      var yearsHTML = profile.yearsInIndustry
-        ? '<span class="years">' + profile.yearsInIndustry + " year" + (profile.yearsInIndustry === 1 ? "" : "s") + " in the industry</span>"
+      var years = typeof profile.yearsInIndustry === "number" ? profile.yearsInIndustry : parseInt(profile.yearsInIndustry, 10);
+      var yearsHTML = years > 0
+        ? '<span class="years">' + years + " year" + (years === 1 ? "" : "s") + " in the industry</span>"
         : "";
       var bioHTML = profile.bio ? '<p class="bio">' + esc(profile.bio) + "</p>" : "";
 
@@ -194,48 +413,59 @@
         profile.companyWebsite ? contactRow("&#127760;", profile.companyWebsite) : ""
       ].filter(Boolean).join("\n");
 
-      var interestTags = (profile.interests || []).map(function (role) {
-        return '<span class="tag">' + esc(role) + "</span>";
+      var interestTags = (Array.isArray(profile.interests) ? profile.interests : []).map(function (role) {
+        return '<span class="tag" style="background:' + tagBackground + '">' + esc(role) + "</span>";
       }).join("\n");
       var interestsHTML = interestTags
         ? '<div class="interests"><div class="interests-label">Looking to connect with</div><div class="tag-row">' + interestTags + "</div></div>"
         : "";
 
       var socialLinks = [];
-      if (profile.linkedinUrl) socialLinks.push('<a class="social" style="color:' + textColor + '" href="' + esc(profile.linkedinUrl) + '" target="_blank" rel="noopener">LinkedIn</a>');
-      if (profile.instagramUrl) socialLinks.push('<a class="social" style="color:' + textColor + '" href="' + esc(profile.instagramUrl) + '" target="_blank" rel="noopener">Instagram</a>');
+      var linkedinUrl = safeLinkUrl(profile.linkedinUrl);
+      var instagramUrl = safeLinkUrl(profile.instagramUrl);
+      if (linkedinUrl) socialLinks.push('<a class="social" href="' + esc(linkedinUrl) + '" target="_blank" rel="noopener">LinkedIn</a>');
+      if (instagramUrl) socialLinks.push('<a class="social" href="' + esc(instagramUrl) + '" target="_blank" rel="noopener">Instagram</a>');
       var socialHTML = socialLinks.length ? '<div class="social-row">' + socialLinks.join("\n") + "</div>" : "";
 
       var card = document.createElement("div");
       card.className = "card";
-      card.style.background = profile.backgroundColor || "#F3EEE4";
+      card.style.background = backgroundColor;
       card.style.color = textColor;
-      card.innerHTML =
+
+      var inner = document.createElement("div");
+      inner.className = "card-inner";
+      if (scheme.scrim) inner.style.background = scheme.scrim;
+      inner.innerHTML =
         '<div class="header">' + avatarHTML +
-        '<div class="name-block"><p class="name">' + nameLine + "</p>" +
+        '<div class="name-block"><h1 class="name">' + nameLine + "</h1>" +
         titleCompanyLines.map(function (l) { return '<p class="role-title" style="color:' + secondaryTextColor + '">' + l + "</p>"; }).join("\n") +
         "</div></div>" +
         headlineHTML +
-        '<div class="role-row"><span class="role-pill" style="color:' + textColor + '">' + esc(profile.role) + "</span>" + yearsHTML + "</div>" +
+        (profile.role ? '<div class="role-row"><span class="role-pill" style="background:' + pillBackground + '">' + esc(profile.role) + "</span>" + yearsHTML + "</div>" : (yearsHTML ? '<div class="role-row">' + yearsHTML + "</div>" : "")) +
         bioHTML +
         (contactRows ? '<div class="contact" style="color:' + secondaryTextColor + '">' + contactRows + "</div>" : "") +
         interestsHTML +
         socialHTML;
+      card.appendChild(inner);
 
-      // Recolor the secondary-text elements that were built before the
-      // card's own background color was known (contactRows/interests use
-      // a shared secondaryTextColor already; role-pill/tag backgrounds
-      // stay a fixed translucent black regardless of card color, matching
-      // the native app's own rendering).
       var content = document.getElementById("content");
+      // The live region announced "Loading…"; the finished card is ordinary
+      // content, so drop the status semantics before swapping it in.
+      content.removeAttribute("role");
+      content.removeAttribute("aria-live");
       content.innerHTML = "";
       content.appendChild(card);
 
       var addContactLink = document.getElementById("addContactLink");
-      addContactLink.href = profile.vcardUrl;
-      addContactLink.classList.remove("hidden");
+      var vcardUrl = safeLinkUrl(profile.vcardUrl);
+      if (vcardUrl) {
+        addContactLink.href = vcardUrl;
+        addContactLink.classList.remove("hidden");
+      } else {
+        addContactLink.classList.add("hidden");
+      }
 
-      document.title = profile.fullName + " — Inner Network";
+      document.title = (fullName ? fullName + " — " : "") + "Inner Network";
     }
 
     function renderError(message) {
@@ -253,7 +483,10 @@
           if (!res.ok) throw new Error("fetch failed: " + res.status);
           return res.json();
         })
-        .then(renderCard)
+        .then(function (profile) {
+          if (!profile || typeof profile !== "object") throw new Error("bad payload");
+          renderCard(profile);
+        })
         .catch(function () {
           renderError("This business card couldn't be found.");
         });

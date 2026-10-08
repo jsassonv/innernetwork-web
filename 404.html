@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Open in InnerNetwork</title>
+<title>Open in Inner Network</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
@@ -25,7 +25,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Inner Network">
 <meta property="og:title" content="Inner Network">
-<meta property="og:description" content="View this event and connect with South Florida's construction & CRE community.">
+<meta property="og:description" content="View this event and connect with South Florida's construction &amp; CRE community.">
 <meta property="og:image" content="https://innernetwork.app/assets/logo.png">
 <!-- og:url deliberately omitted: this static page can't know which
      requested URL it's actually serving (every unmatched path gets this
@@ -33,7 +33,7 @@
      leaving it unset. -->
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Inner Network">
-<meta name="twitter:description" content="View this event and connect with South Florida's construction & CRE community.">
+<meta name="twitter:description" content="View this event and connect with South Florida's construction &amp; CRE community.">
 <meta name="twitter:image" content="https://innernetwork.app/assets/logo.png">
 <style>
   :root {
@@ -42,7 +42,7 @@
     --cream: #ece5d4;
     --cream-card: #f7f3ea;
     --cream-line: #d9d0ba;
-    --muted: #6b7180;
+    --muted: #525a6b;
     --accent: #E4572E;
   }
   * { box-sizing: border-box; }
@@ -54,6 +54,14 @@
     color: var(--navy);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+  .banner a:focus-visible, .banner button:focus-visible { outline-color: var(--cream); }
+  .skip-link {
+    position: absolute; left: 8px; top: -100px; z-index: 100;
+    background: var(--navy); color: var(--cream); padding: 10px 14px; border-radius: 8px;
+    font-weight: 600; text-decoration: none;
+  }
+  .skip-link:focus { top: 8px; }
 
   /* ---- Sticky "open in app" banner ---- */
   .banner {
@@ -83,7 +91,7 @@
     line-height: 1.2;
   }
   .banner-text .t2 {
-    font-size: 11px;
+    font-size: 12px;
     color: rgba(236, 229, 212, 0.7);
     line-height: 1.2;
   }
@@ -227,30 +235,46 @@
     100% { background-position: 0 50%; }
   }
 
-  .footer-note {
+  .btn,
+  button.btn {
+    font-family: inherit;
+    line-height: normal;
+  }
+
+  .site-footer {
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 0 20px 32px;
     text-align: center;
-    margin-top: 20px;
     font-size: 12px;
     color: var(--muted);
+    line-height: 1.6;
   }
-  .footer-note a { color: var(--muted); text-decoration: underline; }
+  .site-footer a { color: var(--muted); text-decoration: underline; }
+  .site-footer nav a { margin: 0 6px; display: inline-block; }
+  .site-footer p { margin: 8px 0 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
 </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <div class="banner">
-    <img src="/assets/logo.png" alt="InnerNetwork">
+    <img src="/assets/logo.png" alt="">
     <div class="banner-text">
-      <div class="t1">InnerNetwork</div>
+      <div class="t1">Inner Network</div>
       <div class="t2">Open this in the app</div>
     </div>
-    <button class="banner-btn" id="bannerBtn">Open</button>
+    <button type="button" class="banner-btn" id="bannerBtn">Open</button>
   </div>
 
-  <div class="wrap">
+  <main id="main" class="wrap">
     <div class="card" id="card">
       <!-- filled in by JS: event preview, generic fallback, or loading skeleton -->
     </div>
-  </div>
+  </main>
 
   <script>
     // ---- CONFIGURATION ----
@@ -356,7 +380,7 @@
 
     function renderLoading() {
       document.getElementById("card").innerHTML =
-        '<div class="event-body">' +
+        '<div class="event-body" role="status" aria-live="polite" aria-label="Loading event">' +
         '  <div class="skeleton" style="height:24px;width:80%;margin-bottom:10px;"></div>' +
         '  <div class="skeleton" style="height:16px;width:50%;margin-bottom:20px;"></div>' +
         '  <div class="skeleton" style="height:80px;width:100%;"></div>' +
@@ -433,8 +457,10 @@
       function addDetailRow(icon, text) {
         var row = document.createElement("div");
         row.className = "detail-row";
+        // The glyph is decorative; the text that follows carries the meaning.
         var iconSpan = document.createElement("span");
         iconSpan.className = "icon";
+        iconSpan.setAttribute("aria-hidden", "true");
         iconSpan.textContent = icon;
         var textSpan = document.createElement("span");
         textSpan.textContent = text;
@@ -447,11 +473,14 @@
       addDetailRow("💲", formatPrice(event.price_amount));
       body.appendChild(detailBlock);
 
-      var openBtn = document.createElement("a");
+      // A real <button>: this control runs script rather than navigating,
+      // so an <a href="#"> was the wrong element (and scrolled to top on
+      // some browsers when JS failed).
+      var openBtn = document.createElement("button");
+      openBtn.type = "button";
       openBtn.className = "btn";
-      openBtn.href = "#";
       openBtn.id = "openAppBtn2";
-      openBtn.textContent = "Open in InnerNetwork";
+      openBtn.textContent = "Open in Inner Network";
       body.appendChild(openBtn);
 
       var statusLine = document.createElement("div");
@@ -461,8 +490,7 @@
 
       card.appendChild(body);
 
-      document.getElementById("openAppBtn2").addEventListener("click", function (e) {
-        e.preventDefault();
+      document.getElementById("openAppBtn2").addEventListener("click", function () {
         openApp(eventId);
       });
     }
@@ -470,8 +498,8 @@
     function renderGenericFallback() {
       document.getElementById("card").innerHTML =
         '<div class="fallback-body">' +
-        '  <img class="logo" src="/assets/logo.png" alt="InnerNetwork">' +
-        '  <h1>Get the InnerNetwork app</h1>' +
+        '  <img class="logo" src="/assets/logo.png" alt="">' +
+        '  <h1>Get the Inner Network app</h1>' +
         '  <p>View shared events, connect, and stay in sync with South Florida’s construction &amp; CRE community.</p>' +
         '  <a class="btn" href="' + esc(CONFIG.appStoreUrl) + '">Download on the App Store</a>' +
         '</div>';
@@ -517,10 +545,16 @@
     })();
   </script>
 
-  <div style="text-align:center; padding-bottom: 24px;">
-    <a href="/privacy-policy.html" style="color: var(--muted); font-size: 12px; text-decoration: underline;">Privacy Policy</a>
-    &middot;
-    <a href="/terms.html" style="color: var(--muted); font-size: 12px; text-decoration: underline;">Terms</a>
-  </div>
+  <footer class="site-footer">
+    <nav aria-label="Legal">
+      <a href="/privacy-policy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Service</a>
+      <a href="/takedown.html">Removal &amp; Corrections</a>
+      <a href="/accessibility.html">Accessibility</a>
+      <a href="/support.html">Support</a>
+    </nav>
+    <p>&copy; 2026 Wavecode LLC. All rights reserved. &middot; 5937 NW 1st Ave, Miami, FL 33127 &middot; <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a></p>
+    <p>Organizer, venue, and publisher names and logos are trademarks of their respective owners and are used only to identify them. Inner Network is not affiliated with or endorsed by them unless stated.</p>
+  </footer>
 </body>
 </html>
