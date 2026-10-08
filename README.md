@@ -1,6 +1,6 @@
 # Inner Network Web
 
-Static site for the Inner Network app (Wavecode LLC), deployed at **https://innernetwork.app** via GitHub Pages. Plain HTML/CSS/JS, no build step.
+Static site for the Inner Network app (Wavecode, LLC), deployed at **https://innernetwork.app** via GitHub Pages. Plain HTML/CSS/JS, no build step.
 
 ## Pages
 
@@ -21,7 +21,7 @@ Static site for the Inner Network app (Wavecode LLC), deployed at **https://inne
 | `CNAME` | Tells GitHub Pages to serve this repo at `innernetwork.app`. |
 | `robots.txt` | Allows everything except `card.html` and `verify-company.html`. |
 
-Every hand-written page carries the same footer: a `<nav aria-label="Legal">` linking the four legal pages plus Support, the Wavecode LLC copyright/address/contact line, and the third-party trademark disclaimer.
+Every hand-written page carries the same footer: a `<nav aria-label="Legal">` linking the four legal pages plus Support, the Wavecode, LLC copyright/address/contact line, and the third-party trademark disclaimer.
 
 ## Generated legal pages — do not edit by hand
 
