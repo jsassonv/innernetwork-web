@@ -254,6 +254,45 @@
   .site-footer nav a { margin: 0 6px; display: inline-block; }
   .site-footer p { margin: 8px 0 0; }
 
+
+  /* ---- Vague event teaser: monogram, action buttons, download prompt ---- */
+  .organizer-row .monogram {
+    flex-shrink: 0;
+    min-width: 26px; height: 26px; padding: 0 6px;
+    border-radius: 13px;
+    background: var(--navy); color: var(--cream);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .btn-secondary {
+    background: transparent; color: var(--navy);
+    border-color: var(--cream-line);
+  }
+  .btn-secondary:hover { background: var(--cream); }
+  .teaser-note { font-size: 13px; color: var(--muted); text-align: center; margin: 4px 0 16px; line-height: 1.45; }
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(38, 43, 61, 0.55);
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    width: 100%; max-width: 440px;
+    background: var(--cream-card); border-radius: 24px 24px 0 0;
+    padding: 28px 26px 30px; text-align: center;
+    max-height: 92vh; overflow-y: auto;
+  }
+  @media (min-width: 560px) {
+    .modal-backdrop { align-items: center; }
+    .modal { border-radius: 24px; }
+  }
+  .modal h2 { font-size: 19px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .modal p { font-size: 14px; color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
+  .qr-box { display: none; margin: 4px auto 14px; }
+  .qr-box canvas { width: 168px; height: 168px; display: block; margin: 0 auto 8px; image-rendering: pixelated; border: 6px solid #fff; border-radius: 8px; background: #fff; }
+  .qr-box span { font-size: 12px; color: var(--muted); }
+  .coming-soon { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 14px; text-decoration: underline; cursor: pointer; margin-top: 6px; font-family: inherit; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
@@ -276,6 +315,16 @@
     </div>
   </main>
 
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal" id="modal">
+      <h2 id="modalTitle">Get the full event in the app</h2>
+      <p>Save it to your radar, see who’s going, RSVP, and connect with the people there — all in the Inner Network app.</p>
+      <div class="qr-box" id="qrBox"><canvas id="qrCanvas" width="168" height="168" aria-label="QR code to open this event on your phone" role="img"></canvas><span>Scan with your phone’s camera</span></div>
+      <div id="modalStores"></div>
+      <button type="button" class="modal-close" id="modalClose">Not now</button>
+    </div>
+  </div>
+  <script src="/assets/qrcode.js"></script>
   <script>
     // ---- CONFIGURATION ----
     var CONFIG = {
@@ -283,6 +332,8 @@
       customScheme: "com.innernetwork.app://",
       // Apple App Store URL — the app's real numeric id, already filled in.
       appStoreUrl: "https://apps.apple.com/app/id6804337610",
+      // Google Play listing: empty until the Android app is published.
+      playStoreUrl: "",
       // How long (ms) to wait after trying the custom scheme before falling back to the store.
       redirectTimeoutMs: 1200,
       supabaseUrl: "https://dwfuvfcjptvycqyedetb.supabase.co",
@@ -299,17 +350,80 @@
       return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     }
 
+    function isAndroid() {
+      return /Android/i.test(navigator.userAgent);
+    }
+
+    function isDesktop() {
+      return !isIOS() && !isAndroid();
+    }
+
+    function storeButtonsHtml() {
+      var html = "";
+      if (isIOS() || isDesktop()) {
+        html += '<a class="btn" href="' + esc(CONFIG.appStoreUrl) + '">Download on the App Store</a>';
+      }
+      if (isAndroid() || isDesktop()) {
+        if (CONFIG.playStoreUrl) {
+          html += '<a class="btn" href="' + esc(CONFIG.playStoreUrl) + '">Get it on Google Play</a>';
+        } else {
+          html += '<p class="coming-soon">' + (isAndroid() ? "The Android app is coming soon." : "Android: coming soon.") + '</p>';
+        }
+      }
+      return html;
+    }
+
+    // Any interaction a read-only visitor attempts (save, RSVP, see more)
+    // lands here: the page itself never does anything for them, it only
+    // points them at the app.
+    function showDownloadPrompt() {
+      document.getElementById("modalStores").innerHTML = storeButtonsHtml();
+      var qrBox = document.getElementById("qrBox");
+      if (isDesktop() && window.QRCodeLib) {
+        try {
+          drawQr(document.getElementById("qrCanvas"), window.location.href);
+          qrBox.style.display = "block";
+        } catch (e) {
+          qrBox.style.display = "none";
+        }
+      } else {
+        qrBox.style.display = "none";
+      }
+      document.getElementById("modalBackdrop").classList.add("open");
+      var first = document.querySelector("#modalStores a, #modalClose");
+      if (first) first.focus();
+    }
+
+    function hideDownloadPrompt() {
+      document.getElementById("modalBackdrop").classList.remove("open");
+    }
+
+    function drawQr(canvas, text) {
+      var L = window.QRCodeLib;
+      var qr = new L.QRCode(-1, L.ErrorCorrectLevel.M);
+      qr.addData(text);
+      qr.make();
+      var n = qr.getModuleCount();
+      var scale = Math.floor(canvas.width / n) || 1;
+      var offset = Math.floor((canvas.width - n * scale) / 2);
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#262b3d";
+      for (var r = 0; r < n; r++) {
+        for (var c = 0; c < n; c++) {
+          if (qr.isDark(r, c)) ctx.fillRect(offset + c * scale, offset + r * scale, scale, scale);
+        }
+      }
+    }
+
     function openApp(eventId) {
-      // isIOS() previously existed but was never called — every visitor,
-      // including Android/desktop ones with no way to open an
-      // com.innernetwork.app:// link, still attempted the custom scheme
-      // and waited out the full timeout below before landing on the App
-      // Store. Skips straight there for non-iOS instead of the pointless
-      // delay (there's no Android build to send them to instead, so the
-      // App Store is still the most useful thing to show — this only
-      // removes the wasted wait, not the destination).
+      // Android and desktop have no way to open a com.innernetwork.app://
+      // link from a web page reliably (Android opens the app straight from
+      // the https link when it is installed and verified), so they get the
+      // download prompt instead of a pointless wait.
       if (!isIOS()) {
-        window.location.href = CONFIG.appStoreUrl;
+        showDownloadPrompt();
         return;
       }
 
@@ -317,13 +431,10 @@
         ? CONFIG.customScheme + "e/" + encodeURIComponent(eventId)
         : CONFIG.customScheme;
 
-      // The fallback timer previously fired unconditionally: a visitor for
-      // whom the custom scheme DID successfully open the app (the common
-      // case when it's installed) still got redirected to the App Store
-      // a moment later once they switched back to Safari, since nothing
-      // ever cancelled the pending setTimeout. Cancel it the moment the
-      // tab is backgrounded/hidden — the only way that happens right after
-      // triggering the deep link is the OS actually switching to the app.
+      // Cancelled the moment the tab is backgrounded: the only way that
+      // happens right after triggering the deep link is the OS switching
+      // to the app, and a still-pending redirect would drag them to the
+      // App Store a moment later.
       var redirectTimer = setTimeout(function () {
         window.location.href = CONFIG.appStoreUrl;
       }, CONFIG.redirectTimeoutMs);
@@ -410,15 +521,25 @@
       }
     }
 
-    // Builds the card via DOM APIs rather than innerHTML string
-    // concatenation — assigning to .textContent/.src/.style.background
-    // can't be broken out of the way a concatenated HTML attribute can,
-    // so this closes the injection class outright rather than just
-    // patching individual escaping gaps.
+    // Initials for the organizer chip, from the organizer's full name
+    // (no logo is ever shown here -- this page is a teaser, not a copy of
+    // the event page).
+    function monogramFor(name) {
+      var skip = { and: 1, of: 1, the: 1, for: 1, at: 1, in: 1 };
+      var words = String(name || "").split(/[^A-Za-z0-9]+/).filter(function (w) { return w && !skip[w.toLowerCase()]; });
+      if (!words.length) return "";
+      if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
+      return words.slice(0, 3).map(function (w) { return w.charAt(0); }).join("").toUpperCase();
+    }
+
+    // A deliberately thin teaser: event name, organizer (monogram + full
+    // name), date/time, and venue name only -- no logo, image, description,
+    // price, or street address. The goal is to get the visitor to open the
+    // app, where the whole event lives. Built via DOM APIs (not innerHTML
+    // concatenation) so database text can never break out into markup.
     function renderEvent(event, eventId) {
       var accent = safeHexColor(event.accent_color_hex ? "#" + event.accent_color_hex : null);
       var dateRange = formatDateRange(event.start_date, event.end_date);
-      var venue = [event.venue_name, event.venue_address].filter(Boolean).join(", ");
 
       var card = document.getElementById("card");
       card.innerHTML = "";
@@ -439,15 +560,13 @@
       if (event.organizer_name) {
         var organizerRow = document.createElement("div");
         organizerRow.className = "organizer-row";
-        var logoUrl = safeImageUrl(event.organizer_logo_url);
-        if (logoUrl) {
-          var img = document.createElement("img");
-          img.src = logoUrl;
-          img.alt = "";
-          organizerRow.appendChild(img);
-        }
+        var chip = document.createElement("span");
+        chip.className = "monogram";
+        chip.setAttribute("aria-hidden", "true");
+        chip.textContent = monogramFor(event.organizer_name);
+        organizerRow.appendChild(chip);
         var organizerLabel = document.createElement("span");
-        organizerLabel.textContent = "Hosted by " + String(event.organizer_name);
+        organizerLabel.textContent = String(event.organizer_name);
         organizerRow.appendChild(organizerLabel);
         body.appendChild(organizerRow);
       }
@@ -457,7 +576,6 @@
       function addDetailRow(icon, text) {
         var row = document.createElement("div");
         row.className = "detail-row";
-        // The glyph is decorative; the text that follows carries the meaning.
         var iconSpan = document.createElement("span");
         iconSpan.className = "icon";
         iconSpan.setAttribute("aria-hidden", "true");
@@ -469,13 +587,24 @@
         detailBlock.appendChild(row);
       }
       if (dateRange) addDetailRow("📅", dateRange);
-      if (venue) addDetailRow("📍", venue);
-      addDetailRow("💲", formatPrice(event.price_amount));
+      if (event.venue_name) addDetailRow("📍", String(event.venue_name));
       body.appendChild(detailBlock);
 
-      // A real <button>: this control runs script rather than navigating,
-      // so an <a href="#"> was the wrong element (and scrolled to top on
-      // some browsers when JS failed).
+      var note = document.createElement("p");
+      note.className = "teaser-note";
+      note.textContent = "Open the app for the full details, who’s going, and to save or RSVP.";
+      body.appendChild(note);
+
+      // Interactive-looking actions that do nothing but invite a download.
+      [["Save to My Radar", false], ["I’m going", false], ["See who’s going", false]].forEach(function (a) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "btn btn-secondary";
+        b.textContent = a[0];
+        b.addEventListener("click", showDownloadPrompt);
+        body.appendChild(b);
+      });
+
       var openBtn = document.createElement("button");
       openBtn.type = "button";
       openBtn.className = "btn";
@@ -485,7 +614,9 @@
 
       var statusLine = document.createElement("div");
       statusLine.className = "status";
-      statusLine.textContent = "Don’t have the app? Tapping above will take you to the App Store.";
+      statusLine.textContent = isIOS()
+        ? "Don’t have the app? Tapping above will take you to the App Store."
+        : "Don’t have the app yet? Tapping above shows how to get it.";
       body.appendChild(statusLine);
 
       card.appendChild(body);
@@ -501,7 +632,7 @@
         '  <img class="logo" src="/assets/logo.png" alt="">' +
         '  <h1>Get the Inner Network app</h1>' +
         '  <p>View shared events, connect, and stay in sync with South Florida’s construction &amp; CRE community.</p>' +
-        '  <a class="btn" href="' + esc(CONFIG.appStoreUrl) + '">Download on the App Store</a>' +
+        '  ' + storeButtonsHtml() +
         '</div>';
     }
 
@@ -510,6 +641,13 @@
 
       document.getElementById("bannerBtn").addEventListener("click", function () {
         openApp(eventId);
+      });
+      document.getElementById("modalClose").addEventListener("click", hideDownloadPrompt);
+      document.getElementById("modalBackdrop").addEventListener("click", function (e) {
+        if (e.target === this) hideDownloadPrompt();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") hideDownloadPrompt();
       });
 
       if (!eventId) {

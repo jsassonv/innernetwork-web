@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.innernetwork.app",
+      "sha256_cert_fingerprints": [
+        "CD:F3:43:D8:22:36:34:6A:03:9B:1C:45:81:66:EE:B6:A2:F4:7D:18:6A:3D:CF:68:BC:62:71:CE:53:EB:FC:DC"
+      ]
+    }
+  }
+]
