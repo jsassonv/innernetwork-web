@@ -637,6 +637,15 @@
     }
 
     (function init() {
+      // Business-card QR codes point at /c/<profile id>. The app claims that
+      // path (so scanning opens the app and connects), and everyone else
+      // lands here: show the public card page for that member.
+      var cardMatch = window.location.pathname.match(/^\/c\/([0-9a-fA-F-]{36})\/?$/);
+      if (cardMatch) {
+        window.location.replace("/card.html?id=" + encodeURIComponent(cardMatch[1]));
+        return;
+      }
+
       var eventId = getEventId();
 
       // iPhone Safari already shows its own native "Open in the app" banner
