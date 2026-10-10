@@ -639,6 +639,11 @@
     (function init() {
       var eventId = getEventId();
 
+      // iPhone Safari already shows its own native "Open in the app" banner
+      // when the app is installed, which stacked on top of this one. The
+      // card below carries the same Open / App Store actions on iOS.
+      if (isIOS()) document.querySelector(".banner").style.display = "none";
+
       document.getElementById("bannerBtn").addEventListener("click", function () {
         openApp(eventId);
       });
