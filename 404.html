@@ -563,7 +563,7 @@
         var chip = document.createElement("span");
         chip.className = "monogram";
         chip.setAttribute("aria-hidden", "true");
-        chip.textContent = monogramFor(event.organizer_name);
+        chip.textContent = event.organizer_monogram || monogramFor(event.organizer_name);
         organizerRow.appendChild(chip);
         var organizerLabel = document.createElement("span");
         organizerLabel.textContent = String(event.organizer_name);
@@ -662,19 +662,26 @@
 
       renderLoading();
 
-      fetch(CONFIG.supabaseUrl + "/rest/v1/rpc/get_public_event_preview", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": CONFIG.supabaseAnonKey,
-          "Authorization": "Bearer " + CONFIG.supabaseAnonKey
-        },
-        body: JSON.stringify({ p_event_id: eventId })
-      })
-        .then(function (res) {
-          if (!res.ok) throw new Error("preview fetch failed: " + res.status);
+      // Prefers the thinner teaser function (real organizer monogram, no
+      // logo/address/price); falls back to the older preview if it isn't
+      // deployed yet, so the page keeps working either way.
+      function fetchRpc(name) {
+        return fetch(CONFIG.supabaseUrl + "/rest/v1/rpc/" + name, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": CONFIG.supabaseAnonKey,
+            "Authorization": "Bearer " + CONFIG.supabaseAnonKey
+          },
+          body: JSON.stringify({ p_event_id: eventId })
+        }).then(function (res) {
+          if (!res.ok) throw new Error(name + " failed: " + res.status);
           return res.json();
-        })
+        });
+      }
+
+      fetchRpc("get_public_event_teaser")
+        .catch(function () { return fetchRpc("get_public_event_preview"); })
         .then(function (rows) {
           if (!rows || !rows.length) {
             renderGenericFallback();
