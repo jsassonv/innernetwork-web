@@ -85,10 +85,10 @@
     font-weight: 600; text-decoration: none;
   }
   .skip-link:focus { top: 8px; }
-  main { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; }
+  main { width: 100%; max-width: 361px; display: flex; flex-direction: column; align-items: center; }
   .download-banner {
     width: 100%;
-    max-width: 420px;
+    max-width: 361px;
     background: var(--ink);
     color: #FFFFFF;
     border-radius: 16px;
@@ -111,24 +111,26 @@
     white-space: nowrap;
   }
   .download-banner a:focus-visible { outline-color: #FFFFFF; }
+  /* Same size as the card on the member's Account screen in the app (361 x 525), whatever the card contains. */
   .card {
     width: 100%;
-    max-width: 420px;
-    border-radius: 20px;
+    max-width: 361px;
+    aspect-ratio: 361 / 525;
+    border-radius: 16px;
     border: 1px solid rgba(0,0,0,0.08);
     background: var(--paper);
     overflow: hidden;
   }
   /* The scrim is only given a background when the best available text
      color still fails 4.5:1 against the member's chosen card color. */
-  .card-inner { padding: 24px; border-radius: 20px; }
+  .card-inner { padding: 16px; border-radius: 16px; height: 100%; overflow: hidden; }
   .header { display: flex; align-items: flex-start; gap: 12px; }
   .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
   .avatar-placeholder { background: rgba(128,128,128,0.3); }
   .name-block { flex: 1; min-width: 0; }
   .name { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; margin: 0; line-height: 1.25; }
-  .role-title { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 15px; margin: 2px 0 0; }
-  .headline { font-family: 'EB Garamond', serif; font-weight: 500; font-size: 16px; margin: 16px 0 0; }
+  .role-title { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 14px; margin: 2px 0 0; }
+  .headline { font-family: 'EB Garamond', serif; font-weight: 600; font-size: 17px; margin: 12px 0 0; }
   .role-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
   .role-pill {
     font-family: 'Inter', sans-serif; font-weight: 700; font-size: 12px;
@@ -137,11 +139,11 @@
     padding: 6px 12px; border-radius: 999px;
   }
   .years { font-family: 'Inter', sans-serif; font-weight: 500; font-size: 13px; }
-  .bio { font-family: 'EB Garamond', serif; font-weight: 400; font-size: 16px; margin: 16px 0 0; white-space: pre-wrap; }
-  .contact { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+  .bio { font-family: 'EB Garamond', serif; font-weight: 400; font-size: 15px; margin: 12px 0 0; white-space: pre-wrap; }
+  .contact { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
   .row { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; }
   .row-icon { width: 18px; text-align: center; }
-  .interests { margin-top: 16px; }
+  .interests { margin-top: 12px; }
   .interests-label { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
   .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag {
@@ -154,7 +156,7 @@
   .social { font-size: 13px; font-weight: 600; text-decoration: underline; color: inherit; }
   .add-contact {
     width: 100%;
-    max-width: 420px;
+    max-width: 361px;
     margin-top: 20px;
     display: block;
     text-align: center;
@@ -178,7 +180,7 @@
   }
   .site-footer {
     width: 100%;
-    max-width: 420px;
+    max-width: 361px;
     margin-top: 32px;
     text-align: center;
     font-size: 12px;
