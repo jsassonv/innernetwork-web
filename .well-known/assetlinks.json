@@ -1,11 +1,14 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.innernetwork.app",
       "sha256_cert_fingerprints": [
-        "CD:F3:43:D8:22:36:34:6A:03:9B:1C:45:81:66:EE:B6:A2:F4:7D:18:6A:3D:CF:68:BC:62:71:CE:53:EB:FC:DC"
+        "CD:F3:43:D8:22:36:34:6A:03:9B:1C:45:81:66:EE:B6:A2:F4:7D:18:6A:3D:CF:68:BC:62:71:CE:53:EB:FC:DC",
+        "2B:09:8F:65:F9:AE:6C:22:DF:6C:11:86:C6:AD:52:35:8F:33:16:FB:F7:23:A0:7B:01:35:0F:7A:AE:87:5A:E9"
       ]
     }
   }
