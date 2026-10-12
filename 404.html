@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
 <title>Open in Inner Network</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="/assets/favicon.png">
@@ -269,6 +270,13 @@
     border-color: var(--cream-line);
   }
   .btn-secondary:hover { background: var(--cream); }
+  /* The street address is shown for reference only: not selectable, not copyable, not a link. */
+  .no-copy { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; pointer-events: none; }
+  .about { margin: 18px 0 4px; }
+  .about h2 { font-size: 15px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .about p { font-size: 14px; line-height: 1.5; margin: 0 0 6px; white-space: pre-line; }
+  .about .source-note { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .link-btn { background: none; border: none; padding: 6px 0 2px; color: var(--navy); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; text-align: left; }
   .teaser-note { font-size: 13px; color: var(--muted); text-align: center; margin: 4px 0 16px; line-height: 1.45; }
   .modal-backdrop {
     position: fixed; inset: 0; z-index: 50;
@@ -318,7 +326,7 @@
   <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal" id="modal">
       <h2 id="modalTitle">Get the full event in the app</h2>
-      <p>Save it to your radar, see who’s going, RSVP, and connect with the people there — all in the Inner Network app.</p>
+      <p>Save it to your radar, see more events from this organization, RSVP, and connect with the people there — all in the Inner Network app.</p>
       <div class="qr-box" id="qrBox"><canvas id="qrCanvas" width="168" height="168" aria-label="QR code to open this event on your phone" role="img"></canvas><span>Scan with your phone’s camera</span></div>
       <div id="modalStores"></div>
       <button type="button" class="modal-close" id="modalClose">Not now</button>
@@ -532,9 +540,10 @@
       return words.slice(0, 3).map(function (w) { return w.charAt(0); }).join("").toUpperCase();
     }
 
-    // A deliberately thin teaser: event name, organizer (monogram + full
-    // name), date/time, and venue name only -- no logo, image, description,
-    // price, or street address. The goal is to get the visitor to open the
+    // A short preview: event name, organizer, date/time, venue and address (shown
+    // for reference only, not copyable or linked), the short excerpt of the
+    // organizer's description, and a link to the organizer's own page -- no logo,
+    // image, or price. The goal is to get the visitor to open the
     // app, where the whole event lives. Built via DOM APIs (not innerHTML
     // concatenation) so database text can never break out into markup.
     function renderEvent(event, eventId) {
@@ -560,20 +569,23 @@
       if (event.organizer_name) {
         var organizerRow = document.createElement("div");
         organizerRow.className = "organizer-row";
-        var chip = document.createElement("span");
-        chip.className = "monogram";
-        chip.setAttribute("aria-hidden", "true");
-        chip.textContent = event.organizer_monogram || monogramFor(event.organizer_name);
-        organizerRow.appendChild(chip);
         var organizerLabel = document.createElement("span");
-        organizerLabel.textContent = String(event.organizer_name);
+        organizerLabel.textContent = "Organization: " + String(event.organizer_name);
         organizerRow.appendChild(organizerLabel);
         body.appendChild(organizerRow);
+
+        // Invites a download: the rest of this organization's events live in the app.
+        var moreEvents = document.createElement("button");
+        moreEvents.type = "button";
+        moreEvents.className = "link-btn";
+        moreEvents.textContent = "Click here to see more events from this organization";
+        moreEvents.addEventListener("click", showDownloadPrompt);
+        body.appendChild(moreEvents);
       }
 
       var detailBlock = document.createElement("div");
       detailBlock.className = "detail-block";
-      function addDetailRow(icon, text) {
+      function addDetailRow(icon, text, protect) {
         var row = document.createElement("div");
         row.className = "detail-row";
         var iconSpan = document.createElement("span");
@@ -582,21 +594,63 @@
         iconSpan.textContent = icon;
         var textSpan = document.createElement("span");
         textSpan.textContent = text;
+        if (protect) {
+          // Shown for reference only: can't be selected, copied or dragged, and is not a map link.
+          textSpan.className = "no-copy";
+          ["copy", "cut", "contextmenu", "selectstart", "dragstart"].forEach(function (name) {
+            row.addEventListener(name, function (e) { e.preventDefault(); });
+          });
+        }
         row.appendChild(iconSpan);
         row.appendChild(textSpan);
         detailBlock.appendChild(row);
       }
-      if (dateRange) addDetailRow("📅", dateRange);
-      if (event.venue_name) addDetailRow("📍", String(event.venue_name));
+      if (dateRange) addDetailRow("📅", dateRange, false);
+      if (event.venue_name) addDetailRow("📍", String(event.venue_name), false);
+      if (event.venue_address && String(event.venue_address).trim() !== String(event.venue_name || "").trim()) {
+        addDetailRow("🧭", String(event.venue_address), true);
+      }
       body.appendChild(detailBlock);
+
+      // About this event: the stored excerpt of the organizer's own description (at most 300 characters).
+      if (event.description && String(event.description).trim()) {
+        var about = document.createElement("div");
+        about.className = "about";
+        var aboutHeading = document.createElement("h2");
+        aboutHeading.textContent = "About this event";
+        about.appendChild(aboutHeading);
+        var aboutText = document.createElement("p");
+        aboutText.textContent = String(event.description).trim();
+        about.appendChild(aboutText);
+        var sourceNote = document.createElement("p");
+        sourceNote.className = "source-note";
+        sourceNote.textContent = "Excerpt from the organizer’s description. Details may change; confirm everything on the organizer’s website.";
+        about.appendChild(sourceNote);
+        body.appendChild(about);
+      }
+
+      // The organizer's own page for this event (http or https only).
+      var siteUrl = safeImageUrl(event.registration_url);
+      if (siteUrl && event.registration_url) {
+        var site = document.createElement("a");
+        site.className = "btn btn-secondary";
+        site.href = siteUrl;
+        site.target = "_blank";
+        site.rel = "noopener noreferrer nofollow";
+        site.textContent = "Go to website";
+        site.style.display = "block";
+        site.style.textAlign = "center";
+        site.style.textDecoration = "none";
+        body.appendChild(site);
+      }
 
       var note = document.createElement("p");
       note.className = "teaser-note";
-      note.textContent = "Open the app for the full details, who’s going, and to save or RSVP.";
+      note.textContent = "Open the app to save this event and see more from this organization.";
       body.appendChild(note);
 
-      // Interactive-looking actions that do nothing but invite a download.
-      [["Save to My Radar", false], ["I’m going", false], ["See who’s going", false]].forEach(function (a) {
+      // An interactive-looking action that does nothing but invite a download.
+      [["Save to My Radar", false]].forEach(function (a) {
         var b = document.createElement("button");
         b.type = "button";
         b.className = "btn btn-secondary";
@@ -671,9 +725,8 @@
 
       renderLoading();
 
-      // Prefers the thinner teaser function (real organizer monogram, no
-      // logo/address/price); falls back to the older preview if it isn't
-      // deployed yet, so the page keeps working either way.
+      // Loads the event's public preview (name, organizer, dates, venue and address, the short
+      // excerpt and the organizer's own link).
       function fetchRpc(name) {
         return fetch(CONFIG.supabaseUrl + "/rest/v1/rpc/" + name, {
           method: "POST",
@@ -689,8 +742,7 @@
         });
       }
 
-      fetchRpc("get_public_event_teaser")
-        .catch(function () { return fetchRpc("get_public_event_preview"); })
+      fetchRpc("get_public_event_preview")
         .then(function (rows) {
           if (!rows || !rows.length) {
             renderGenericFallback();
