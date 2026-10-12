@@ -199,7 +199,7 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <div class="download-banner">
     <span>Get the Inner Network app</span>
-    <a href="https://apps.apple.com/app/id6804337610">Download</a>
+    <a id="bannerLink" href="https://apps.apple.com/app/id6804337610">Download</a>
   </div>
 
   <main id="main">
@@ -224,6 +224,10 @@
 
   <script>
     var CONFIG = {
+      appStoreUrl: "https://apps.apple.com/app/id6804337610",
+      // Google Play listing: empty until the Android app is published, then
+      // https://play.google.com/store/apps/details?id=com.innernetwork.app
+      playStoreUrl: "",
       functionUrl: "https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card",
       defaultBackground: "#F3EEE4",
       lightText: "#FFFFFF",
@@ -474,7 +478,31 @@
       document.getElementById("content").innerHTML = '<p class="status-message">' + esc(message) + "</p>";
     }
 
+    // The banner sends iPhone visitors to the App Store and Android visitors to Google Play
+    // (or says it is coming soon until the Android app is published).
+    function setUpDownloadBanner() {
+      var ua = navigator.userAgent;
+      var isAndroid = /Android/i.test(ua);
+      var link = document.getElementById("bannerLink");
+      if (!link) return;
+      if (isAndroid) {
+        if (CONFIG.playStoreUrl) {
+          link.href = CONFIG.playStoreUrl;
+          link.textContent = "Get it on Google Play";
+        } else {
+          var note = document.createElement("span");
+          note.textContent = "Android: coming soon";
+          note.style.fontWeight = "600";
+          note.style.fontSize = "13px";
+          link.replaceWith(note);
+        }
+      } else {
+        link.href = CONFIG.appStoreUrl;
+      }
+    }
+
     (function init() {
+      setUpDownloadBanner();
       var id = getProfileId();
       if (!id) {
         renderError("No profile specified.");
