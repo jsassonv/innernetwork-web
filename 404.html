@@ -6,8 +6,10 @@
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
 <title>Open in Inner Network</title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="/assets/favicon.png">
-<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png?v=2">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=2">
 <!--
   Static, generic Open Graph tags — NOT per-event. There were previously
   none at all, so a shared /e/<uuid> link rendered with no title,
@@ -355,7 +357,9 @@
     }
 
     function isIOS() {
-      return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      // iPads often report themselves as a Mac; a touch screen tells them apart.
+      var ipadAsMac = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+      return (/iPad|iPhone|iPod/.test(navigator.userAgent) || ipadAsMac) && !window.MSStream;
     }
 
     function isAndroid() {
