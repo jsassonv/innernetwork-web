@@ -1,0 +1,8 @@
+.DS_Store
+.env
+.env.*
+*.pem
+*.p8
+*.p12
+*.key
+node_modules/

@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
 <title>Open in Inner Network</title>
 <meta name="robots" content="noindex">
@@ -462,10 +464,12 @@
       window.location.href = deepLink;
     }
 
+    // Escapes everything that matters in both text and quoted attributes (the old version left " and ' alone,
+    // so a name containing a quote could break out of an alt="..." attribute).
     function esc(s) {
-      var d = document.createElement("div");
-      d.textContent = s == null ? "" : String(s);
-      return d.innerHTML;
+      return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
     }
 
     function formatDateRange(startIso, endIso) {
