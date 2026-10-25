@@ -235,9 +235,8 @@
   <script>
     var CONFIG = {
       appStoreUrl: "https://apps.apple.com/app/id6804337610",
-      // Google Play listing: empty until the Android app is published, then
-      // https://play.google.com/store/apps/details?id=com.innernetwork.app
-      playStoreUrl: "",
+      // Google Play listing.
+      playStoreUrl: "https://play.google.com/store/apps/details?id=com.innernetwork.app",
       functionUrl: "https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card",
       defaultBackground: "#F3EEE4",
       lightText: "#FFFFFF",
@@ -568,8 +567,7 @@
       document.getElementById("content").innerHTML = '<p class="status-message">' + esc(message) + "</p>";
     }
 
-    // The banner sends iPhone visitors to the App Store and Android visitors to Google Play
-    // (or says it is coming soon until the Android app is published).
+    // The banner sends iPhone visitors to the App Store and Android visitors to Google Play.
     function setUpDownloadBanner() {
       var ua = navigator.userAgent;
       var isAndroid = /Android/i.test(ua);
