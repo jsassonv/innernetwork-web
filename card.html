@@ -257,6 +257,22 @@
       return params.get("id");
     }
 
+    // Where the card was opened from (q = QR code, n = NFC tag), passed on for the member's card insights.
+    function getSource() {
+      var s = new URLSearchParams(window.location.search).get("s");
+      return /^[qnl]$/.test(s || "") ? s : "";
+    }
+
+    // Counts a tap on one of the card's links (only the key, nothing about the visitor).
+    function trackLinkTaps(container, id, profile) {
+      if (!profile.insights || !navigator.sendBeacon) return;
+      container.addEventListener("click", function (e) {
+        var a = e.target.closest && e.target.closest("a[data-link]");
+        if (!a) return;
+        navigator.sendBeacon(CONFIG.functionUrl + "?id=" + encodeURIComponent(id) + "&format=tap&link=" + encodeURIComponent(a.getAttribute("data-link")) + (getSource() ? "&s=" + getSource() : ""));
+      });
+    }
+
     // ---- Untrusted-input guards -------------------------------------
     // Everything in the profile JSON was typed by a member, so colors and
     // URLs are validated before they reach a style attribute, href or src.
@@ -465,8 +481,8 @@
       var li = safeLinkUrl(profile.linkedinUrl), ig = safeLinkUrl(profile.instagramUrl);
       var soc = (li || ig)
         ? '<div class="soc">' +
-            (li ? '<a class="li" href="' + esc(li) + '" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">in</a>' : '') +
-            (ig ? '<a class="ig" href="' + esc(ig) + '" target="_blank" rel="noopener noreferrer" aria-label="Instagram">' + svg("camera") + '</a>' : '') +
+            (li ? '<a class="li" data-link="linkedin" href="' + esc(li) + '" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">in</a>' : '') +
+            (ig ? '<a class="ig" data-link="instagram" href="' + esc(ig) + '" target="_blank" rel="noopener noreferrer" aria-label="Instagram">' + svg("camera") + '</a>' : '') +
           '</div>'
         : '';
 
@@ -508,9 +524,9 @@
         if (style === "gilded") return 'background:' + (R.s ? R.icon : hair) + ';color:#1F2330';
         return 'border:1px solid ' + metal + ';background:' + (dark ? 'rgba(255,255,255,.06)' : 'rgba(176,141,87,.07)') + ';color:' + ink;
       }
-      function row(icon, text, href) {
+      function row(icon, text, href, linkKey) {
         var inner = '<span class="ic" style="' + iconStyle() + '">' + svg(icon) + '</span><span class="t">' + esc(text) + '</span>';
-        return href ? '<a href="' + esc(href) + '"' + (href.indexOf("http") === 0 ? ' target="_blank" rel="noopener noreferrer"' : '') + ' style="color:' + ink2 + '">' + inner + '</a>'
+        return href ? '<a href="' + esc(href) + '"' + (linkKey ? ' data-link="' + esc(linkKey) + '"' : '') + (href.indexOf("http") === 0 ? ' target="_blank" rel="noopener noreferrer"' : '') + ' style="color:' + ink2 + '">' + inner + '</a>'
                     : '<div style="color:' + ink2 + '">' + inner + '</div>';
       }
       var rows = [];
@@ -518,13 +534,13 @@
       if (profile.phone) rows.push(row("phone", formatPhone(profile.phone), "tel:" + String(profile.phone).replace(/[^\d+]/g, "")));
       if (profile.companyEmail) rows.push(row("building", profile.companyEmail, "mailto:" + profile.companyEmail));
       if (profile.officePhone) rows.push(row("phone", formatPhone(profile.officePhone), "tel:" + String(profile.officePhone).replace(/[^\d+]/g, "")));
-      if (profile.website) rows.push(row("globe", profile.website, websiteHref(profile.website)));
-      if (profile.companyWebsite) rows.push(row("globe", profile.companyWebsite, websiteHref(profile.companyWebsite)));
+      if (profile.website) rows.push(row("globe", profile.website, websiteHref(profile.website), "website"));
+      if (profile.companyWebsite) rows.push(row("globe", profile.companyWebsite, websiteHref(profile.companyWebsite), "company_website"));
       // The member's own links (Edit Profile > Links): title shown, https only, at most 5.
       if (Array.isArray(profile.links)) {
-        profile.links.slice(0, 5).forEach(function (link) {
+        profile.links.slice(0, 5).forEach(function (link, index) {
           var href = link && typeof link.title === "string" ? safeLinkUrl(link.url) : null;
-          if (href && href.indexOf("https:") === 0 && link.title.trim()) rows.push(row("link", link.title.trim().slice(0, 40), href));
+          if (href && href.indexOf("https:") === 0 && link.title.trim()) rows.push(row("link", link.title.trim().slice(0, 40), href, String(index)));
         });
       }
       var contacts = rows.length ? '<div class="ct">' + rows.join('') + '</div>' : '';
@@ -558,11 +574,12 @@
       content.removeAttribute("aria-live");
       content.innerHTML = "";
       content.appendChild(card);
+      trackLinkTaps(card, getProfileId(), profile);
 
       var addContactLink = document.getElementById("addContactLink");
       var vcardUrl = safeLinkUrl(profile.vcardUrl);
       if (vcardUrl) {
-        addContactLink.href = vcardUrl;
+        addContactLink.href = vcardUrl + (getSource() ? "&s=" + getSource() : "");
         addContactLink.classList.remove("hidden");
       } else {
         addContactLink.classList.add("hidden");
@@ -604,7 +621,7 @@
         renderError("No profile specified.");
         return;
       }
-      fetch(CONFIG.functionUrl + "?id=" + encodeURIComponent(id) + "&format=json")
+      fetch(CONFIG.functionUrl + "?id=" + encodeURIComponent(id) + "&format=json" + (getSource() ? "&s=" + getSource() : ""))
         .then(function (res) {
           if (!res.ok) throw new Error("fetch failed: " + res.status);
           return res.json();

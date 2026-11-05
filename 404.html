@@ -704,7 +704,9 @@
       // lands here: show the public card page for that member.
       var cardMatch = window.location.pathname.match(/^\/c\/([0-9a-fA-F-]{36})\/?$/);
       if (cardMatch) {
-        window.location.replace("/card.html?id=" + encodeURIComponent(cardMatch[1]));
+        // Keep where the card was opened from (s=q QR code, s=n NFC tag) for the member's card insights.
+        var source = new URLSearchParams(window.location.search).get("s");
+        window.location.replace("/card.html?id=" + encodeURIComponent(cardMatch[1]) + (/^[qnl]$/.test(source || "") ? "&s=" + source : ""));
         return;
       }
 
