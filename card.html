@@ -179,6 +179,34 @@
     border-radius: 12px;
   }
   .add-contact.hidden { display: none; }
+  /* Share back (2.0): the visitor leaves their own contact for the card's owner. */
+  .share-back { width: 100%; max-width: 361px; margin-top: 12px; }
+  .share-back.hidden, .share-form.hidden, .share-done.hidden { display: none; }
+  .share-toggle {
+    width: 100%; display: block; padding: 13px; border-radius: 12px; cursor: pointer;
+    background: transparent; color: var(--ink); border: 1.5px solid var(--brass);
+    font: 700 16px Inter, sans-serif;
+  }
+  .share-form { margin-top: 12px; padding: 16px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E1DACB; }
+  .share-form label { display: block; font: 600 13px Inter, sans-serif; color: var(--ink); margin: 10px 0 4px; }
+  .share-form label:first-child { margin-top: 0; }
+  .share-form input[type=text], .share-form input[type=email], .share-form input[type=tel], .share-form textarea {
+    width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px; border: 1px solid #CFC6B4;
+    font: 400 16px Inter, sans-serif; color: var(--ink); background: #FFFFFF;
+  }
+  .share-form textarea { min-height: 64px; resize: vertical; }
+  .share-form .consent { display: flex; gap: 8px; align-items: flex-start; font: 400 13px/1.45 Inter, sans-serif; margin-top: 14px; }
+  .share-form .consent input { margin-top: 2px; width: 18px; height: 18px; flex: none; }
+  .share-form .consent a { color: var(--ink); }
+  .share-form .trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  .share-form .error { color: #A3271B; font: 500 13px Inter, sans-serif; margin: 10px 0 0; min-height: 1em; }
+  .share-form button[type=submit] {
+    width: 100%; margin-top: 12px; padding: 13px; border: 0; border-radius: 12px; cursor: pointer;
+    background: var(--brass); color: #FFFFFF; font: 700 16px Inter, sans-serif;
+  }
+  .share-form button[disabled] { opacity: .6; cursor: default; }
+  .share-done { margin-top: 12px; padding: 16px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E1DACB;
+    text-align: center; font: 500 15px/1.45 Inter, sans-serif; color: var(--ink); }
   .status-message {
     max-width: 420px;
     text-align: center;
@@ -218,6 +246,29 @@
     </div>
 
     <a id="addContactLink" class="add-contact hidden" href="#">Add to Contacts</a>
+
+    <section id="shareBack" class="share-back hidden" aria-labelledby="shareToggle">
+      <button id="shareToggle" class="share-toggle" type="button" aria-expanded="false" aria-controls="shareForm">Share your contact</button>
+      <form id="shareForm" class="share-form hidden" novalidate>
+        <label for="sbName" data-t="Your name">Your name</label>
+        <input id="sbName" name="name" type="text" autocomplete="name" maxlength="120" required>
+        <label for="sbEmail" data-t="Email">Email</label>
+        <input id="sbEmail" name="email" type="email" autocomplete="email" maxlength="200">
+        <label for="sbPhone" data-t="Phone">Phone</label>
+        <input id="sbPhone" name="phone" type="tel" autocomplete="tel" maxlength="40">
+        <label for="sbCompany" data-t="Company (optional)">Company (optional)</label>
+        <input id="sbCompany" name="company" type="text" autocomplete="organization" maxlength="120">
+        <label for="sbTitle" data-t="Job title (optional)">Job title (optional)</label>
+        <input id="sbTitle" name="title" type="text" autocomplete="organization-title" maxlength="120">
+        <label for="sbNote" data-t="Note (optional)">Note (optional)</label>
+        <textarea id="sbNote" name="note" maxlength="500"></textarea>
+        <div class="trap" aria-hidden="true"><label for="sbWebsite">Website</label><input id="sbWebsite" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+        <label class="consent"><input id="sbConsent" type="checkbox" required> <span id="sbConsentText"></span></label>
+        <p id="sbError" class="error" role="alert"></p>
+        <button type="submit" data-t="Send">Send</button>
+      </form>
+      <p id="shareDone" class="share-done hidden" role="status"></p>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -585,7 +636,106 @@
         addContactLink.classList.add("hidden");
       }
 
+      setUpShareBack(profile, fullName);
       document.title = (fullName ? fullName + " — " : "") + "Inner Network";
+    }
+
+    // Share back: Spanish when the visitor's browser is in Spanish, English otherwise.
+    var SPANISH = /^es\b/i.test(navigator.language || "");
+    var ES = {
+      "Share your contact": "Comparte tu contacto",
+      "Your name": "Tu nombre",
+      "Email": "Correo electrónico",
+      "Phone": "Teléfono",
+      "Company (optional)": "Empresa (opcional)",
+      "Job title (optional)": "Cargo (opcional)",
+      "Note (optional)": "Nota (opcional)",
+      "Send": "Enviar",
+      "Sending…": "Enviando…",
+      "consent": "Acepto compartir estos datos con {name}. Inner Network los guarda solo para que {name} los vea. ",
+      "Privacy Policy": "Política de Privacidad",
+      "Please enter your name.": "Escribe tu nombre.",
+      "Please enter an email or a phone number.": "Escribe un correo electrónico o un teléfono.",
+      "Please check the email address.": "Revisa el correo electrónico.",
+      "Please check the phone number.": "Revisa el número de teléfono.",
+      "Please tick the box to agree.": "Marca la casilla para aceptar.",
+      "Too many tries. Please wait a few minutes.": "Demasiados intentos. Espera unos minutos.",
+      "That didn't go through. Please try again.": "No se pudo enviar. Inténtalo de nuevo.",
+      "done": "Listo. {name} ya tiene tus datos de contacto."
+    };
+    var EN = {
+      "consent": "I agree to share these details with {name}. Inner Network keeps them only so {name} can see them. ",
+      "done": "Done. {name} now has your contact details."
+    };
+    function t(key, name) {
+      var text = (SPANISH ? ES[key] : EN[key]) || key;
+      return name ? text.split("{name}").join(name) : text;
+    }
+
+    function setUpShareBack(profile, fullName) {
+      var section = document.getElementById("shareBack");
+      // Only when the server accepts share back (older deployments don't send this flag).
+      if (!profile.shareBack || !section) return;
+      var firstName = (fullName || "").split(/\s+/)[0] || (SPANISH ? "esta persona" : "this person");
+      var toggle = document.getElementById("shareToggle");
+      var form = document.getElementById("shareForm");
+      var done = document.getElementById("shareDone");
+      var error = document.getElementById("sbError");
+      toggle.textContent = t("Share your contact");
+      Array.prototype.forEach.call(form.querySelectorAll("[data-t]"), function (el) { el.textContent = t(el.getAttribute("data-t")); });
+      var consentText = document.getElementById("sbConsentText");
+      consentText.textContent = t("consent", firstName);
+      var policy = document.createElement("a");
+      policy.href = "/privacy-policy.html";
+      policy.target = "_blank";
+      policy.rel = "noopener";
+      policy.textContent = t("Privacy Policy");
+      consentText.appendChild(policy);
+      section.classList.remove("hidden");
+
+      toggle.addEventListener("click", function () {
+        var open = form.classList.toggle("hidden") === false;
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        if (open) document.getElementById("sbName").focus();
+      });
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var value = function (id) { return document.getElementById(id).value.trim(); };
+        var body = {
+          name: value("sbName"), email: value("sbEmail"), phone: value("sbPhone"), company: value("sbCompany"),
+          title: value("sbTitle"), note: value("sbNote"), website: value("sbWebsite"),
+          consent: document.getElementById("sbConsent").checked
+        };
+        var problem = !body.name ? "Please enter your name."
+          : (!body.email && !body.phone) ? "Please enter an email or a phone number."
+          : (body.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) ? "Please check the email address."
+          : (body.phone && !/^[+()\-.\s\d]{5,40}$/.test(body.phone)) ? "Please check the phone number."
+          : !body.consent ? "Please tick the box to agree." : "";
+        if (problem) { error.textContent = t(problem); return; }
+        error.textContent = "";
+        var button = form.querySelector("button[type=submit]");
+        button.disabled = true;
+        button.textContent = t("Sending…");
+        // text/plain keeps this a simple request (no preflight); the server reads the body as JSON.
+        fetch(CONFIG.functionUrl + "?id=" + encodeURIComponent(getProfileId()) + "&format=lead" + (getSource() ? "&s=" + getSource() : ""), {
+          method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body)
+        }).then(function (res) {
+          if (res.ok) {
+            form.classList.add("hidden");
+            toggle.classList.add("hidden");
+            done.textContent = t("done", firstName);
+            done.classList.remove("hidden");
+            return;
+          }
+          error.textContent = t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't go through. Please try again.");
+        }).catch(function () {
+          error.textContent = t("That didn't go through. Please try again.");
+        }).then(function () {
+          button.disabled = false;
+          button.textContent = t("Send");
+        });
+      });
     }
 
     function renderError(message) {
