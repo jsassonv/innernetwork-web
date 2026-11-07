@@ -262,6 +262,7 @@
         <input id="sbTitle" name="title" type="text" autocomplete="organization-title" maxlength="120">
         <label for="sbNote" data-t="Note (optional)">Note (optional)</label>
         <textarea id="sbNote" name="note" maxlength="500"></textarea>
+        <div id="sbQuestions"></div>
         <div class="trap" aria-hidden="true"><label for="sbWebsite">Website</label><input id="sbWebsite" name="website" type="text" tabindex="-1" autocomplete="off"></div>
         <label class="consent"><input id="sbConsent" type="checkbox" required> <span id="sbConsentText"></span></label>
         <p id="sbError" class="error" role="alert"></p>
@@ -701,6 +702,21 @@
       policy.rel = "noopener";
       policy.textContent = t("Privacy Policy");
       consentText.appendChild(policy);
+      // The member's own questions (migration 2025), shown as the member wrote them; answers are optional.
+      var questions = Array.isArray(profile.leadQuestions) ? profile.leadQuestions.slice(0, 5) : [];
+      var questionBox = document.getElementById("sbQuestions");
+      questions.forEach(function (q, i) {
+        var label = document.createElement("label");
+        label.setAttribute("for", "sbQ" + i);
+        label.textContent = String(q);
+        var input = document.createElement("input");
+        input.id = "sbQ" + i;
+        input.type = "text";
+        input.maxLength = 500;
+        input.setAttribute("data-question", String(q));
+        questionBox.appendChild(label);
+        questionBox.appendChild(input);
+      });
       section.classList.remove("hidden");
 
       toggle.addEventListener("click", function () {
@@ -715,7 +731,10 @@
         var body = {
           name: value("sbName"), email: value("sbEmail"), phone: value("sbPhone"), company: value("sbCompany"),
           title: value("sbTitle"), note: value("sbNote"), website: value("sbWebsite"),
-          consent: document.getElementById("sbConsent").checked
+          consent: document.getElementById("sbConsent").checked,
+          answers: Array.prototype.map.call(document.querySelectorAll("#sbQuestions input"), function (el) {
+            return { q: el.getAttribute("data-question"), a: el.value.trim() };
+          }).filter(function (x) { return x.a !== ""; })
         };
         var problem = !body.name ? "Please enter your name."
           : (!body.email && !body.phone) ? "Please enter an email or a phone number."
