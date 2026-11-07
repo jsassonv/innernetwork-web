@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; frame-src https://www.youtube-nocookie.com https://player.vimeo.com https://www.loom.com; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 <meta name="robots" content="noindex, nofollow" />
 <title>Business Card — Inner Network</title>
@@ -178,7 +178,10 @@
     padding: 14px;
     border-radius: 12px;
   }
-  .add-contact.hidden { display: none; }
+  .add-contact.hidden, .video-box.hidden { display: none; }
+  .add-contact.booking { background: #FFFFFF; color: var(--ink); border: 1px solid #E1DACB; }
+  .video-box { width: 100%; max-width: 361px; margin-top: 16px; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+  .video-box iframe { width: 100%; height: 100%; border: 0; display: block; }
   /* Share back (2.0): the visitor leaves their own contact for the card's owner. */
   .share-back { width: 100%; max-width: 361px; margin-top: 12px; }
   .share-back.hidden, .share-form.hidden, .share-done.hidden, .consent.hidden { display: none; }
@@ -246,6 +249,8 @@
     </div>
 
     <a id="addContactLink" class="add-contact hidden" href="#">Add to Contacts</a>
+    <a id="bookingLink" class="add-contact booking hidden" href="#" target="_blank" rel="noopener">Book a meeting</a>
+    <div id="videoBox" class="video-box hidden"></div>
 
     <section id="shareBack" class="share-back hidden" aria-labelledby="shareToggle">
       <button id="shareToggle" class="share-toggle" type="button" aria-expanded="false" aria-controls="shareForm">Share your contact</button>
@@ -640,6 +645,7 @@
         addContactLink.classList.add("hidden");
       }
 
+      setUpBookingAndVideo(profile);
       setUpShareBack(profile, fullName);
       document.title = (fullName ? fullName + " — " : "") + "Inner Network";
       // Paid plans can hide Inner Network branding (migration 2024): no app banner, no company footer, just their name
@@ -686,6 +692,30 @@
     function t(key, name) {
       var text = (SPANISH ? ES[key] : EN[key]) || key;
       return name ? text.split("{name}").join(name) : text;
+    }
+
+    // Booking link and video (migration 2027). The server only sends https booking pages and YouTube (no-cookie),
+    // Vimeo or Loom player addresses; checked again here before use.
+    function setUpBookingAndVideo(profile) {
+      var booking = document.getElementById("bookingLink");
+      if (booking && typeof profile.bookingUrl === "string" && /^https:\/\//.test(profile.bookingUrl)) {
+        booking.href = profile.bookingUrl;
+        booking.textContent = SPANISH ? "Reservar una reunión" : "Book a meeting";
+        booking.classList.remove("hidden");
+      }
+      var box = document.getElementById("videoBox");
+      var src = profile.videoEmbedUrl;
+      if (box && typeof src === "string" && /^https:\/\/(www\.youtube-nocookie\.com\/embed\/|player\.vimeo\.com\/video\/|www\.loom\.com\/embed\/)[A-Za-z0-9_-]+$/.test(src)) {
+        var frame = document.createElement("iframe");
+        frame.src = src;
+        frame.title = SPANISH ? "Video" : "Video";
+        frame.loading = "lazy";
+        frame.allow = "fullscreen; picture-in-picture";
+        frame.setAttribute("allowfullscreen", "");
+        frame.referrerPolicy = "strict-origin-when-cross-origin";
+        box.appendChild(frame);
+        box.classList.remove("hidden");
+      }
     }
 
     function setUpShareBack(profile, fullName) {
