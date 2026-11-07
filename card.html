@@ -181,7 +181,7 @@
   .add-contact.hidden { display: none; }
   /* Share back (2.0): the visitor leaves their own contact for the card's owner. */
   .share-back { width: 100%; max-width: 361px; margin-top: 12px; }
-  .share-back.hidden, .share-form.hidden, .share-done.hidden { display: none; }
+  .share-back.hidden, .share-form.hidden, .share-done.hidden, .consent.hidden { display: none; }
   .share-toggle {
     width: 100%; display: block; padding: 13px; border-radius: 12px; cursor: pointer;
     background: transparent; color: var(--ink); border: 1.5px solid var(--brass);
@@ -264,6 +264,7 @@
         <textarea id="sbNote" name="note" maxlength="500"></textarea>
         <div id="sbQuestions"></div>
         <div class="trap" aria-hidden="true"><label for="sbWebsite">Website</label><input id="sbWebsite" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+        <label id="sbEmailMeRow" class="consent hidden"><input id="sbEmailMe" type="checkbox"> <span id="sbEmailMeText"></span></label>
         <label class="consent"><input id="sbConsent" type="checkbox" required> <span id="sbConsentText"></span></label>
         <p id="sbError" class="error" role="alert"></p>
         <button type="submit" data-t="Send">Send</button>
@@ -672,11 +673,15 @@
       "Please tick the box to agree.": "Marca la casilla para aceptar.",
       "Too many tries. Please wait a few minutes.": "Demasiados intentos. Espera unos minutos.",
       "That didn't go through. Please try again.": "No se pudo enviar. Inténtalo de nuevo.",
-      "done": "Listo. {name} ya tiene tus datos de contacto."
+      "done": "Listo. {name} ya tiene tus datos de contacto.",
+      "emailMe": "Envíame la tarjeta de {name} por correo (una sola vez).",
+      "doneEmailed": "Listo. {name} ya tiene tus datos y te enviamos su tarjeta por correo."
     };
     var EN = {
       "consent": "I agree to share these details with {name}. Inner Network keeps them only so {name} can see them. ",
-      "done": "Done. {name} now has your contact details."
+      "done": "Done. {name} now has your contact details.",
+      "emailMe": "Email me {name}'s card (one email only).",
+      "doneEmailed": "Done. {name} now has your contact details, and we've emailed you their card."
     };
     function t(key, name) {
       var text = (SPANISH ? ES[key] : EN[key]) || key;
@@ -702,6 +707,11 @@
       policy.rel = "noopener";
       policy.textContent = t("Privacy Policy");
       consentText.appendChild(policy);
+      // "Email me <name>'s card" (migration 2026): only when the server can send email; unticked by default.
+      if (profile.emailCard === true) {
+        document.getElementById("sbEmailMeText").textContent = t("emailMe", firstName);
+        document.getElementById("sbEmailMeRow").classList.remove("hidden");
+      }
       // The member's own questions (migration 2025), shown as the member wrote them; answers are optional.
       var questions = Array.isArray(profile.leadQuestions) ? profile.leadQuestions.slice(0, 5) : [];
       var questionBox = document.getElementById("sbQuestions");
@@ -732,6 +742,7 @@
           name: value("sbName"), email: value("sbEmail"), phone: value("sbPhone"), company: value("sbCompany"),
           title: value("sbTitle"), note: value("sbNote"), website: value("sbWebsite"),
           consent: document.getElementById("sbConsent").checked,
+          emailMeCard: document.getElementById("sbEmailMe").checked,
           answers: Array.prototype.map.call(document.querySelectorAll("#sbQuestions input"), function (el) {
             return { q: el.getAttribute("data-question"), a: el.value.trim() };
           }).filter(function (x) { return x.a !== ""; })
@@ -753,7 +764,7 @@
           if (res.ok) {
             form.classList.add("hidden");
             toggle.classList.add("hidden");
-            done.textContent = t("done", firstName);
+            done.textContent = t(body.emailMeCard && body.email ? "doneEmailed" : "done", firstName);
             done.classList.remove("hidden");
             return;
           }
