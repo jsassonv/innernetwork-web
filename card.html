@@ -303,9 +303,11 @@
       });
     }
 
+    // A personal link (innernetwork.app/<handle>, migration 2023) arrives as ?h=<handle> and is turned into the id first.
+    var resolvedId = null;
     function getProfileId() {
       var params = new URLSearchParams(window.location.search);
-      return params.get("id");
+      return resolvedId || params.get("id");
     }
 
     // Where the card was opened from (q = QR code, n = NFC tag), passed on for the member's card insights.
@@ -766,11 +768,27 @@
 
     (function init() {
       setUpDownloadBanner();
+      var handle = new URLSearchParams(window.location.search).get("h");
+      if (!getProfileId() && handle && /^[a-zA-Z0-9-]{3,30}$/.test(handle)) {
+        fetch(CONFIG.functionUrl + "?format=resolve&handle=" + encodeURIComponent(handle.toLowerCase()))
+          .then(function (res) { if (!res.ok) throw new Error("not found"); return res.json(); })
+          .then(function (body) {
+            if (!body || !body.id) throw new Error("not found");
+            resolvedId = body.id;
+            loadCard(resolvedId);
+          })
+          .catch(function () { renderError("No profile specified."); });
+        return;
+      }
       var id = getProfileId();
       if (!id) {
         renderError("No profile specified.");
         return;
       }
+      loadCard(id);
+    })();
+
+    function loadCard(id) {
       fetch(CONFIG.functionUrl + "?id=" + encodeURIComponent(id) + "&format=json" + (getSource() ? "&s=" + getSource() : ""))
         .then(function (res) {
           if (!res.ok) throw new Error("fetch failed: " + res.status);
@@ -783,7 +801,7 @@
         .catch(function () {
           renderError("This business card couldn't be found.");
         });
-    })();
+    }
   </script>
 </body>
 </html>

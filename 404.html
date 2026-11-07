@@ -709,6 +709,12 @@
         window.location.replace("/card.html?id=" + encodeURIComponent(cardMatch[1]) + (/^[qnl]$/.test(source || "") ? "&s=" + source : ""));
         return;
       }
+      // A member's personal link, innernetwork.app/<handle> (3-30 letters, numbers or hyphens): their card page.
+      var handleMatch = window.location.pathname.match(/^\/([a-zA-Z0-9](?:[a-zA-Z0-9-]{1,28})[a-zA-Z0-9])\/?$/);
+      if (handleMatch) {
+        window.location.replace("/card.html?h=" + encodeURIComponent(handleMatch[1].toLowerCase()));
+        return;
+      }
 
       var eventId = getEventId();
 
