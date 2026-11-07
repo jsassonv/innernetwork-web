@@ -275,12 +275,12 @@
     <nav aria-label="Legal">
       <a href="/privacy-policy.html">Privacy Policy</a>
       <a href="/terms.html">Terms of Service</a>
-      <a href="/takedown.html">Removal &amp; Corrections</a>
-      <a href="/accessibility.html">Accessibility</a>
-      <a href="/support.html">Support</a>
+      <a class="brand-line" href="/takedown.html">Removal &amp; Corrections</a>
+      <a class="brand-line" href="/accessibility.html">Accessibility</a>
+      <a class="brand-line" href="/support.html">Support</a>
     </nav>
-    <p>&copy; 2026 Wavecode, LLC. All rights reserved. &middot; 5937 NW 1st Ave, Miami, FL 33127 &middot; <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a></p>
-    <p>Organizer, venue, and publisher names and logos are trademarks of their respective owners and are used only to identify them. Inner Network is not affiliated with or endorsed by them unless stated.</p>
+    <p class="brand-line">&copy; 2026 Wavecode, LLC. All rights reserved. &middot; 5937 NW 1st Ave, Miami, FL 33127 &middot; <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a></p>
+    <p class="brand-line">Organizer, venue, and publisher names and logos are trademarks of their respective owners and are used only to identify them. Inner Network is not affiliated with or endorsed by them unless stated.</p>
   </footer>
 
   <script>
@@ -640,6 +640,14 @@
 
       setUpShareBack(profile, fullName);
       document.title = (fullName ? fullName + " — " : "") + "Inner Network";
+      // Paid plans can hide Inner Network branding (migration 2024): no app banner, no company footer, just their name
+      // in the title. The Privacy Policy and Terms links and the share-back consent wording stay.
+      if (profile.hideBranding === true) {
+        var banner = document.querySelector(".download-banner");
+        if (banner) banner.style.display = "none";
+        document.querySelectorAll(".brand-line").forEach(function (el) { el.style.display = "none"; });
+        document.title = fullName || "Business Card";
+      }
     }
 
     // Share back: Spanish when the visitor's browser is in Spanish, English otherwise.
