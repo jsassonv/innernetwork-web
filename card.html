@@ -926,7 +926,9 @@
     })();
 
     function loadCard(id) {
-      fetch(CONFIG.functionUrl + "?id=" + encodeURIComponent(id) + "&format=json" + (getSource() ? "&s=" + getSource() : ""))
+      // The referring site (Instagram, LinkedIn, an email...) tells the member where views came from (migration 2046).
+      fetch(CONFIG.functionUrl + "?id=" + encodeURIComponent(id) + "&format=json" + (getSource() ? "&s=" + getSource() : "") +
+            (function () { var r = new URLSearchParams(location.search).get("ref") || document.referrer; return r ? "&ref=" + encodeURIComponent(r.slice(0, 300)) : ""; })())
         .then(function (res) {
           if (!res.ok) throw new Error("fetch failed: " + res.status);
           return res.json();

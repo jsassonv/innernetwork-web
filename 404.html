@@ -702,24 +702,32 @@
       // Business-card QR codes point at /c/<profile id>. The app claims that
       // path (so scanning opens the app and connects), and everyone else
       // lands here: show the public card page for that member.
+      // Where the visitor really came from (Instagram, LinkedIn...): the redirects below would otherwise hide it.
+      var refParam = document.referrer && document.referrer.indexOf(window.location.origin) !== 0 ? "&ref=" + encodeURIComponent(document.referrer.slice(0, 300)) : "";
       var cardMatch = window.location.pathname.match(/^\/c\/([0-9a-fA-F-]{36})\/?$/);
       if (cardMatch) {
         // Keep where the card was opened from (s=q QR code, s=n NFC tag) for the member's card insights.
         var source = new URLSearchParams(window.location.search).get("s");
-        window.location.replace("/card.html?id=" + encodeURIComponent(cardMatch[1]) + (/^[qnl]$/.test(source || "") ? "&s=" + source : ""));
+        window.location.replace("/card.html?id=" + encodeURIComponent(cardMatch[1]) + (/^[qnl]$/.test(source || "") ? "&s=" + source : "") + refParam);
+        return;
+      }
+      // A trackable link (migration 2046): /q/<code> counts the scan, then the server forwards to the member's address.
+      var goMatch = window.location.pathname.match(/^\/q\/([a-zA-Z0-9]{5,12})\/?$/);
+      if (goMatch) {
+        window.location.replace("https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card?format=go&slug=" + encodeURIComponent(goMatch[1].toLowerCase()));
         return;
       }
       // An extra card's Link in Bio page: /b/<card id>.
       var bioMatch = window.location.pathname.match(/^\/b\/([0-9a-fA-F-]{36})\/?$/);
       if (bioMatch) {
-        window.location.replace("/bio.html?id=" + encodeURIComponent(bioMatch[1]) + window.location.search.replace(/^\?/, "&"));
+        window.location.replace("/bio.html?id=" + encodeURIComponent(bioMatch[1]) + window.location.search.replace(/^\?/, "&") + refParam);
         return;
       }
       // A member's personal link, innernetwork.app/<handle> (3-30 letters, numbers or hyphens): their card page.
       var handleMatch = window.location.pathname.match(/^\/([a-zA-Z0-9](?:[a-zA-Z0-9-]{1,28})[a-zA-Z0-9])\/?$/);
       if (handleMatch) {
         // Its Link in Bio page when turned on; bio.html falls back to the web card otherwise.
-        window.location.replace("/bio.html?h=" + encodeURIComponent(handleMatch[1].toLowerCase()) + window.location.search.replace(/^\?/, "&"));
+        window.location.replace("/bio.html?h=" + encodeURIComponent(handleMatch[1].toLowerCase()) + window.location.search.replace(/^\?/, "&") + refParam);
         return;
       }
 

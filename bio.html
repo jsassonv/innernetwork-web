@@ -395,7 +395,8 @@
       document.getElementById("status").textContent = t("Loading…");
       document.documentElement.lang = SPANISH ? "es" : "en";
       var handle = params.get("h"), id = params.get("id");
-      var ref = document.referrer ? "&ref=" + encodeURIComponent(document.referrer.slice(0, 300)) : "";
+      var refRaw = params.get("ref") || document.referrer;
+      var ref = refRaw ? "&ref=" + encodeURIComponent(refRaw.slice(0, 300)) : "";
       var query = handle && /^[a-zA-Z0-9-]{3,30}$/.test(handle) ? "?format=bio&handle=" + encodeURIComponent(handle.toLowerCase())
         : id && /^[0-9a-f-]{36}$/i.test(id) ? "?format=bio&id=" + id : null;
       var fail = function () { document.getElementById("status").textContent = t("This page isn't available."); };
@@ -406,8 +407,8 @@
         if (r.ok) return render(r.body);
         // No Link in Bio page turned on: show the web card instead.
         if (r.body && r.body.error === "nopage") {
-          location.replace(handle ? "/card.html?h=" + encodeURIComponent(handle.toLowerCase()) + (source ? "&s=" + source : "")
-                                  : "/c/" + r.body.cardId + (source ? "?s=" + source : ""));
+          location.replace((handle ? "/card.html?h=" + encodeURIComponent(handle.toLowerCase()) + (source ? "&s=" + source : "")
+                                   : "/card.html?id=" + r.body.cardId + (source ? "&s=" + source : "")) + ref);
           return;
         }
         fail();
