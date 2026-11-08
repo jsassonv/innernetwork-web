@@ -2,101 +2,268 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F6F1E7">
 <title>Inner Network</title>
-<meta name="description" content="Find industry events, meet the right people, and track what your networking is worth.">
+<meta name="description" content="Inner Network helps construction and real estate professionals find industry events, share a digital business card and keep every contact organized after the event.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png?v=2">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=2">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Inner Network">
-<meta property="og:title" content="Inner Network">
-<meta property="og:description" content="Find industry events, meet the right people, and track what your networking is worth.">
+<meta property="og:title" content="Inner Network: turn industry events into relationships">
+<meta property="og:description" content="Find the events worth your time, share a digital business card in one tap, and keep every contact organized after the event.">
 <meta property="og:image" content="https://innernetwork.app/assets/logo.png">
 <meta property="og:url" content="https://innernetwork.app/">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Inner Network">
-<meta name="twitter:description" content="Find industry events, meet the right people, and track what your networking is worth.">
+<meta name="twitter:description" content="Find the events worth your time, share a digital business card in one tap, and keep every contact organized after the event.">
 <meta name="twitter:image" content="https://innernetwork.app/assets/logo.png">
-<style>
-  :root {
-    --navy: #2f354a;
-    --navy-dark: #262b3d;
-    --cream: #ece5d4;
-    --cream-card: #f7f3ea;
-    --cream-line: #d9d0ba;
-    --muted: #525a6b;
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0; height: 100%;
-    background: var(--cream); color: var(--navy);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  }
-  a:focus-visible, button:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
-  .skip-link {
-    position: absolute; left: 8px; top: -100px; z-index: 100;
-    background: var(--navy); color: var(--cream); padding: 10px 14px; border-radius: 8px;
-    font-weight: 600; text-decoration: none;
-  }
-  .skip-link:focus { top: 8px; }
-  .wrap {
-    min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px;
-  }
-  .card {
-    width: 100%; max-width: 460px; background: var(--cream-card); border: 1px solid var(--cream-line);
-    border-radius: 24px; padding: 44px 32px; text-align: center;
-    box-shadow: 0 20px 40px -20px rgba(47, 53, 74, 0.25);
-  }
-  .logo {
-    width: 88px; height: 88px; border-radius: 50%; margin: 0 auto 24px;
-    display: block; box-shadow: 0 8px 20px -6px rgba(47, 53, 74, 0.35);
-  }
-  h1 {
-    font-size: 24px; margin: 0 0 10px; font-weight: 700; letter-spacing: -0.01em;
-  }
-  p { color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0 0 28px; }
-  .btn {
-    display: block; width: 100%; padding: 14px 16px; border-radius: 12px; font-size: 15px;
-    font-weight: 600; text-decoration: none; margin-bottom: 12px; border: 1px solid transparent;
-    background: var(--navy); color: var(--cream);
-    transition: background 0.15s ease;
-  }
-  .btn:hover { background: var(--navy-dark); }
-  .btn-secondary {
-    background: transparent; color: var(--navy); border: 1px solid var(--navy);
-  }
-  .btn-secondary:hover { background: rgba(47, 53, 74, 0.06); }
-  .site-footer {
-    width: 100%; max-width: 460px; margin-top: 24px; font-size: 12px; color: var(--muted);
-    letter-spacing: 0.02em; text-align: center; line-height: 1.6;
-  }
-  .site-footer a { color: var(--muted); text-decoration: underline; }
-  .site-footer nav a { margin: 0 6px; display: inline-block; }
-  .site-footer p { color: var(--muted); font-size: 12px; margin: 8px 0 0; line-height: 1.6; }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-  }
-</style>
+<link rel="preload" href="/assets/fonts/Inter-Variable.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="/assets/home.css?v=1">
+<script>document.documentElement.classList.add('js')</script>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to content</a>
-  <div class="wrap">
-    <main id="main" class="card">
-      <img class="logo" src="/assets/logo.png" alt="">
-      <h1>Inner Network</h1>
-      <p>Get the Inner Network app to view shared content, connect, and stay in sync.</p>
-      <a class="btn" href="https://apps.apple.com/app/id6804337610">Download on the App Store</a>
-      <a class="btn" href="https://play.google.com/store/apps/details?id=com.innernetwork.app">Get it on Google Play</a>
-      <a class="btn btn-secondary" href="/teams.html">Inner Network for teams</a>
-      <p style="margin:8px 0 0;font-size:14px"><a href="/pricing.html">See pricing</a></p>
-    </main>
+<a class="skip" href="#main">Skip to content</a>
 
-    <footer class="site-footer">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7-5.7-1.8 5.7-1.8zM19 17l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" style="fill:currentColor;stroke:none"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-qr" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2"/></symbol>
+<symbol id="i-team" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5.5" cy="10" r="2.2"/><circle cx="18.5" cy="10" r="2.2"/><path d="M6.5 20c.5-3.3 2.6-5 5.5-5s5 1.7 5.5 5M1.5 18.5c.3-2.2 1.7-3.5 4-3.8M22.5 18.5c-.3-2.2-1.7-3.5-4-3.8"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3.5l9 4.8-9 4.8-9-4.8z"/><path d="M3 12.5l9 4.8 9-4.8M3 16.5l9 4.8 9-4.8"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/></symbol>
+<symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="M16 10.5l5-3v9l-5-3z"/></symbol>
+<symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M6.5 8h11v3a5.5 5.5 0 0 1-11 0zM12 16.5V21"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3.5 3.5v17h17"/><path d="M7.5 15l3.5-4.5 3 3 5-6.5"/></symbol>
+<symbol id="i-apple" viewBox="0 0 24 24"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.8-3-.8c-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z" style="fill:currentColor;stroke:none"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M5 3.5l13 8.5-13 8.5z"/></symbol>
+</defs></svg>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Inner Network home"><img src="/assets/home/mark.png" alt="" width="13" height="34"><span>Inner Network</span></a>
+    <ul>
+      <li><a href="#events">Events</a></li>
+      <li><a href="#cards">Cards</a></li>
+      <li><a href="#network">Network</a></li>
+      <li><a href="#teams">Teams</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="act">
+      <a class="login" href="https://app.innernetwork.app">Log in</a>
+      <a class="btn navy sm" href="/download.html">Get started</a>
+      <button class="mm" type="button" id="mmbtn" aria-label="Open menu" aria-expanded="false" aria-controls="mnav"><svg class="ic"><use href="#i-menu"/></svg></button>
+    </div>
+  </div>
+  <nav class="mnav" id="mnav" hidden aria-label="Site">
+    <a href="#events">Events</a><a href="#cards">Cards</a><a href="#network">Network</a><a href="#teams">Teams</a><a href="#faq">FAQ</a><a href="https://app.innernetwork.app">Log in</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="wrap">
+      <div class="copy">
+        <span class="pillbar" data-in style="--d:0"><i></i>Built for construction and real estate</span>
+        <h1><span class="l"><span style="--d:80">Turn industry</span></span><span class="l"><span style="--d:160">events into</span></span><span class="l"><span style="--d:240"><span class="rot" id="rot" aria-live="off"><span class="on">relationships.</span><span>introductions.</span><span>projects.</span><span>partners.</span><svg viewBox="0 0 520 30" preserveAspectRatio="none" aria-hidden="true"><path d="M6 22 C 120 6, 260 4, 514 16"/></svg></span></span></span></h1>
+        <p class="sub" data-in style="--d:360">Find the events worth your time, share a digital business card in one tap, and keep every contact organized after the room clears out.</p>
+        <div class="cta" data-in style="--d:460">
+          <a class="btn navy lg" href="/download.html">Get started <svg class="ic"><use href="#i-arrow"/></svg></a>
+          <a class="btn line lg" href="#how">See how it works</a>
+        </div>
+        <div class="for" data-in style="--d:560">
+          <span>On iPhone, Android and the web.</span>
+          <span class="stores"><a href="https://apps.apple.com/app/id6804337610"><svg class="ic" style="width:16px;height:16px"><use href="#i-apple"/></svg>App Store</a><a href="https://play.google.com/store/apps/details?id=com.innernetwork.app"><svg class="ic" style="width:14px;height:14px"><use href="#i-play"/></svg>Google Play</a></span>
+        </div>
+      </div>
+
+      <div class="door" id="door" aria-hidden="true">
+        <div class="arch"><div class="glow"></div><img class="wm" src="/assets/home/mark.png" alt=""></div>
+        <div class="leaf"></div>
+        <div class="layer c1" data-depth="10"><div class="bcard" style="background:#2F354A;color:#FAF8F2">
+          <div class="who"><div class="av">AM</div><div><h4>Alex Moreno</h4><div class="t">Project Executive, Brickell Builders</div></div></div>
+          <div class="rows"><div>alex@brickellbuilders.example</div><div>(305) 555-0142</div></div>
+          <div class="bt"><span>Save contact</span><span>Connect</span></div>
+        </div></div>
+        <div class="layer c2" data-depth="22"><div class="float mini-ev">
+          <div class="dt"><small>Thu</small><b>12</b><em>Nov</em></div>
+          <div><h5>Brickell Commercial Real Estate Mixer</h5><p>6:00 PM, Brickell</p></div>
+          <span class="star" id="heroStar" aria-pressed="false"><svg class="ic"><use href="#i-star"/></svg></span>
+        </div></div>
+        <div class="layer c3" data-depth="30"><div class="float toast"><span class="ok"><svg class="ic"><use href="#i-check"/></svg></span><div class="txt" id="toastTxt">Ana Ruiz added to My network<small>Met at the design awards</small></div></div></div>
+        <div class="layer c4" data-depth="16"><div class="float scan"><span class="q"><svg class="ic"><use href="#i-qr"/></svg></span>Card scanned</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marq" aria-label="Who uses Inner Network">
+    <div class="tr" id="m1"></div>
+    <div class="tr r" id="m2"></div>
+  </div>
+
+  <section class="room" aria-labelledby="room-h">
+    <div class="wrap">
+      <div class="frame" id="room">
+        <img src="/assets/home/room.webp" alt="" loading="lazy" width="1672" height="941">
+        <span class="sample">Sample</span>
+        <div class="chip a float toast"><span class="ok"><svg class="ic"><use href="#i-check"/></svg></span><div>Saved: Builders Breakfast<small>Thu, 7:30 AM</small></div></div>
+        <div class="chip b float scan"><span class="q"><svg class="ic"><use href="#i-qr"/></svg></span>Priya Shah viewed your card</div>
+        <div class="chip c float toast"><span class="ok" style="background:var(--brass)"><svg class="ic"><use href="#i-spark"/></svg></span><div>Follow up with Daniel<small>Note: GC and architect team</small></div></div>
+        <div class="say">
+          <h2 id="room-h">The best deals still start in a room.</h2>
+          <p>Inner Network helps you pick the right rooms, make the introduction count, and remember it the next morning.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="events" style="padding-bottom:40px">
+    <div class="wrap">
+      <div class="hd rv"><p class="eb2">What it does</p><h2>From the first hello to the follow up.</h2><p>Three tools that work together, so nobody falls through the cracks after the event.</p></div>
+      <div class="stack" id="stack">
+        <article class="fc brass rv" style="--i:0">
+          <div class="ft">
+            <span class="chip2"><b>1</b>Events</span>
+            <h3>Every event worth attending, in one list.</h3>
+            <p class="l">Chambers, AIA chapters and industry groups publish in a dozen places. Inner Network brings them together so you can search, save and plan from one calendar.</p>
+            <ul class="ticks">
+              <li><svg class="ic"><use href="#i-check"/></svg>AI search finds events by who you want to meet</li>
+              <li><svg class="ic"><use href="#i-check"/></svg>For You shows what your network and follows are into</li>
+              <li><svg class="ic"><use href="#i-check"/></svg>Switch between a list and a calendar</li>
+            </ul>
+          </div>
+          <div class="win" aria-label="Events preview">
+            <div class="top"><span class="sample">Sample</span></div>
+            <div class="srch" id="srch"><svg class="ic sp"><use href="#i-spark"/></svg><span class="ai">AI search</span><span class="typed" id="typed"></span></div>
+            <div class="seg" id="evseg"><button type="button" data-t="up" aria-pressed="true">Upcoming</button><button type="button" data-t="you" aria-pressed="false">For You</button><button type="button" data-t="saved" aria-pressed="false">Saved</button></div>
+            <div class="list" id="evlist"></div>
+          </div>
+        </article>
+
+        <article class="fc sage rev rv" id="cards" style="--i:1">
+          <div class="win" aria-label="Business card preview">
+            <div class="top"><span class="sample">Sample</span></div>
+            <div class="cardwrap" id="cardwrap"><div id="democard"></div></div>
+            <div class="lab">Card color</div>
+            <div class="sw" id="sw"></div>
+          </div>
+          <div class="ft">
+            <span class="chip2"><b>2</b>Digital business cards</span>
+            <h3>A card people actually keep.</h3>
+            <p class="l">Build a card in your colors with your logo and links. Share it with a link or QR code, and when a detail changes, every share stays current.</p>
+            <ul class="ticks">
+              <li><svg class="ic"><use href="#i-check"/></svg>Your colors, cover photo and layout</li>
+              <li><svg class="ic"><use href="#i-check"/></svg>Share anywhere in one tap</li>
+              <li><svg class="ic"><use href="#i-check"/></svg>No more reordering paper cards</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="fc sky rv" id="network" style="--i:2">
+          <div class="ft">
+            <span class="chip2"><b>3</b>Your network</span>
+            <h3>Remember who you met and why.</h3>
+            <p class="l">Every contact keeps where you met, the date and your notes. Tag them, search them in plain language, and export when you need them elsewhere.</p>
+            <ul class="ticks">
+              <li><svg class="ic"><use href="#i-check"/></svg>Private tags and notes on every contact</li>
+              <li><svg class="ic"><use href="#i-check"/></svg>Search your network by what people do</li>
+              <li><svg class="ic"><use href="#i-check"/></svg>Export to a spreadsheet any time</li>
+            </ul>
+          </div>
+          <div class="win" aria-label="Contacts preview">
+            <div class="top"><span class="sample">Sample</span></div>
+            <div class="chips" id="tags"></div>
+            <div class="list" id="contacts"></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap">
+      <div class="hd rv"><p class="eb2">Share it</p><h2>Your card, wherever you show up.</h2><p>Hand it over at the event, drop it in an email, or show it on a video call.</p></div>
+      <div class="sh" id="share">
+        <div class="shc a rv" style="--d:0"><div class="shv"><div class="lnk"><span>innernetwork.app/alex-moreno</span><button class="btn navy" type="button" id="copybtn">Copy</button></div></div><h3>Link</h3><p>A clean page with your details, ready to paste anywhere.</p></div>
+        <div class="shc b rv" style="--d:100"><div class="shv"><div class="qrbox" id="qrbox"><canvas id="qr" width="128" height="128" aria-label="Sample QR code"></canvas></div></div><h3>QR code</h3><p>Someone scans it and your card opens. No app needed on their side.</p></div>
+        <div class="shc c rv" style="--d:200"><div class="shv"><div class="sig"><b class="tw">Alex Moreno</b><span class="tw">Project Executive</span><small class="tw">Brickell Builders</small><small class="tw">(305) 555-0142</small></div></div><h3>Email signature</h3><p>A matching signature on every message you send.</p></div>
+        <div class="shc d rv" style="--d:300"><div class="shv"><div class="vbg"><img class="bgimg" src="/assets/home/room2.webp" alt="" loading="lazy"><span class="who"></span><span class="pnl"><i></i><b>Alex Moreno</b></span></div></div><h3>Virtual background</h3><p>Your card and QR code on every video call.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="teams" style="padding-top:24px">
+    <div class="wrap">
+      <div class="hd rv"><p class="eb2">For teams</p><h2>One company. Every card on brand.</h2><p>Give everyone the same polished card, signature and background, and keep a clear record of what your team is doing.</p></div>
+      <div class="t2g">
+        <div class="t2 rv" style="--d:0"><div class="ib"><svg class="ic"><use href="#i-team"/></svg></div><h3>Team members</h3><p>Invite your people and manage who has access.</p></div>
+        <div class="t2 rv" style="--d:80"><div class="ib"><svg class="ic"><use href="#i-layers"/></svg></div><h3>Templates</h3><p>One card design your whole team starts from.</p></div>
+        <div class="t2 rv" style="--d:160"><div class="ib"><svg class="ic"><use href="#i-mail"/></svg></div><h3>Email signatures</h3><p>Matching signatures for the whole company.</p></div>
+        <div class="t2 rv" style="--d:0"><div class="ib"><svg class="ic"><use href="#i-video"/></svg></div><h3>Virtual backgrounds</h3><p>Branded backgrounds for every video call.</p></div>
+        <div class="t2 rv" style="--d:80"><div class="ib"><svg class="ic"><use href="#i-plug"/></svg></div><h3>Integrations</h3><p>Connect the tools your team already uses.</p></div>
+        <div class="t2 rv" style="--d:160"><div class="ib"><svg class="ic"><use href="#i-chart"/></svg></div><h3>Activity and audit log</h3><p>See what is happening and keep a record of changes.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="how" style="padding-top:24px">
+    <div class="wrap">
+      <div class="hd rv"><p class="eb2">How it works</p><h2>Up and running in three steps.</h2></div>
+      <div class="st2g" id="steps">
+        <div class="rail" aria-hidden="true"><i></i></div>
+        <div class="st2 rv" style="--d:0"><div class="n">1</div><h3>Create your card</h3><p>Add your details, pick your colors and get a link and QR code to share.</p></div>
+        <div class="st2 rv" style="--d:150"><div class="n">2</div><h3>Find events and show up</h3><p>Search the list, save what fits your calendar and go meet people.</p></div>
+        <div class="st2 rv" style="--d:300"><div class="n">3</div><h3>Follow up from one list</h3><p>Add notes and tags while it is fresh, then reach out when it matters.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="faq" style="padding-top:24px">
+    <div class="wrap">
+      <div class="hd rv"><p class="eb2">FAQ</p><h2>Good questions.</h2></div>
+      <div class="faq rv">
+        <div>
+          <details open><summary>Who is Inner Network for?</summary><p>Professionals in construction and real estate, including developers, contractors, architects, engineers, lenders, brokers and property managers.</p></details>
+          <details><summary>Where do the events come from?</summary><p>Events are collected from chambers, associations and industry organizers and shown in one place. Each listing links to the organizer for full details.</p></details>
+          <details><summary>Do people need the app to see my card?</summary><p>No. Your card opens in any phone browser from your link or QR code, and they can save your contact or send you theirs.</p></details>
+        </div>
+        <div>
+          <details><summary>Can my whole team use it?</summary><p>Yes. Company accounts include team members, a shared card design, email signatures, virtual backgrounds and an activity log.</p></details>
+          <details><summary>Who can see my tags and notes?</summary><p>Only you. Tags and notes on your contacts are private to your account.</p></details>
+          <details><summary>Where can I use Inner Network?</summary><p>On iPhone, on Android, and on the web at app.innernetwork.app. Everything stays in sync.</p></details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:0 0 28px">
+    <div class="wrap">
+      <div class="fin rv" id="fin">
+        <div>
+          <h2>Your next introduction starts at the next event.</h2>
+          <div class="cta"><a class="btn navy lg" href="/download.html">Get started <svg class="ic"><use href="#i-arrow"/></svg></a><a class="btn line lg" href="https://app.innernetwork.app">Log in</a></div>
+        </div>
+        <div class="doors" aria-hidden="true"><i></i><i></i><i></i></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="frow">
+      <a class="brand" href="#top"><img src="/assets/home/mark.png" alt="" width="13" height="34"><span>Inner Network</span></a>
+      <nav aria-label="Site"><a href="#events">Events</a><a href="#cards">Cards</a><a href="#network">Network</a><a href="/teams.html">Teams</a><a href="/support.html">Support</a></nav>
+    </div>
+    <div class="giant" aria-hidden="true">Inner Network</div>
+    <div class="legal">
       <nav aria-label="Legal">
-        <a href="/pricing.html">Pricing</a>
-        <a href="/teams.html">For teams</a>
         <a href="/privacy-policy.html">Privacy Policy</a>
         <a href="/terms.html">Terms of Service</a>
         <a href="/takedown.html">Removal &amp; Corrections</a>
@@ -104,8 +271,12 @@
         <a href="/support.html">Support</a>
       </nav>
       <p>&copy; 2026 Wavecode, LLC. All rights reserved. &middot; 5937 NW 1st Ave, Miami, FL 33127 &middot; <a href="mailto:contact@innernetwork.app">contact@innernetwork.app</a></p>
-      <p>Organizer, venue, and publisher names and logos are trademarks of their respective owners and are used only to identify them. Inner Network is not affiliated with or endorsed by them unless stated.</p>
-    </footer>
+      <p>The people, companies and events shown on this page are samples. Organizer, venue, and publisher names and logos are trademarks of their respective owners and are used only to identify them. Inner Network is not affiliated with or endorsed by them unless stated.</p>
+    </div>
   </div>
+</footer>
+
+<script src="/assets/qrcode.js" defer></script>
+<script src="/assets/home.js?v=1" defer></script>
 </body>
 </html>
