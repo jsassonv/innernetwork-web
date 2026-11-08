@@ -547,3 +547,9 @@ section.s { padding: 90px 0; }
 @media (max-width: 640px) { .hero h1 { font-size: clamp(32px, 9.4vw, 44px); } .door .c2 { top: 54%; } }
 .doors i:nth-child(3) { background: var(--t-sky); }
 @media (max-width: 640px) { .door .c2 { right: 0; width: 70%; } .door .c3 { left: 0; } }
+/* Official store badges. Google's file has built-in padding, so it is drawn larger and pulled in to match Apple's height. */
+.stores { gap: 12px; align-items: center; }
+.stores a.badge-o { display: inline-flex; border: 0; padding: 0; background: none; border-radius: 8px; line-height: 0; }
+.stores a.badge-o img { height: 44px; width: auto; display: block; }
+.stores a.badge-o img.gp { height: 65.5px; margin: -10.75px; }
+@media (hover: hover) { .stores a.badge-o:hover { opacity: .85; border: 0; } }
