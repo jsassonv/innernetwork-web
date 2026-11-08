@@ -276,6 +276,12 @@
   </div>
 </footer>
 
+<script>
+/* Preview only: on this computer or the home network, Log in opens the local dashboard preview (port 5175),
+   because app.innernetwork.app is not online yet. The live site keeps the real address. */
+(function(){var h=location.hostname;if(h==="localhost"||h==="127.0.0.1"||/^192\.168\./.test(h)){
+document.querySelectorAll('a[href="https://app.innernetwork.app"]').forEach(function(a){a.href=location.protocol+"//"+h+":5175/"})}})();
+</script>
 <script src="/assets/qrcode.js" defer></script>
 <script src="/assets/home.js?v=1" defer></script>
 </body>
