@@ -267,6 +267,7 @@
 
     <a id="addContactLink" class="add-contact hidden" href="#">Add to Contacts</a>
     <a id="bookingLink" class="add-contact booking hidden" href="#" target="_blank" rel="noopener">Book a meeting</a>
+    <a id="downloadLink" class="add-contact booking hidden" href="#" target="_blank" rel="noopener noreferrer">Download</a>
     <div id="videoBox" class="video-box hidden"></div>
 
     <section id="shareBack" class="share-back hidden" aria-labelledby="shareToggle">
@@ -715,6 +716,7 @@
       }
 
       setUpBookingAndVideo(profile);
+      setUpDownload(profile);
       setUpShareBack(profile, fullName);
       document.title = (fullName ? fullName + " — " : "") + "Inner Network";
       // Paid plans can hide Inner Network branding (migration 2024): no app banner, no company footer, just their name
@@ -765,6 +767,33 @@
 
     // Booking link and video (migration 2027). The server only sends https booking pages and YouTube (no-cookie),
     // Vimeo or Loom player addresses; checked again here before use.
+    // A download on the card (migration 2047): a brochure or price sheet. When the member asks for it, the visitor
+    // shares their name and email first (the share-back form below), then gets the download link.
+    var pendingDownload = null;
+    function setUpDownload(profile) {
+      var link = document.getElementById("downloadLink");
+      var d = profile.download;
+      if (!link || !d || typeof d.url !== "string" || !/^https:\/\/[^\s<>"]+$/.test(d.url)) return;
+      link.textContent = (typeof d.title === "string" && d.title.trim()) ? d.title.trim().slice(0, 80) : (SPANISH ? "Descargar" : "Download");
+      link.classList.remove("hidden");
+      if (d.ask && profile.shareBack) {
+        link.href = "#shareBack";
+        link.removeAttribute("target");
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          pendingDownload = { url: d.url, title: link.textContent };
+          var form = document.getElementById("shareForm"), toggle = document.getElementById("shareToggle");
+          if (form.classList.contains("hidden")) toggle.click();
+          var note = document.getElementById("sbNote");
+          if (!note.value) note.value = (SPANISH ? "Descarga: " : "Download: ") + link.textContent;
+          document.getElementById("shareBack").scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      } else {
+        link.href = d.url;
+        link.setAttribute("data-link", "download");
+      }
+    }
+
     function setUpBookingAndVideo(profile) {
       var booking = document.getElementById("bookingLink");
       if (booking && typeof profile.bookingUrl === "string" && /^https:\/\//.test(profile.bookingUrl)) {
@@ -864,6 +893,13 @@
             form.classList.add("hidden");
             toggle.classList.add("hidden");
             done.textContent = t(body.emailMeCard && body.email ? "doneEmailed" : "done", firstName);
+            if (pendingDownload) {
+              var dl = document.createElement("a");
+              dl.href = pendingDownload.url; dl.target = "_blank"; dl.rel = "noopener noreferrer";
+              dl.className = "add-contact"; dl.style.marginTop = "12px"; dl.style.display = "block";
+              dl.textContent = (SPANISH ? "Abrir: " : "Open: ") + pendingDownload.title;
+              done.appendChild(document.createElement("br")); done.appendChild(dl);
+            }
             done.classList.remove("hidden");
             return;
           }
