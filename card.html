@@ -138,9 +138,10 @@
   .media .row { position: absolute; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
   .media .pc { width: 92px; height: 92px; border-radius: 50%; border: 3px solid #fff; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
   .media .pc img, .media .pc .ph { width: 100%; height: 100%; object-fit: cover; }
-  .media .lg { width: 76px; height: 76px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.16); }
-  .media .lg img { max-width: 86%; max-height: 80%; object-fit: contain; }
-  .media .lg.sm { position: absolute; top: 12px; left: 12px; width: 54px; height: 54px; border-radius: 8px; }
+  /* The company logo fills a rounded square, with the same white edge as the round photo. */
+  .media .lg { width: 76px; height: 76px; border-radius: 12px; background: #fff; border: 3px solid #fff; overflow: hidden; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+  .media .lg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .media .lg.sm { position: absolute; top: 12px; left: 12px; width: 54px; height: 54px; border-radius: 10px; }
   .media.ctr .pc { width: 112px; height: 112px; }
   .bc.ctr .hd { flex-direction: column; align-items: center; text-align: center; }
   .bc.ctr .hl { text-align: center; }
