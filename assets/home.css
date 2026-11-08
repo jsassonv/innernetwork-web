@@ -1,4 +1,4 @@
-/* innernetwork.app home page. Warm, light, arch motif. Fonts are self-hosted (no third-party requests). */
+/* innernetwork.app home page. Warm, light, arch motif. Design system tokens only (see :root). Fonts are self-hosted (no third-party requests). */
 @font-face { font-family: "Inter"; src: url("/assets/fonts/Inter-Variable.ttf") format("truetype"); font-weight: 100 900; font-display: swap; }
 @font-face { font-family: "EB Garamond"; src: url("/assets/fonts/EBGaramond-Italic-Variable.ttf") format("truetype"); font-weight: 400 800; font-style: italic; font-display: swap; }
 
@@ -388,3 +388,162 @@ section.s { padding: 112px 0; }
   .js .fin .doors i { --g: 1; }
   .sig .tw { max-width: 220px !important; }
 }
+
+/* ================================================================================================
+   Nov 2026 revision: accuracy pass, new order, "Know what it's worth", organizers, two tints only.
+   ================================================================================================ */
+/* "Coming soon" switch: features that are not live yet stay hidden (preview with ?soon=1). */
+html:not(.show-soon) [data-soon] { display: none !important; }
+
+section.s { padding: 90px 0; }
+.s + .s { padding-top: 24px; }
+#events { padding-top: 72px; }
+
+/* Hero: the three-line headline, last line in the serif italic with the drawn underline. */
+.hero h1 { font-size: clamp(40px, 5.3vw, 72px); line-height: 1.02; }
+.rot > span { white-space: normal; }
+.rot svg { width: 100%; left: 0; }
+
+/* Store badges (black, like the stores' own badges). */
+.stores { flex-wrap: wrap; justify-content: inherit; }
+.stores a.badge { background: #000; color: #fff; border-color: #000; border-radius: 10px; padding: 7px 14px 7px 10px; gap: 8px; min-height: 44px; }
+.stores a.badge .ic { width: 22px; height: 22px; }
+.stores a.badge span { display: grid; line-height: 1.1; font-size: 16px; font-weight: 600; letter-spacing: -.01em; text-align: left; }
+.stores a.badge small { font-size: 10.5px; font-weight: 500; letter-spacing: .02em; }
+@media (hover: hover) { .stores a.badge:hover { background: #1B1F2B; border-color: #1B1F2B; } }
+
+/* Hero visual: an app screen with the card, instead of the empty arch. */
+.door .arch, .door .leaf, .door .glow, .door .wm { display: none; }
+.door { aspect-ratio: 4 / 4.6; display: grid; place-items: center; }
+.door .phone { position: relative; width: 66%; aspect-ratio: 9 / 18.5; background: var(--ink); border-radius: 44px; padding: 10px; box-shadow: 0 50px 90px -20px rgba(27,31,43,.38); z-index: 1; }
+.door .scr { height: 100%; background: var(--bg); border-radius: 35px; padding: 16px 12px; display: grid; align-content: start; gap: 12px; overflow: hidden; }
+.door .ptop { display: flex; justify-content: center; }
+.door .phone .layer.c1 { position: relative; inset: auto; }
+.door .phone .bcard { padding: 16px; gap: 12px; }
+.door .phone .bcard .av { width: 44px; height: 44px; font-size: 15px; }
+.door .phone .bcard h4 { font-size: 16px; }
+.door .phone .bcard .t, .door .phone .bcard .rows, .door .phone .bcard .bt span { font-size: 12px; }
+.door .plist { display: grid; gap: 8px; }
+.door .pl { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.door .pl span { color: var(--navy-7); }
+.door .c2 { right: -6%; top: 22%; width: 66%; }
+.door .c3 { left: -6%; bottom: 8%; }
+.door .c4 { left: -2%; top: 8%; }
+.js .door .plist { opacity: 0; } .js .door.go .plist { animation: pop .9s var(--spring) 1.5s forwards; }
+
+/* Two tints only: brass and sky. */
+.shc.a, .shc.c { background: var(--t-brass); } .shc.b, .shc.d { background: var(--t-sky); }
+.t2:nth-child(3n+2) .ib { background: var(--t-sky); }
+.role { min-width: 210px; justify-content: flex-start; }
+
+/* Feature cards: h2 styled like the previous h3; the card and network pair. */
+.ft h2.h3 { font-size: clamp(30px, 3.6vw, 46px); line-height: 1.04; letter-spacing: -.035em; font-weight: 800; margin: 18px 0 14px; text-wrap: balance; }
+.duo { display: grid; gap: 24px; }
+.ticks li { font-size: 16px; }
+.aff { margin: 18px auto 0; max-width: 60em; text-align: center; font-size: 14px; color: var(--navy-7); }
+
+/* Sample UI text: readable sizes and AA contrast. */
+.ev .meta, .crow .nm small, .crow .no, .toast small, .mini-ev p { font-size: 13.5px; color: var(--navy-7); }
+.ev .org { font-size: 13px; }
+.shc p, .ft p.l { color: #3C4358; }
+
+/* Share: one compact row inside the card section. */
+.sh { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 24px; }
+.shc { grid-template-columns: 150px minmax(0, 1fr); align-items: center; padding: 14px 22px 14px 14px; border-radius: 26px; gap: 18px; }
+.shc .shv { height: 150px; border-radius: 75px 75px 14px 14px; padding: 12px; }
+.shc h3 { padding: 0; } .shc p { padding: 0; margin-top: 6px; font-size: 15px; }
+.shc .lnk { flex-direction: column; align-items: stretch; gap: 8px; font-size: 12.5px; }
+.shc .lnk span { overflow-wrap: anywhere; }
+.qrbox canvas { width: 104px; height: 104px; }
+
+/* Know what it's worth: the ROI sample. */
+.roi .top { gap: 10px; flex-wrap: wrap; }
+.roi-ev { font-size: 14px; font-weight: 650; }
+.roi-checks { display: flex; gap: 8px; flex-wrap: wrap; }
+.roi-checks span { display: inline-flex; align-items: center; gap: 7px; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px 6px 9px; font-size: 13.5px; font-weight: 600; }
+.roi-checks .ic { width: 18px; height: 18px; color: var(--sage); }
+.roi-log { display: grid; gap: 8px; }
+.rl { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 9px 12px; }
+.rl .av2 { width: 38px; height: 38px; }
+.rl .nm { font-weight: 650; font-size: 14.5px; } .rl .nm small { display: block; font-weight: 400; font-size: 13.5px; color: var(--navy-7); }
+.st { font-size: 12.5px; font-weight: 700; border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.st.won { background: var(--sage); color: #fff; } .st.opp { background: var(--navy); color: #fff; } .st.fu { background: var(--brass-100); color: #5A4524; }
+.roi-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.roi-sum > div { background: var(--ink); color: #FAF8F2; border-radius: 16px; padding: 12px; display: grid; gap: 2px; min-width: 0; }
+.roi-sum small { font-size: 12.5px; color: #C9CCD6; font-weight: 600; }
+.roi-sum b { font-size: clamp(18px, 2vw, 24px); font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.roi-sum span { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: #C9CCD6; }
+.roi-sum .ic { width: 15px; height: 15px; }
+.roi-note { font-size: 13px; color: var(--navy-7); text-align: center; }
+
+/* For organizers. */
+.org-band { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 28px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 36px; padding: 40px 44px; }
+.ob-ic { width: 64px; height: 76px; border-radius: 999px 999px 12px 12px; background: var(--t-sky); display: grid; place-items: center; padding-top: 8px; }
+.ob-ic .ic { width: 28px; height: 28px; }
+.ob-tx h2 { font-size: clamp(28px, 3.2vw, 40px); line-height: 1.05; letter-spacing: -.03em; font-weight: 800; margin: 8px 0 8px; }
+.ob-tx p:last-child { font-size: 17.5px; color: #3C4358; }
+
+/* FAQ links. */
+.faq details p a { color: var(--brass-d); font-weight: 600; }
+
+/* Founder note. */
+.founder .note { margin: 0 auto; max-width: 760px; text-align: center; }
+.founder blockquote { margin: 0; }
+.founder blockquote p { font-family: var(--serif); font-style: italic; font-size: clamp(22px, 2.4vw, 28px); line-height: 1.4; color: var(--ink); }
+.founder figcaption { margin-top: 16px; font-size: 15px; font-weight: 650; color: var(--navy-7); }
+.last { padding: 0 0 28px; }
+
+/* Room picture: darker overlay so the white text passes AA. */
+.room .frame::after { background: linear-gradient(90deg, rgba(27,31,43,.82) 0%, rgba(27,31,43,.55) 55%, rgba(27,31,43,.25) 100%), linear-gradient(180deg, rgba(27,31,43,0) 40%, rgba(27,31,43,.5) 100%); }
+
+/* Footer: the wordmark always shows in full; legal text 13px with AA contrast. */
+.giant { line-height: 1; padding-bottom: .06em; font-size: clamp(44px, 12.2vw, 168px); overflow: hidden; }
+.giant span { display: inline-block; white-space: nowrap; }
+.legal { font-size: 13px; color: var(--navy-7); }
+.legal p { max-width: 70em; }
+
+/* Sticky "Get the app" on phones. */
+.getapp { display: none; }
+@media (max-width: 760px) {
+  .getapp { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(246,241,231,.94); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-top: 1px solid var(--line);
+    transform: translateY(110%); transition: transform .35s var(--ease); }
+  .getapp.on { transform: none; }
+  .getapp .btn { width: 100%; min-height: 48px; }
+  .foot { padding-bottom: 96px; }
+}
+
+@media (max-width: 1100px) { .sh { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 1000px) {
+  .door { max-width: 440px; aspect-ratio: 4 / 4.4; }
+  .org-band { grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 36px 28px; }
+  .s + .s { padding-top: 16px; }
+}
+@media (max-width: 640px) {
+  section.s { padding: 64px 0; }
+  .door { aspect-ratio: 4 / 4.8; }
+  .door .phone { width: 74%; }
+  .door .c2 { right: -4%; top: 30%; width: 74%; } .door .c3 { left: -3%; bottom: 3%; }
+  .sh { grid-template-columns: 1fr; }
+  .shc { grid-template-columns: 120px minmax(0, 1fr); padding: 12px 16px 12px 12px; }
+  .shc .shv { height: 130px; }
+  .roi-sum { grid-template-columns: 1fr; }
+  .roi-sum > div { grid-template-columns: 1fr auto; align-items: baseline; }
+  .roi-sum span { grid-column: 1 / -1; }
+  .org-band .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marq .tr { animation: none !important; transform: none; flex-wrap: wrap; width: auto; justify-content: center; }
+  .marq .tr [aria-hidden="true"], .marq .tr.r { display: none; }
+  .js .door .plist { opacity: 1 !important; }
+  .getapp { transition: none; }
+}
+/* Headline: each "Know..." line fits on one line on wide screens. */
+.hero h1 { font-size: clamp(38px, 4.3vw, 62px); }
+.door .c2 { top: 50%; right: -8%; width: 62%; }
+.door .c3 { bottom: 4%; left: -8%; }
+.door .c4 { top: 4%; left: -6%; }
+@media (max-width: 1000px) { .hero h1 { font-size: clamp(38px, 7vw, 60px); } }
+@media (max-width: 640px) { .hero h1 { font-size: clamp(32px, 9.4vw, 44px); } .door .c2 { top: 54%; } }
+.doors i:nth-child(3) { background: var(--t-sky); }
+@media (max-width: 640px) { .door .c2 { right: 0; width: 70%; } .door .c3 { left: 0; } }

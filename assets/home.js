@@ -47,10 +47,10 @@
   } else doorEl.classList.add("go");
 
   // Rotating last word with a hand-drawn underline.
-  var rot = $("#rot"), words = $$("span", rot), path = $("path", rot), wi = 0;
+  var rot = $("#rot"), words = $$(":scope > span", rot), path = $("path", rot), wi = 0;
   function draw() { path.classList.remove("draw"); void path.getBBox; path.getBoundingClientRect(); path.classList.add("draw"); }
   setTimeout(draw, 900);
-  if (!reduce) setInterval(function () {
+  if (!reduce && words.length > 1) setInterval(function () {
     if (document.hidden) return;
     var cur = words[wi]; wi = (wi + 1) % words.length; var nxt = words[wi];
     cur.classList.remove("on"); cur.classList.add("out");
@@ -95,9 +95,9 @@
 
   /* ---------- roles strip ---------- */
   var roles = ["Developers", "General contractors", "Architects", "Engineers", "Lenders", "Brokers", "Property managers", "Attorneys", "Subcontractors", "Restoration", "Interior designers", "Investors"];
-  var tints = ["#EBD8B0", "#D3E0CC", "#F4D6C9", "#D5DCEC"];
+  var tints = ["#EBD8B0", "#D5DCEC"];
   function strip(list) {
-    var h = list.map(function (r, i) { return '<span class="role"><i style="background:' + tints[i % 4] + '"></i>' + esc(r) + "</span>"; }).join("");
+    var h = list.map(function (r, i) { return '<span class="role"><i style="background:' + tints[i % 2] + '"></i>' + esc(r) + "</span>"; }).join("");
     return h + h.replace(/class="role"/g, 'class="role" aria-hidden="true"');
   }
   $("#m1").innerHTML = strip(roles);
@@ -137,7 +137,7 @@
   });
 
   // Typing AI search.
-  var phrases = ["architects in Miami", "who can finance my condo project", "free events this week", "general contractors near Doral"];
+  var phrases = ["builders breakfast", "free events this week", "permitting", "events in Doral"];
   var typed = $("#typed"), srch = $("#srch"), ph = 0, ch = 0, del = false, typingOn = false;
   function tick() {
     if (!typingOn || document.hidden) { setTimeout(tick, 600); return; }
@@ -208,6 +208,74 @@
     })();
   }
 
+  // ROI sample numbers count up once when they come into view.
+  function countUp(box) {
+    $$("[data-count]", box).forEach(function (b) {
+      var to = +b.getAttribute("data-count"), t0 = performance.now();
+      (function step(now) {
+        var k = Math.min(1, (now - t0) / 1200), v = Math.round(to * (1 - Math.pow(1 - k, 3)));
+        b.textContent = "$" + v.toLocaleString("en-US");
+        if (k < 1) requestAnimationFrame(step);
+      })(t0);
+    });
+  }
+
+  /* ---------- campaign tracking on our own links (no cookies, no third-party scripts) ----------
+     UTM parameters on the landing URL are kept for this visit only (sessionStorage) and passed along to the download
+     page and the store links. The App Store uses ct (campaign) and pt (provider token); Google Play uses referrer. */
+  var APP_STORE_PT = ""; // TODO: App Store Connect provider token (App Analytics > Campaigns). Leave empty until set.
+  var UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+  var utm = {};
+  try { utm = JSON.parse(sessionStorage.getItem("in.utm") || "{}"); } catch (e) { utm = {}; }
+  var qs = new URLSearchParams(location.search), gotNew = false;
+  UTM_KEYS.forEach(function (k) { var v = qs.get(k); if (v) { if (!gotNew) { utm = {}; gotNew = true; } utm[k] = v.slice(0, 100); } });
+  if (gotNew) try { sessionStorage.setItem("in.utm", JSON.stringify(utm)); } catch (e) { /* private mode */ }
+  function params(cta) {
+    return { utm_source: utm.utm_source || "innernetwork.app", utm_medium: utm.utm_medium || "website", utm_campaign: utm.utm_campaign || "home",
+      utm_content: utm.utm_content || cta, utm_term: utm.utm_term || "" };
+  }
+  $$("a[data-cta]").forEach(function (a) {
+    var cta = a.getAttribute("data-cta"), p = params(cta), store = a.getAttribute("data-store"), u = new URL(a.href, location.href);
+    if (store === "ios") {
+      u.searchParams.set("ct", (p.utm_campaign + "-" + cta).slice(0, 40));
+      if (APP_STORE_PT) { u.searchParams.set("pt", APP_STORE_PT); u.searchParams.set("mt", "8"); }
+    } else if (store === "android") {
+      u.searchParams.set("referrer", UTM_KEYS.filter(function (k) { return p[k]; }).map(function (k) { return k + "=" + encodeURIComponent(p[k]); }).join("&"));
+    } else if (u.origin === location.origin) {
+      UTM_KEYS.forEach(function (k) { if (p[k]) u.searchParams.set(k, p[k]); });
+    }
+    a.href = u.toString();
+  });
+
+  /* ---------- sticky "Get the app" on phones, once the hero buttons are off screen ---------- */
+  var getapp = $("#getapp"), gaBtn = $("#getappBtn"), ua = navigator.userAgent;
+  if (getapp) {
+    var heroCta = $(".hero .cta");
+    if (/iPhone|iPad|iPod/.test(ua)) gaBtn.href = $('.hero a[data-store="ios"]').href.replace("hero-badge", "sticky");
+    else if (/Android/.test(ua)) gaBtn.href = $('.hero a[data-store="android"]').href.replace("hero-badge", "sticky");
+    var showGa = function (on) { getapp.classList.toggle("on", on); getapp.setAttribute("aria-hidden", String(!on)); gaBtn.tabIndex = on ? 0 : -1; };
+    if ("IntersectionObserver" in window) {
+      var finEl = $("#fin"), heroVisible = true, finVisible = false;
+      var gio = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.target === heroCta) heroVisible = e.isIntersecting; else finVisible = e.isIntersecting; });
+        showGa(!heroVisible && !finVisible);
+      });
+      gio.observe(heroCta); if (finEl) gio.observe(finEl);
+    }
+  }
+
+  /* ---------- footer wordmark: always fits on one line ---------- */
+  var giant = $(".giant"), gspan = giant && $("span", giant);
+  function fitGiant() {
+    if (!gspan) return;
+    giant.style.fontSize = "";
+    var w = giant.clientWidth, sw = gspan.scrollWidth, fs = parseFloat(getComputedStyle(giant).fontSize);
+    if (sw > w) giant.style.fontSize = Math.floor(fs * w / sw * 0.98) + "px";
+  }
+  fitGiant();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitGiant);
+  window.addEventListener("resize", fitGiant);
+
   /* ---------- reveal on scroll + section triggers ---------- */
   var rv = $$(".rv");
   if ("IntersectionObserver" in window && !reduce) {
@@ -228,11 +296,12 @@
         if (el.id === "democard") cardOn = true;
         if (el.id === "contacts") ctOn = true;
         if (el.id === "qrbox") drawQr();
+        if (el.classList.contains("roi-sum")) countUp(el);
         if (el.classList.contains("shc")) el.classList.add("go");
         once.unobserve(el);
       });
     }, { threshold: .4 });
-    ["#srch", "#democard", "#contacts", "#qrbox"].forEach(function (s) { once.observe($(s)); });
+    ["#srch", "#democard", "#contacts", "#qrbox", ".roi-sum"].forEach(function (s) { if ($(s)) once.observe($(s)); });
     $$(".shc").forEach(function (s) { once.observe(s); });
   } else {
     rv.forEach(function (el) { el.classList.add("in"); });
