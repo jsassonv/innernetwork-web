@@ -8,6 +8,8 @@ Static site for the Inner Network app (Wavecode, LLC), deployed at **https://inn
 | --- | --- |
 | `index.html` | Landing page with an App Store button. |
 | `download.html` | Store badges (App Store and Google Play). Served at `/download`. |
+| `pricing.html` | Plans and prices (Free, Pro, Teams, Enterprise) with a monthly / yearly switch. Styles in `assets/site.css`. |
+| `teams.html` | Inner Network for teams: what companies get, how to start, link to the web dashboard (app.innernetwork.app). |
 | `support.html` | Contact details and FAQ. Linked from App Store Connect as the support URL. |
 | `404.html` | The smart lander. GitHub Pages serves this for ANY unmatched path (like `/e/abc123`), so it doubles as the `/e/:id` fallback. It reads the event id from the URL, fetches a public preview from Supabase, tries to open the app via its custom URL scheme (`com.innernetwork.app://`), and shows the App Store button if the app doesn't open. |
 | `card.html` | A member's public digital business card (`/card.html?id=...`), built client-side from the `public-profile-card` Edge Function's JSON. `noindex` and disallowed in `robots.txt`. |
