@@ -138,9 +138,9 @@
   .media .row { position: absolute; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
   .media .pc { width: 92px; height: 92px; border-radius: 50%; border: 3px solid #fff; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
   .media .pc img, .media .pc .ph { width: 100%; height: 100%; object-fit: cover; }
-  .media .lg { width: 116px; height: 64px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.16); }
+  .media .lg { width: 76px; height: 76px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.16); }
   .media .lg img { max-width: 86%; max-height: 80%; object-fit: contain; }
-  .media .lg.sm { position: absolute; top: 12px; left: 12px; width: 84px; height: 46px; border-radius: 8px; }
+  .media .lg.sm { position: absolute; top: 12px; left: 12px; width: 54px; height: 54px; border-radius: 8px; }
   .media.ctr .pc { width: 112px; height: 112px; }
   .bc.ctr .hd { flex-direction: column; align-items: center; text-align: center; }
   .bc.ctr .hl { text-align: center; }
@@ -592,9 +592,9 @@
             (logoUrl ? '<div class="lg sm"><img src="' + esc(logoUrl) + '" alt="Company logo"></div>' : '') +
             '<div class="row" style="top:94px;justify-content:center">' + circle + '</div></div>';
         } else if (layout === "photo") {
-          media = '<div class="media" style="padding-bottom:36px">' +
+          media = '<div class="media" style="padding-bottom:42px">' +
             (avatarUrl ? '<img class="bn" style="height:240px" src="' + esc(avatarUrl) + '" alt="' + esc(fullName ? "Photo of " + fullName : "") + '">' : '<div class="bn ph-fill" style="height:240px"></div>') +
-            '<div class="row" style="top:208px">' + logoBadge + '<span></span></div></div>';
+            '<div class="row" style="top:202px">' + logoBadge + '<span></span></div></div>';
         } else {
           media = '<div class="media" style="padding-bottom:50px">' +
             '<div class="bn lb" style="height:130px">' + (logoUrl ? '<img src="' + esc(logoUrl) + '" alt="Company logo">' : '') + '</div>' +
