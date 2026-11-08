@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; frame-src https://www.youtube-nocookie.com https://player.vimeo.com https://www.loom.com; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#F4F1EA" />
+<title>Inner Network</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<!--
+  Link in Bio page (Docs/2.0_Link_in_Bio_Plan.md). Opened at innernetwork.app/<personal link> (404.html sends it
+  here as ?h=<handle>) or innernetwork.app/b/<card id> (?id=<card id>). Everything about the person comes from
+  their card; the page adds its own design and blocks. When the member has no page turned on, the visitor is
+  sent to the web card instead. Statistics are counts only: no cookies, nothing stored in the browser.
+-->
+<style>
+  @font-face { font-family: "Inter"; src: url("/assets/fonts/Inter-Variable.ttf") format("truetype"); font-weight: 100 900; font-display: swap; }
+  @font-face { font-family: "EB Garamond"; src: url("/assets/fonts/EBGaramond-Variable.ttf") format("truetype"); font-weight: 400 800; font-display: swap; }
+  @font-face { font-family: "Playfair Display"; src: url("/assets/fonts/PlayfairDisplay-Variable.ttf") format("truetype"); font-weight: 400 900; font-display: swap; }
+  :root { --bg: #F4F1EA; --bg2: #E5DCC8; --ink: #1F2330; --btn: #1F2330; --btn-ink: #FFFFFF; --radius: 14px; --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { min-height: 100vh; min-height: 100dvh; font-family: var(--font); color: var(--ink); background: var(--bg);
+         -webkit-font-smoothing: antialiased; }
+  .wall { position: fixed; inset: 0; z-index: -1; background: var(--bg); background-size: cover; background-position: center; }
+  .wall.blur { filter: blur(18px); transform: scale(1.1); }
+  .wall-shade { position: fixed; inset: 0; z-index: -1; background: rgba(0, 0, 0, .18); }
+  main { max-width: 580px; margin: 0 auto; padding: max(18px, env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom)); }
+  .top { display: flex; justify-content: flex-end; height: 40px; }
+  .round { width: 40px; height: 40px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
+           background: rgba(255, 255, 255, .7); color: #1F2330; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .round svg { width: 18px; height: 18px; }
+  .round:focus-visible, .btn:focus-visible, .tile:focus-visible, .soc a:focus-visible { outline: 3px solid #B08D57; outline-offset: 3px; }
+
+  header { text-align: center; margin: 4px 0 22px; }
+  .avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 14px;
+            border: 3px solid rgba(255, 255, 255, .85); background: #ddd; }
+  .initials { width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 14px; display: grid; place-items: center;
+              font-size: 34px; font-weight: 700; background: var(--btn); color: var(--btn-ink); }
+  .hero-img { width: calc(100% + 32px); margin: -58px -16px 18px; aspect-ratio: 1 / 1; max-height: 460px; object-fit: cover; display: block;
+              -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+  .banner { width: calc(100% + 32px); margin: -58px -16px -48px; height: 190px; object-fit: cover; display: block; }
+  .banner-fill { width: calc(100% + 32px); margin: -58px -16px -48px; height: 190px; background: var(--btn); }
+  .logo { max-width: 220px; max-height: 90px; object-fit: contain; display: block; margin: 0 auto 12px; }
+  h1 { font-size: 23px; line-height: 1.2; margin: 0 0 4px; font-weight: 700; letter-spacing: -.01em; }
+  .sub { margin: 0; font-size: 15px; opacity: .78; }
+  .about { margin: 10px auto 0; font-size: 15px; line-height: 1.45; max-width: 460px; opacity: .9; }
+
+  .blocks { display: flex; flex-direction: column; gap: 12px; }
+  .btn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 10px 16px; border-radius: var(--radius);
+         background: var(--btn); color: var(--btn-ink); text-decoration: none; font: inherit; font-size: 16px; font-weight: 600;
+         border: 2px solid var(--btn); cursor: pointer; text-align: center; transition: transform .15s ease; }
+  .btn:hover { transform: scale(1.015); }
+  .btn .lbl { flex: 1; overflow-wrap: anywhere; }
+  .btn .thumb { width: 40px; height: 40px; border-radius: calc(var(--radius) * .6); object-fit: cover; flex: none; }
+  .btn .ico, .btn .pad { width: 40px; height: 40px; flex: none; display: grid; place-items: center; }
+  .btn .ico svg { width: 20px; height: 20px; }
+  body.b-outline .btn { background: transparent; color: var(--btn); }
+  body.b-shadow .btn { box-shadow: 5px 5px 0 rgba(0, 0, 0, .85); border-color: rgba(0, 0, 0, .85); }
+  body.b-glass .btn { background: rgba(255, 255, 255, .22); color: var(--ink); border-color: rgba(255, 255, 255, .45);
+                      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .btn.hl { animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+  @media (prefers-reduced-motion: reduce) { .btn.hl { animation: none; } .btn:hover { transform: none; } }
+
+  .soc { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .soc a { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; text-decoration: none; }
+  .soc a svg { width: 22px; height: 22px; }
+  .soc .plain { background: rgba(255, 255, 255, .55); color: var(--ink); }
+
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .08em; margin: 14px 0 0; text-align: center; opacity: .75; }
+  .text { margin: 0; text-align: center; font-size: 15px; line-height: 1.5; white-space: pre-line; }
+  .grid { display: grid; gap: 6px; }
+  .grid.c3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.c2 { grid-template-columns: repeat(2, 1fr); }
+  .tile { position: relative; display: block; aspect-ratio: 1 / 1; overflow: hidden; border-radius: calc(var(--radius) * .5); background: rgba(0,0,0,.08); }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tile span { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 8px 6px; font-size: 12px; font-weight: 600; color: #fff;
+               background: linear-gradient(transparent, rgba(0,0,0,.6)); text-align: left; }
+  .video { aspect-ratio: 16 / 9; width: 100%; border: 0; border-radius: var(--radius); display: block; background: #000; }
+  .card-box { background: rgba(255, 255, 255, .72); color: #1F2330; border-radius: var(--radius); padding: 16px; }
+  .card-box h3 { margin: 0 0 10px; font-size: 16px; }
+  .events a { display: flex; gap: 12px; align-items: center; color: inherit; text-decoration: none; padding: 8px 0; border-top: 1px solid rgba(0,0,0,.08); }
+  .events a:first-of-type { border-top: 0; }
+  .date { width: 46px; flex: none; text-align: center; border-radius: 10px; background: #1F2330; color: #fff; padding: 5px 0; line-height: 1.1; }
+  .date b { display: block; font-size: 18px; }
+  .date small { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .events .nm { font-weight: 600; font-size: 15px; }
+  .events .vn { font-size: 13px; opacity: .7; }
+  .company { display: flex; align-items: center; gap: 12px; }
+  .company img { width: 48px; height: 48px; object-fit: contain; border-radius: 10px; background: #fff; }
+  .company a { color: inherit; font-size: 14px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  form.lead { display: grid; gap: 10px; margin-top: 4px; }
+  form.lead label { font-size: 13px; font-weight: 600; display: grid; gap: 4px; }
+  form.lead input, form.lead textarea { font: inherit; font-size: 16px; padding: 11px 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,.2); background: #fff; color: #1F2330; width: 100%; }
+  form.lead .consent { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; font-size: 13px; line-height: 1.4; }
+  form.lead .consent input { width: 20px; height: 20px; margin: 0; flex: none; }
+  form.lead .hp { position: absolute; left: -9999px; }
+  .err { color: #B3261E; font-size: 14px; margin: 0; min-height: 1em; }
+  .ok { font-size: 15px; margin: 0; }
+  .hidden { display: none !important; }
+
+  footer { text-align: center; margin-top: 30px; font-size: 13px; }
+  footer a { color: inherit; opacity: .8; }
+  .made { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: rgba(255,255,255,.75);
+          color: #1F2330 !important; opacity: 1 !important; text-decoration: none; font-weight: 600; margin-bottom: 12px; }
+  .made img { width: 9px; height: 24px; }
+  .status { text-align: center; padding: 30vh 16px; font-size: 16px; }
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #1F2330; color: #fff;
+           padding: 10px 16px; border-radius: 999px; font-size: 14px; }
+</style>
+</head>
+<body>
+  <div class="wall" id="wall"></div>
+  <main id="main"><p class="status" id="status">Loading…</p></main>
+
+  <script src="/assets/card-icons.js?v=1"></script>
+  <script>
+  (function () {
+    var CONFIG = { functionUrl: "https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card" };
+    var ICONS = window.IN_ICONS.ICONS, BRAND = window.IN_ICONS.BRAND, brandOf = window.IN_ICONS.brandOf;
+    var SPANISH = /^es\b/i.test(navigator.language || "");
+    var ES = {
+      "Loading…": "Cargando…", "Save contact": "Guardar contacto", "Share your contact": "Comparte tu contacto",
+      "Book a meeting": "Reservar una reunión", "Share": "Compartir", "Link copied": "Enlace copiado",
+      "Your name": "Tu nombre", "Email": "Correo electrónico", "Phone": "Teléfono", "Company (optional)": "Empresa (opcional)",
+      "Send": "Enviar", "Sending…": "Enviando…", "Download": "Descargar", "Upcoming events": "Próximos eventos",
+      "consent": "Acepto compartir estos datos con {name}. Inner Network los guarda solo para que {name} los vea. ",
+      "Privacy Policy": "Política de Privacidad", "Terms": "Términos",
+      "Please enter your name.": "Escribe tu nombre.", "Please enter an email or a phone number.": "Escribe un correo electrónico o un teléfono.",
+      "Please check the email address.": "Revisa el correo electrónico.", "Please check the phone number.": "Revisa el número de teléfono.", "Please tick the box to agree.": "Marca la casilla para aceptar.",
+      "Too many tries. Please wait a few minutes.": "Demasiados intentos. Espera unos minutos.",
+      "That didn't go through. Please try again.": "No se pudo enviar. Inténtalo de nuevo.",
+      "done": "Listo. {name} ya tiene tus datos de contacto.", "doneDownload": "Listo. Tu descarga se abrió en una pestaña nueva.",
+      "Made with Inner Network": "Hecho con Inner Network", "This page isn't available.": "Esta página no está disponible.",
+      "Get the download": "Obtener la descarga"
+    };
+    var EN = {
+      "consent": "I agree to share these details with {name}. Inner Network keeps them only so {name} can see them. ",
+      "done": "Done. {name} now has your contact details.", "doneDownload": "Done. Your download opened in a new tab."
+    };
+    function t(key, name) {
+      var s = (SPANISH ? ES[key] : EN[key]) || key;
+      return name ? s.split("{name}").join(name) : s;
+    }
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
+    }
+    var LOCAL = { download: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>' };
+    function svg(name) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (LOCAL[name] || ICONS[name] || ICONS.link) + '</svg>';
+    }
+    function brandSvg(key) {
+      return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="' + BRAND[key][1] + '"/></svg>';
+    }
+    function https(u) { return typeof u === "string" && /^https:\/\/[^\s<>"]+$/.test(u) ? u : null; }
+    function hex(v, d) { return typeof v === "string" && /^#[0-9A-F]{6}$/i.test(v) ? v : d; }
+    function lum(h) {
+      var c = h.replace("#", "").match(/../g).map(function (v) { v = parseInt(v, 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    }
+    var params = new URLSearchParams(location.search);
+    var source = (params.get("s") || "").replace(/[^a-z]/gi, "").slice(0, 12);
+    function q(extra) { return extra + (source ? "&s=" + encodeURIComponent(source) : ""); }
+    var state = {};
+
+    function beacon(block) {
+      if (!state.pageId || !navigator.sendBeacon) return;
+      try { navigator.sendBeacon(CONFIG.functionUrl + q("?id=" + state.pageId + "&format=bioclick&block=" + encodeURIComponent(block))); } catch (e) { /* counts only */ }
+    }
+    function toast(msg) {
+      var el = document.createElement("div"); el.className = "toast"; el.textContent = msg; document.body.appendChild(el);
+      setTimeout(function () { el.remove(); }, 2200);
+    }
+
+    function applyDesign(d, card) {
+      var root = document.documentElement.style;
+      root.setProperty("--bg", hex(d.bg, "#F4F1EA"));
+      root.setProperty("--bg2", hex(d.bg2, "#E5DCC8"));
+      root.setProperty("--ink", hex(d.textColor, "#1F2330"));
+      root.setProperty("--btn", hex(d.buttonColor, "#1F2330"));
+      root.setProperty("--btn-ink", hex(d.buttonText, "#FFFFFF"));
+      root.setProperty("--radius", { square: "4px", rounded: "14px", pill: "999px" }[d.corners] || "14px");
+      root.setProperty("--font", {
+        inter: '"Inter", system-ui, sans-serif', serif: '"EB Garamond", Georgia, serif', rounded: 'ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif',
+        mono: 'ui-monospace, "SF Mono", Menlo, monospace', condensed: '"Avenir Next Condensed", "Arial Narrow", system-ui, sans-serif',
+        classic: '"Playfair Display", Georgia, serif'
+      }[d.font] || '"Inter", system-ui, sans-serif');
+      document.body.classList.add("b-" + (d.button || "filled"));
+      var wall = document.getElementById("wall");
+      var img = d.wallpaper === "image" ? https(d.image) : d.wallpaper === "cover" ? https(card.coverUrl) : null;
+      if (img) {
+        wall.style.backgroundImage = 'url("' + img.replace(/"/g, "%22") + '")';
+        if (d.blur) wall.classList.add("blur");
+        var shade = document.createElement("div"); shade.className = "wall-shade"; document.body.insertBefore(shade, wall.nextSibling);
+      } else if (d.wallpaper === "gradient") {
+        wall.style.background = "linear-gradient(180deg, " + hex(d.bg, "#F4F1EA") + ", " + hex(d.bg2, "#E5DCC8") + ")";
+      }
+      var meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = hex(d.bg, "#F4F1EA");
+    }
+
+    function header(d, c) {
+      var name = d.title || c.fullName || "";
+      var sub = [c.title, c.company].filter(Boolean).join(" · ");
+      var photo = https(c.avatarUrl);
+      var initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join("").toUpperCase();
+      var round = photo ? '<img class="avatar" src="' + esc(photo) + '" alt="">' : '<div class="initials" aria-hidden="true">' + esc(initials) + '</div>';
+      var top = "";
+      if (d.layout === "hero" && photo) top = '<img class="hero-img" src="' + esc(photo) + '" alt="">';
+      else if (d.layout === "banner") top = (https(c.coverUrl) ? '<img class="banner" src="' + esc(c.coverUrl) + '" alt="">' : '<div class="banner-fill"></div>') + round;
+      else if (d.layout === "logo" && https(c.logoUrl)) top = '<img class="logo" src="' + esc(c.logoUrl) + '" alt="' + esc(c.company || "") + '">';
+      else top = round;
+      var showName = !(d.layout === "logo" && https(c.logoUrl) && !d.title);
+      return '<header>' + top + (showName ? '<h1>' + esc(name) + '</h1>' : '<h1 class="hidden">' + esc(name) + '</h1>') +
+        (sub ? '<p class="sub">' + esc(sub) + '</p>' : '') +
+        (c.headline ? '<p class="about">' + esc(c.headline) + '</p>' : '') + '</header>';
+    }
+
+    // The card's own links: LinkedIn, Instagram, custom links and extra fields, with the same icons as the card.
+    function cardLinks(c) {
+      var out = [], seen = {};
+      function add(url, title, key) {
+        url = https(url); if (!url || seen[url]) return; seen[url] = 1;
+        out.push({ url: url, title: title, brand: key || brandOf(url) });
+      }
+      add(c.linkedinUrl, "LinkedIn", "linkedin");
+      add(c.instagramUrl, "Instagram", "instagram");
+      (c.links || []).forEach(function (l) { add(l.url, l.title); });
+      (c.fields || []).forEach(function (f) { if (f && typeof f.href === "string" && f.href.indexOf("https:") === 0) add(f.href, f.label || f.value, BRAND[f.type] ? f.type : null); });
+      add(c.website, SPANISH ? "Sitio web" : "Website");
+      return out;
+    }
+
+    function linkButton(id, url, title, opts) {
+      opts = opts || {};
+      var lead = opts.thumb ? '<img class="thumb" src="' + esc(opts.thumb) + '" alt="">' : opts.icon ? '<span class="ico">' + opts.icon + '</span>' : '<span class="pad"></span>';
+      return '<a class="btn' + (opts.hl ? ' hl' : '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" data-b="' + esc(id) + '">' +
+        lead + '<span class="lbl">' + esc(title) + '</span><span class="pad"></span></a>';
+    }
+
+    function leadForm(id, firstName, withPhone, submitLabel) {
+      return '<form class="lead hidden" id="f-' + esc(id) + '" novalidate>' +
+        '<label>' + t("Your name") + '<input name="name" autocomplete="name" maxlength="120" required></label>' +
+        '<label>' + t("Email") + '<input name="email" type="email" autocomplete="email" maxlength="200"></label>' +
+        (withPhone ? '<label>' + t("Phone") + '<input name="phone" type="tel" autocomplete="tel" maxlength="40"></label>' +
+          '<label>' + t("Company (optional)") + '<input name="company" autocomplete="organization" maxlength="120"></label>' : '') +
+        '<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+        '<label class="consent"><input type="checkbox" name="consent"><span>' + esc(t("consent", firstName)) +
+        '<a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a>.</span></label>' +
+        '<p class="err" role="alert"></p><button class="btn" type="submit"><span class="lbl">' + esc(submitLabel) + '</span></button></form>';
+    }
+
+    function render(data) {
+      var d = data.design || {}, c = data.card || {};
+      state.pageId = data.pageId; state.cardId = data.cardId; state.card = c;
+      applyDesign(d, c);
+      document.title = (d.title || c.fullName || "Inner Network");
+      var firstName = (c.fullName || "").split(/\s+/)[0] || "";
+      var html = header(d, c) + '<div class="blocks">';
+      (data.blocks || []).forEach(function (b) {
+        switch (b.type) {
+          case "card_links": {
+            var links = cardLinks(c);
+            if (!links.length) break;
+            if (d.icons === "buttons") {
+              links.forEach(function (l, i) { html += linkButton(b.id + ":" + i, l.url, l.title, { icon: l.brand && BRAND[l.brand] ? brandSvg(l.brand) : svg("link") }); });
+            } else {
+              html += '<div class="soc">' + links.map(function (l, i) {
+                var br = l.brand && BRAND[l.brand];
+                return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer" data-b="' + esc(b.id + ":" + i) + '" aria-label="' + esc(l.title) + '"' +
+                  (br ? ' style="background:#' + br[0] + ';color:' + (lum("#" + br[0]) > 0.5 ? "#1F2330" : "#FFFFFF") + '">' + brandSvg(l.brand) : ' class="plain">' + svg("link")) + '</a>';
+              }).join("") + '</div>';
+            }
+            break;
+          }
+          case "header": html += '<h2>' + esc(b.title) + '</h2>'; break;
+          case "text": html += '<p class="text">' + esc(b.text) + '</p>'; break;
+          case "link": html += linkButton(b.id, b.url, b.title, { thumb: https(b.thumb), hl: b.highlight }); break;
+          case "grid":
+            html += (b.title ? '<h2>' + esc(b.title) + '</h2>' : '') + '<div class="grid c' + (b.columns === 2 ? 2 : 3) + '">' + (b.tiles || []).map(function (tl, i) {
+              var inner = '<img src="' + esc(tl.image) + '" alt="' + esc(tl.title || "") + '" loading="lazy">' + (tl.title ? '<span>' + esc(tl.title) + '</span>' : '');
+              return https(tl.url) ? '<a class="tile" href="' + esc(tl.url) + '" target="_blank" rel="noopener noreferrer" data-b="' + esc(b.id + ":" + i) + '">' + inner + '</a>'
+                                   : '<div class="tile">' + inner + '</div>';
+            }).join("") + '</div>';
+            break;
+          case "video":
+            if (/^https:\/\/(www\.youtube-nocookie\.com\/embed\/|player\.vimeo\.com\/video\/|www\.loom\.com\/embed\/)[A-Za-z0-9_-]+$/.test(b.embed || ""))
+              html += (b.title ? '<h2>' + esc(b.title) + '</h2>' : '') + '<iframe class="video" src="' + esc(b.embed) + '" title="' + esc(b.title || "Video") + '" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+            break;
+          case "booking": {
+            var bu = https(b.url) || https(c.bookingUrl);
+            if (bu) html += linkButton(b.id, bu, b.title || t("Book a meeting"), { icon: svg("calendar") });
+            break;
+          }
+          case "contact":
+            html += '<div class="row2"><a class="btn" href="' + esc(c.vcardUrl + (source ? "&s=" + source : "")) + '" data-b="' + esc(b.id) + ':save"><span class="lbl">' + t("Save contact") + '</span></a>' +
+              (c.shareBack ? '<button class="btn" type="button" data-open="' + esc(b.id) + '"><span class="lbl">' + t("Share your contact") + '</span></button>' : '') + '</div>' +
+              (c.shareBack ? leadForm(b.id, firstName, true, t("Send")) : '');
+            break;
+          case "download":
+            if (b.ask && c.shareBack) {
+              html += '<button class="btn" type="button" data-open="' + esc(b.id) + '"><span class="ico">' + svg("download") + '</span><span class="lbl">' + esc(b.title || t("Download")) + '</span><span class="pad"></span></button>' +
+                leadForm(b.id, firstName, false, t("Get the download"));
+            } else {
+              html += linkButton(b.id, b.url, b.title || t("Download"), { icon: svg("download") });
+            }
+            break;
+          case "events":
+            if ((data.events || []).length) {
+              html += '<div class="card-box events"><h3>' + esc(b.title || t("Upcoming events")) + '</h3>' + data.events.map(function (e) {
+                var dt = new Date(e.start);
+                var mon = dt.toLocaleDateString(SPANISH ? "es" : "en-US", { month: "short", timeZone: "America/New_York" });
+                var day = dt.toLocaleDateString("en-US", { day: "numeric", timeZone: "America/New_York" });
+                return '<a href="/e/' + esc(e.id) + '" data-b="' + esc(b.id + ":" + e.id.slice(0, 8)) + '"><span class="date"><small>' + esc(mon) + '</small><b>' + esc(day) + '</b></span>' +
+                  '<span><span class="nm">' + esc(e.name) + '</span><br><span class="vn">' + esc(e.venue) + '</span></span></a>';
+              }).join("") + '</div>';
+            }
+            break;
+          case "company": {
+            var site = https(c.companyWebsite);
+            if (!c.company && !c.logoUrl) break;
+            html += '<div class="card-box company">' + (https(c.logoUrl) ? '<img src="' + esc(c.logoUrl) + '" alt="">' : '') +
+              '<div><strong>' + esc(c.company || "") + '</strong>' + (site ? '<br><a href="' + esc(site) + '" target="_blank" rel="noopener noreferrer" data-b="' + esc(b.id) + '">' + esc(site.replace(/^https:\/\/(www\.)?/, "").replace(/\/$/, "")) + '</a>' : '') + '</div></div>';
+            break;
+          }
+        }
+      });
+      html += '</div><footer>' + (c.hideBranding ? '' :
+        '<a class="made" href="/?utm_source=bio&utm_medium=footer" data-b="footer"><img src="/assets/logo.png" alt="">' + t("Made with Inner Network") + '</a><br>') +
+        '<a href="/privacy-policy.html">' + t("Privacy Policy") + '</a> · <a href="/terms.html">' + t("Terms") + '</a></footer>';
+      var main = document.getElementById("main");
+      main.innerHTML = '<div class="top"><button class="round" id="share" aria-label="' + t("Share") + '">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></button></div>' + html;
+      wire(firstName, data.blocks || []);
+    }
+
+    function wire(firstName, blocks) {
+      document.getElementById("share").addEventListener("click", function () {
+        var h = params.get("h");
+        var url = location.origin + (h ? "/" + h.toLowerCase() : "/b/" + state.cardId);
+        if (navigator.share) navigator.share({ title: document.title, url: url }).catch(function () {});
+        else if (navigator.clipboard) navigator.clipboard.writeText(url).then(function () { toast(t("Link copied")); });
+      });
+      document.querySelectorAll("[data-b]").forEach(function (a) {
+        a.addEventListener("click", function () { beacon(a.getAttribute("data-b")); });
+      });
+      document.querySelectorAll("[data-open]").forEach(function (btn) {
+        var form = document.getElementById("f-" + btn.getAttribute("data-open"));
+        btn.setAttribute("aria-expanded", "false");
+        btn.addEventListener("click", function () {
+          var open = form.classList.toggle("hidden") === false;
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+          if (open) form.querySelector("input").focus();
+        });
+        var block = blocks.filter(function (b) { return b.id === btn.getAttribute("data-open"); })[0] || {};
+        form.addEventListener("submit", function (e) { e.preventDefault(); sendLead(form, block, firstName); });
+      });
+    }
+
+    function sendLead(form, block, firstName) {
+      var v = function (n) { var el = form.elements[n]; return el ? el.value.trim() : ""; };
+      var body = { name: v("name"), email: v("email"), phone: v("phone"), company: v("company"), title: "", website: v("website"),
+                   note: block.type === "download" ? ("Download: " + (block.title || "")).slice(0, 300) : "",
+                   consent: form.elements.consent.checked, emailMeCard: false, answers: [] };
+      var err = form.querySelector(".err");
+      var problem = !body.name ? "Please enter your name."
+        : (!body.email && !body.phone) ? "Please enter an email or a phone number."
+        : (body.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) ? "Please check the email address."
+        : !body.consent ? "Please tick the box to agree." : "";
+      if (problem) { err.textContent = t(problem); return; }
+      err.textContent = "";
+      var button = form.querySelector("button[type=submit]"), label = button.textContent;
+      button.disabled = true; button.querySelector(".lbl").textContent = t("Sending…");
+      // A download opens right away in the click's own turn (pop-up blockers), then the lead is sent.
+      var win = block.type === "download" && https(block.url) ? window.open(block.url, "_blank", "noopener") : null;
+      fetch(CONFIG.functionUrl + q("?id=" + encodeURIComponent(state.cardId) + "&format=lead&page=" + state.pageId), {
+        method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body)
+      }).then(function (res) {
+        if (res.ok) {
+          beacon(block.id);
+          form.innerHTML = '<p class="ok" role="status">' + esc(t(block.type === "download" ? "doneDownload" : "done", firstName)) + '</p>';
+          if (block.type === "download" && !win) location.href = block.url;
+          return;
+        }
+        err.textContent = t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't go through. Please try again.");
+      }).catch(function () { err.textContent = t("That didn't go through. Please try again."); })
+        .then(function () { button.disabled = false; var l = button.querySelector(".lbl"); if (l && l.textContent === t("Sending…")) l.textContent = label; });
+    }
+
+    (function init() {
+      document.getElementById("status").textContent = t("Loading…");
+      document.documentElement.lang = SPANISH ? "es" : "en";
+      var handle = params.get("h"), id = params.get("id");
+      var ref = document.referrer ? "&ref=" + encodeURIComponent(document.referrer.slice(0, 300)) : "";
+      var query = handle && /^[a-zA-Z0-9-]{3,30}$/.test(handle) ? "?format=bio&handle=" + encodeURIComponent(handle.toLowerCase())
+        : id && /^[0-9a-f-]{36}$/i.test(id) ? "?format=bio&id=" + id : null;
+      var fail = function () { document.getElementById("status").textContent = t("This page isn't available."); };
+      if (!query) return fail();
+      fetch(CONFIG.functionUrl + q(query) + ref).then(function (res) {
+        return res.json().then(function (body) { return { ok: res.ok, body: body }; });
+      }).then(function (r) {
+        if (r.ok) return render(r.body);
+        // No Link in Bio page turned on: show the web card instead.
+        if (r.body && r.body.error === "nopage") {
+          location.replace(handle ? "/card.html?h=" + encodeURIComponent(handle.toLowerCase()) + (source ? "&s=" + source : "")
+                                  : "/c/" + r.body.cardId + (source ? "?s=" + source : ""));
+          return;
+        }
+        fail();
+      }).catch(fail);
+    })();
+  })();
+  </script>
+</body>
+</html>

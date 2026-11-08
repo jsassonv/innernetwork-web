@@ -709,10 +709,17 @@
         window.location.replace("/card.html?id=" + encodeURIComponent(cardMatch[1]) + (/^[qnl]$/.test(source || "") ? "&s=" + source : ""));
         return;
       }
+      // An extra card's Link in Bio page: /b/<card id>.
+      var bioMatch = window.location.pathname.match(/^\/b\/([0-9a-fA-F-]{36})\/?$/);
+      if (bioMatch) {
+        window.location.replace("/bio.html?id=" + encodeURIComponent(bioMatch[1]) + window.location.search.replace(/^\?/, "&"));
+        return;
+      }
       // A member's personal link, innernetwork.app/<handle> (3-30 letters, numbers or hyphens): their card page.
       var handleMatch = window.location.pathname.match(/^\/([a-zA-Z0-9](?:[a-zA-Z0-9-]{1,28})[a-zA-Z0-9])\/?$/);
       if (handleMatch) {
-        window.location.replace("/card.html?h=" + encodeURIComponent(handleMatch[1].toLowerCase()));
+        // Its Link in Bio page when turned on; bio.html falls back to the web card otherwise.
+        window.location.replace("/bio.html?h=" + encodeURIComponent(handleMatch[1].toLowerCase()) + window.location.search.replace(/^\?/, "&"));
         return;
       }
 
