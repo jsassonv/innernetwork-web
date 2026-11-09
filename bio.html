@@ -407,8 +407,10 @@
         if (r.ok) return render(r.body);
         // No Link in Bio page turned on: show the web card instead.
         if (r.body && r.body.error === "nopage") {
+          // Keeps ?lang=es / en (cards in the viewer's language, migration 2056).
+          var lang = /^(es|en)$/.test(params.get("lang") || "") ? "&lang=" + params.get("lang") : "";
           location.replace((handle ? "/card.html?h=" + encodeURIComponent(handle.toLowerCase()) + (source ? "&s=" + source : "")
-                                   : "/card.html?id=" + r.body.cardId + (source ? "&s=" + source : "")) + ref);
+                                   : "/card.html?id=" + r.body.cardId + (source ? "&s=" + source : "")) + lang + ref);
           return;
         }
         fail();

@@ -708,7 +708,9 @@
       if (cardMatch) {
         // Keep where the card was opened from (s=q QR code, s=n NFC tag) for the member's card insights.
         var source = new URLSearchParams(window.location.search).get("s");
-        window.location.replace("/card.html?id=" + encodeURIComponent(cardMatch[1]) + (/^[qnl]$/.test(source || "") ? "&s=" + source : "") + refParam);
+        var lang = new URLSearchParams(window.location.search).get("lang");
+        window.location.replace("/card.html?id=" + encodeURIComponent(cardMatch[1]) + (/^[qnl]$/.test(source || "") ? "&s=" + source : "") +
+          (/^(es|en)$/.test(lang || "") ? "&lang=" + lang : "") + refParam);
         return;
       }
       // A trackable link (migration 2046): /q/<code> counts the scan, then the server forwards to the member's address.
