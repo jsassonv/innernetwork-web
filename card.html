@@ -248,6 +248,7 @@
   .site-footer a { color: var(--muted); text-decoration: underline; }
   .site-footer nav a { margin: 0 6px; display: inline-block; }
   .site-footer p { margin: 8px 0 0; }
+  .lang-switch { display: block; width: fit-content; margin: 18px auto 0; font: 600 14px Inter, sans-serif; color: #8A6B3F; text-decoration: underline; text-underline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
@@ -310,6 +311,12 @@
 
   <script src="/assets/card-icons.js?v=1"></script>
   <script>
+    // Cards in the viewer's language (migration 2056): Spanish when the visitor's browser is in Spanish, or when the link
+    // says ?lang=es (?lang=en forces English). The member's own Spanish title, headline and bio are used when they have one.
+    var LANG_PARAM = (new URLSearchParams(location.search).get("lang") || "").toLowerCase();
+    var SPANISH = LANG_PARAM === "es" || (LANG_PARAM !== "en" && /^es\b/i.test(navigator.language || ""));
+    document.documentElement.lang = SPANISH ? "es" : "en";
+
     var CONFIG = {
       appStoreUrl: "https://apps.apple.com/app/id6804337610",
       // Google Play listing.
@@ -540,7 +547,7 @@
       var avatarUrl = safeImageUrl(profile.avatarUrl);
       var initials = fullName.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join("");
       var photoInner = avatarUrl
-        ? '<img class="ph" src="' + esc(avatarUrl) + '" alt="' + esc(fullName ? "Photo of " + fullName : "") + '">'
+        ? '<img class="ph" src="' + esc(avatarUrl) + '" alt="' + esc(fullName ? t("Photo of {name}", fullName) : "") + '">'
         : '<div class="ph" aria-hidden="true">' + esc(initials) + '</div>';
       var photo = ringKey === "none"
         ? '<div style="width:' + ringPx + 'px;height:' + ringPx + 'px;flex:none">' + photoInner + '</div>'
@@ -557,15 +564,15 @@
 
       var nameHtml = esc(fullName) + (profile.nameSuffix ? ' <small>, ' + esc(profile.nameSuffix) + '</small>' : '');
       var lines = [];
-      if (profile.title) lines.push('<p class="s" style="color:' + ink2 + '">' + esc(profile.title) + '</p>');
+      if (cardText(profile, "title")) lines.push('<p class="s" style="color:' + ink2 + '">' + esc(cardText(profile, "title")) + '</p>');
       if (profile.company) lines.push('<p class="s" style="color:' + ink2 + '">' + esc(profile.company) + (profile.department ? ' · ' + esc(profile.department) : '') + '</p>');
       // Layout (migration 2040): cover across the top with round photo and logo badge, a large photo, or a logo band.
       var layout = ["cover", "centered", "photo", "logo"].indexOf(design.layout) >= 0 ? design.layout : "classic";
       var coverUrl = safeImageUrl(profile.coverUrl), logoUrl = safeImageUrl(profile.logoUrl);
       var media = "";
       if (layout !== "classic") {
-        var logoBadge = logoUrl ? '<div class="lg"><img src="' + esc(logoUrl) + '" alt="Company logo"></div>' : '';
-        var circle = '<div class="pc">' + (avatarUrl ? '<img src="' + esc(avatarUrl) + '" alt="' + esc(fullName ? "Photo of " + fullName : "") + '">' : '<div class="ph" aria-hidden="true">' + esc(initials) + '</div>') + '</div>';
+        var logoBadge = logoUrl ? '<div class="lg"><img src="' + esc(logoUrl) + '" alt="' + esc(t("Company logo")) + '"></div>' : '';
+        var circle = '<div class="pc">' + (avatarUrl ? '<img src="' + esc(avatarUrl) + '" alt="' + esc(fullName ? t("Photo of {name}", fullName) : "") + '">' : '<div class="ph" aria-hidden="true">' + esc(initials) + '</div>') + '</div>';
         if (layout === "cover") {
           media = '<div class="media" style="padding-bottom:50px">' +
             (coverUrl ? '<img class="bn" style="height:150px" src="' + esc(coverUrl) + '" alt="">' : '<div class="bn ph-fill" style="height:150px"></div>') +
@@ -574,15 +581,15 @@
           // Cover, a big round photo centered on its lower edge, the logo small on the cover's top left.
           media = '<div class="media ctr" style="padding-bottom:60px">' +
             (coverUrl ? '<img class="bn" style="height:150px" src="' + esc(coverUrl) + '" alt="">' : '<div class="bn ph-fill" style="height:150px"></div>') +
-            (logoUrl ? '<div class="lg sm"><img src="' + esc(logoUrl) + '" alt="Company logo"></div>' : '') +
+            (logoUrl ? '<div class="lg sm"><img src="' + esc(logoUrl) + '" alt="' + esc(t("Company logo")) + '"></div>' : '') +
             '<div class="row" style="top:94px;justify-content:center">' + circle + '</div></div>';
         } else if (layout === "photo") {
           media = '<div class="media" style="padding-bottom:42px">' +
-            (avatarUrl ? '<img class="bn" style="height:240px" src="' + esc(avatarUrl) + '" alt="' + esc(fullName ? "Photo of " + fullName : "") + '">' : '<div class="bn ph-fill" style="height:240px"></div>') +
+            (avatarUrl ? '<img class="bn" style="height:240px" src="' + esc(avatarUrl) + '" alt="' + esc(fullName ? t("Photo of {name}", fullName) : "") + '">' : '<div class="bn ph-fill" style="height:240px"></div>') +
             '<div class="row" style="top:202px">' + logoBadge + '<span></span></div></div>';
         } else {
           media = '<div class="media" style="padding-bottom:50px">' +
-            '<div class="bn lb" style="height:130px">' + (logoUrl ? '<img src="' + esc(logoUrl) + '" alt="Company logo">' : '') + '</div>' +
+            '<div class="bn lb" style="height:130px">' + (logoUrl ? '<img src="' + esc(logoUrl) + '" alt="' + esc(t("Company logo")) + '">' : '') + '</div>' +
             '<div class="row" style="top:84px">' + circle + '<span></span></div></div>';
         }
         photo = "";
@@ -592,7 +599,7 @@
       var hlFont = style === "ledger" ? "font:italic 400 18px/1.25 'Playfair Display',serif"
         : style === "gilded" ? "font:400 18px/1.25 'Playfair Display',serif"
         : "font:600 17px/1.25 'EB Garamond',serif";
-      var headline = profile.headline ? '<p class="hl" style="color:' + ink + ';' + hlFont + '">' + esc(profile.headline) + '</p>' : '';
+      var headline = cardText(profile, "headline") ? '<p class="hl" style="color:' + ink + ';' + hlFont + '">' + esc(cardText(profile, "headline")) + '</p>' : '';
 
       // Role pill (the member's Company Function) and years in the industry.
       var pillStyle, pillText;
@@ -610,10 +617,10 @@
       var years = typeof profile.yearsInIndustry === "number" ? profile.yearsInIndustry : parseInt(profile.yearsInIndustry, 10);
       var tags = '<div class="tags">' +
         (profile.role ? '<div class="tag" style="' + pillStyle + ';color:' + pillText + '">' + svg("briefcase") + '<i style="background:currentColor;opacity:.4"></i>' + esc(profile.role) + '</div>' : '') +
-        (years > 0 ? '<div class="yrs" style="color:' + ink2 + '"><i style="background:' + metal + '"></i>' + years + ' year' + (years === 1 ? '' : 's') + ' in the industry</div>' : '') +
+        (years > 0 ? '<div class="yrs" style="color:' + ink2 + '"><i style="background:' + metal + '"></i>' + esc(years === 1 ? t("1 year in the industry") : t("{n} years in the industry", null, years)) + '</div>' : '') +
         '</div>';
 
-      var bio = profile.bio ? '<p class="bio" style="color:' + ink + '">' + esc(profile.bio) + '</p>' : '';
+      var bio = cardText(profile, "bio") ? '<p class="bio" style="color:' + ink + '">' + esc(cardText(profile, "bio")) + '</p>' : '';
 
       // Contact rows with the member's chosen icon look.
       function iconStyle() {
@@ -683,10 +690,10 @@
       var shown = Math.max(Math.min(vouches, 3), 1);
       for (var i = 0; i < shown; i++) circles += '<div class="vav" style="background:' + avFill + ';color:' + ink + ';' + avRing + '">' + svg("person", true) + '</div>';
       if (vouches > 3) circles += '<div class="vav" style="background:' + avFill + ';color:' + ink + ';font:600 10px Inter,sans-serif;' + avRing + '">+' + (vouches - 3) + '</div>';
-      var vouchLine = vouches === 0 ? 'No vouches yet' : vouches + (vouches === 1 ? ' person vouches' : ' people vouch') + ' for ' + esc(first);
+      var vouchLine = esc(vouches === 0 ? t("No vouches yet") : vouches === 1 ? t("1 person vouches for {name}", first) : t("{n} people vouch for {name}", first, vouches));
       var panel = '<div class="vp" style="border-color:' + metal + ';background:' + (dark ? 'rgba(255,255,255,.05)' : 'rgba(176,141,87,.08)') + '">' +
         '<div class="vstack">' + circles + '</div><i class="vsep" style="background:' + metal + '"></i>' +
-        '<div class="vtx"><b style="color:' + ink + '">Vouches from the Community</b><span style="color:' + brass + '">' + vouchLine + '</span></div></div>';
+        '<div class="vtx"><b style="color:' + ink + '">' + esc(t("Vouches from the Community")) + '</b><span style="color:' + brass + '">' + vouchLine + '</span></div></div>';
 
       var card = document.createElement("div");
       card.className = "card";
@@ -718,6 +725,7 @@
       setUpBookingAndVideo(profile);
       setUpDownload(profile);
       setUpShareBack(profile, fullName);
+      addLanguageSwitch(profile);
       document.title = (fullName ? fullName + " — " : "") + "Inner Network";
       // Paid plans can hide Inner Network branding (migration 2024): no app banner, no company footer, just their name
       // in the title. The Privacy Policy and Terms links and the share-back consent wording stay.
@@ -729,9 +737,32 @@
       }
     }
 
-    // Share back: Spanish when the visitor's browser is in Spanish, English otherwise.
-    var SPANISH = /^es\b/i.test(navigator.language || "");
+    // The card's words in Spanish (SPANISH is decided at the top of the script).
     var ES = {
+      "Skip to content": "Saltar al contenido",
+      "Get the Inner Network app": "Descarga la app Inner Network",
+      "Download": "Descargar",
+      "Add to Contacts": "Agregar a Contactos",
+      "Loading…": "Cargando…",
+      "Privacy Policy": "Política de Privacidad",
+      "Terms of Service": "Términos de Servicio",
+      "Removal & Corrections": "Eliminación y correcciones",
+      "Accessibility": "Accesibilidad",
+      "Support": "Soporte",
+      "Legal": "Legal",
+      "All rights reserved.": "Todos los derechos reservados.",
+      "trademarks": "Los nombres y logotipos de organizadores, lugares y editores son marcas de sus respectivos dueños y se usan solo para identificarlos. Inner Network no está afiliado ni respaldado por ellos, salvo que se indique.",
+      "Photo of {name}": "Foto de {name}",
+      "Company logo": "Logotipo de la empresa",
+      "1 year in the industry": "1 año en la industria",
+      "{n} years in the industry": "{n} años en la industria",
+      "Vouches from the Community": "Recomendaciones de la comunidad",
+      "No vouches yet": "Aún no tiene recomendaciones",
+      "1 person vouches for {name}": "1 persona recomienda a {name}",
+      "{n} people vouch for {name}": "{n} personas recomiendan a {name}",
+      "This business card couldn't be found.": "No se encontró esta tarjeta de presentación.",
+      "English": "English",
+      "Español": "Español",
       "Share your contact": "Comparte tu contacto",
       "Your name": "Tu nombre",
       "Email": "Correo electrónico",
@@ -760,10 +791,46 @@
       "emailMe": "Email me {name}'s card (one email only).",
       "doneEmailed": "Done. {name} now has your contact details, and we've emailed you their card."
     };
-    function t(key, name) {
+    function t(key, name, n) {
       var text = (SPANISH ? ES[key] : EN[key]) || key;
+      if (n != null) text = text.split("{n}").join(String(n));
       return name ? text.split("{name}").join(name) : text;
     }
+    // The member's title, headline or bio: their Spanish version for Spanish readers when they wrote one.
+    function cardText(profile, key) {
+      var es = SPANISH && profile.es && typeof profile.es[key] === "string" ? profile.es[key].trim() : "";
+      var main = typeof profile[key] === "string" ? profile[key].trim() : "";
+      return es || main;
+    }
+    // When the member wrote a Spanish version, a small switch lets the visitor read the other one.
+    function addLanguageSwitch(profile) {
+      var es = profile.es || {};
+      if (!(es.title || es.headline || es.bio) || document.getElementById("langSwitch")) return;
+      var u = new URL(location.href);
+      u.searchParams.set("lang", SPANISH ? "en" : "es");
+      var a = document.createElement("a");
+      a.id = "langSwitch"; a.className = "lang-switch"; a.href = u.toString();
+      a.lang = SPANISH ? "en" : "es";
+      a.textContent = SPANISH ? "English" : "Español";
+      var main = document.getElementById("main");
+      main.appendChild(a);
+    }
+    // The page's fixed words (banner, buttons, footer) in the visitor's language.
+    (function translateStatic() {
+      if (!SPANISH) return;
+      var tr = function (sel, key) { var el = document.querySelector(sel); if (el) el.textContent = t(key); };
+      tr(".skip-link", "Skip to content");
+      tr(".download-banner span", "Get the Inner Network app");
+      tr("#bannerLink", "Download");
+      tr("#addContactLink", "Add to Contacts");
+      tr("#downloadLink", "Download");
+      tr("#content .status-message", "Loading…");
+      Array.prototype.forEach.call(document.querySelectorAll(".site-footer nav a"), function (a) { a.textContent = t(a.textContent.trim()); });
+      var nav = document.querySelector(".site-footer nav"); if (nav) nav.setAttribute("aria-label", t("Legal"));
+      var lines = document.querySelectorAll(".site-footer p.brand-line");
+      if (lines[0]) lines[0].innerHTML = lines[0].innerHTML.replace("All rights reserved.", t("All rights reserved."));
+      if (lines[1]) lines[1].textContent = t("trademarks");
+    })();
 
     // Booking link and video (migration 2027). The server only sends https booking pages and YouTube (no-cookie),
     // Vimeo or Loom player addresses; checked again here before use.
@@ -974,7 +1041,7 @@
           renderCard(profile);
         })
         .catch(function () {
-          renderError("This business card couldn't be found.");
+          renderError(t("This business card couldn't be found."));
         });
     }
   </script>
