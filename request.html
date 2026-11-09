@@ -20,20 +20,21 @@
   <main id="main"><p class="status">Loading…</p></main>
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
-<script src="/assets/hosted.js?v=1"></script>
+<script src="/assets/hosted.js?v=2"></script>
 <script>
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
   var handle = (new URLSearchParams(location.search).get("h") || "").toLowerCase();
   if (!/^[a-z0-9-]{3,30}$/.test(handle)) return H.fail();
-  var DAYS = H.SPANISH ? ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  // Read when drawing: the page may switch to Spanish once the request types arrive.
+  function DAYS() { return H.SPANISH ? ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; }
 
   H.get("?format=requesttypes&handle=" + handle).then(function (r) {
     if (!r.ok || !r.body.types || !r.body.types.length) return H.fail();
     var owner = r.body.owner, types = r.body.types, chosen = types[0];
     document.title = t("Request a meeting") + " · " + owner.name;
     function hours(ty) {
-      var d = (ty.weekdays || []).slice().sort().map(function (x) { return DAYS[x]; }).join(", ");
+      var d = (ty.weekdays || []).slice().sort().map(function (x) { return DAYS()[x]; }).join(", ");
       var hm = function (v) { var p = String(v).split(":"), h = +p[0], m = p[1] || "00"; return H.SPANISH ? h + ":" + m : ((h % 12) || 12) + ":" + m + (h < 12 ? " AM" : " PM"); };
       return d + ", " + hm(ty.day_start) + (H.SPANISH ? " a " : " to ") + hm(ty.day_end);
     }

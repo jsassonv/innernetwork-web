@@ -24,13 +24,26 @@
     "Topic": "Tema", "Tell them more (optional)": "Cuéntales más (opcional)", "Preferred dates and times (up to 3)": "Fechas y horas preferidas (hasta 3)",
     "Request sent. You'll get an email when they answer.": "Solicitud enviada. Recibirás un correo cuando respondan.",
     "Request a meeting": "Solicitar una reunión", "minutes": "minutos", "Answer this invitation": "Responde esta invitación",
-    "This event has ended.": "Este evento ya terminó."
+    "This event has ended.": "Este evento ya terminó.",
+    "Invitation": "Invitación", "Event": "Evento"
   };
   var EN = {
     consent: "I agree to share these details with this event's hosts. Inner Network keeps them only for this event. ",
     sms: "Text me reminders about this event. Message rates may apply. Reply STOP to opt out."
   };
   function t(k) { return (SPANISH ? ES[k] : EN[k]) || k; }
+  /** Spanish when the visitor's browser is Spanish or the event (or request type) was made in Spanish. */
+  function setLang(l) {
+    SPANISH = SPANISH || l === "es";
+    document.documentElement.lang = SPANISH ? "es" : "en";
+    if (window.HOSTED) window.HOSTED.SPANISH = SPANISH;
+    if (SPANISH) {
+      var parts = document.title.split(" · ");
+      if (ES[parts[0]]) document.title = ES[parts[0]] + " · " + parts.slice(1).join(" · ");
+      var st = document.querySelector("#main > p.status");
+      if (st && ES[st.textContent]) st.textContent = ES[st.textContent];
+    }
+  }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   var ICON = {
     cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
@@ -66,9 +79,17 @@
     return fetch(FN + query, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body || {}) })
       .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, status: r.status, body: b }; }); });
   }
-  function get(query) { return fetch(FN + query).then(function (r) { return r.json().then(function (b) { return { ok: r.ok, status: r.status, body: b }; }); }); }
+  function get(query) {
+    // ?lang=es asks the function for Spanish dates; the answer says which language the page should use.
+    return fetch(FN + query + (SPANISH ? "&lang=es" : "")).then(function (r) {
+      return r.json().then(function (b) {
+        if (b) setLang(b.lang || (b.event && b.event.lang));
+        return { ok: r.ok, status: r.status, body: b };
+      });
+    });
+  }
   function fail(msg) { var m = document.getElementById("main"); m.innerHTML = '<p class="status">' + esc(msg || t("This page isn't available.")) + '</p>'; }
 
-  document.documentElement.lang = SPANISH ? "es" : "en";
   window.HOSTED = { FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setLang(); }); else setLang();
 })();
