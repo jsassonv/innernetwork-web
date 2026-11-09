@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Request a meeting · Inner Network</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="stylesheet" href="/assets/hosted.css?v=1">
+<!--
+  Meeting requests (Docs/2.0_Hosted_Events_Plan.md, section 4): innernetwork.app/<personal link>/request. What the
+  member accepts (for example a Lunch and Learn for 50 with breakfast), and a form with up to 3 preferred times. The
+  member answers in the app or on the dashboard; the requester gets the confirmation email.
+-->
+</head>
+<body>
+<div class="wrap" style="max-width:720px">
+  <a class="brand" href="/"><img src="/assets/logo.png" alt="">Inner Network</a>
+  <main id="main"><p class="status">Loading…</p></main>
+  <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
+</div>
+<script src="/assets/hosted.js?v=1"></script>
+<script>
+(function () {
+  var H = window.HOSTED, t = H.t, esc = H.esc;
+  var handle = (new URLSearchParams(location.search).get("h") || "").toLowerCase();
+  if (!/^[a-z0-9-]{3,30}$/.test(handle)) return H.fail();
+  var DAYS = H.SPANISH ? ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  H.get("?format=requesttypes&handle=" + handle).then(function (r) {
+    if (!r.ok || !r.body.types || !r.body.types.length) return H.fail();
+    var owner = r.body.owner, types = r.body.types, chosen = types[0];
+    document.title = t("Request a meeting") + " · " + owner.name;
+    function hours(ty) {
+      var d = (ty.weekdays || []).slice().sort().map(function (x) { return DAYS[x]; }).join(", ");
+      var hm = function (v) { var p = String(v).split(":"), h = +p[0], m = p[1] || "00"; return H.SPANISH ? h + ":" + m : ((h % 12) || 12) + ":" + m + (h < 12 ? " AM" : " PM"); };
+      return d + ", " + hm(ty.day_start) + (H.SPANISH ? " a " : " to ") + hm(ty.day_end);
+    }
+    function minDate(ty) { var d = new Date(Date.now() + (ty.lead_days || 0) * 86400000); return d.toISOString().slice(0, 10) + "T08:00"; }
+    function draw() {
+      document.getElementById("main").innerHTML =
+        '<div class="who">' + (owner.photo && /^https:\/\//.test(owner.photo) ? '<img src="' + esc(owner.photo) + '" alt="">' : '') +
+        '<div><strong>' + esc(owner.name) + '</strong><div class="note">' + esc([owner.title, owner.company].filter(Boolean).join(" · ")) + '</div></div></div>' +
+        '<h1 style="font-size:34px">' + t("Request a meeting") + '</h1>' +
+        '<section class="panel" style="margin-bottom:14px"><h2>' + t("What would you like to request?") + '</h2><div class="types">' +
+        types.map(function (ty) {
+          return '<button type="button" data-id="' + esc(ty.id) + '" aria-pressed="' + (ty.id === chosen.id) + '"><strong>' + esc(ty.name) + '</strong>' +
+            '<small>' + esc(ty.duration_minutes) + ' ' + t("minutes") + (ty.headcount ? ' · ' + esc(ty.headcount) + ' ' + t("people") : '') + ' · ' + esc(hours(ty)) + '</small>' +
+            (ty.description ? '<small>' + esc(ty.description) + '</small>' : '') + '</button>';
+        }).join("") + '</div></section>' +
+        (chosen.requirements || chosen.venue_name ? '<section class="panel" style="margin-bottom:14px"><h2>' + t("What to know") + '</h2>' +
+          (chosen.venue_name ? '<p style="margin:0 0 8px"><strong>' + esc(chosen.venue_name) + '</strong>' + (chosen.venue_address ? '<br><span class="note">' + esc(chosen.venue_address) + '</span>' : '') + '</p>' : '') +
+          '<p class="text">' + esc(chosen.requirements) + '</p>' +
+          (chosen.cancellation_policy ? '<p class="note" style="margin-top:10px">' + t("Cancellation policy") + ': ' + esc(chosen.cancellation_policy) + '</p>' : '') + '</section>' : '') +
+        '<section class="panel"><form id="req" novalidate>' +
+        '<div class="row2"><label>' + t("First name") + '<input name="first_name" autocomplete="given-name" maxlength="80" required></label>' +
+        '<label>' + t("Last name") + '<input name="last_name" autocomplete="family-name" maxlength="80"></label></div>' +
+        '<div class="row2"><label>' + t("Email") + '<input name="email" type="email" autocomplete="email" maxlength="200" required></label>' +
+        '<label>' + t("Phone (optional)") + '<input name="phone" type="tel" autocomplete="tel" maxlength="30"></label></div>' +
+        '<div class="row2"><label>' + t("Company (optional)") + '<input name="company" autocomplete="organization" maxlength="120"></label>' +
+        '<label>' + t("Job title (optional)") + '<input name="title" autocomplete="organization-title" maxlength="120"></label></div>' +
+        '<label>' + t("Topic") + '<input name="topic" maxlength="200"></label>' +
+        '<label>' + t("Tell them more (optional)") + '<textarea name="message" maxlength="2000"></textarea></label>' +
+        '<fieldset style="border:0;padding:0;margin:0;display:grid;gap:8px"><legend style="font-size:14px;font-weight:600;margin-bottom:4px">' + t("Preferred dates and times (up to 3)") + '</legend>' +
+        [0, 1, 2].map(function (i) { return '<input type="datetime-local" name="d' + i + '" min="' + minDate(chosen) + '" aria-label="' + t("Preferred dates and times (up to 3)") + ' ' + (i + 1) + '">'; }).join("") + '</fieldset>' +
+        '<input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+        '<label class="check"><input type="checkbox" name="sms"><span>' + esc(t("sms")) + '</span></label>' +
+        '<label class="check"><input type="checkbox" name="consent"><span>' + esc(t("consent")) + '<a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a>.</span></label>' +
+        '<p class="err" id="err" role="alert"></p><button class="btn" type="submit">' + t("Send request") + '</button></form></section>';
+      document.querySelectorAll(".types button").forEach(function (b) {
+        b.addEventListener("click", function () { chosen = types.filter(function (x) { return x.id === b.getAttribute("data-id"); })[0]; draw(); });
+      });
+      var form = document.getElementById("req");
+      form.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var f = form.elements, err = document.getElementById("err");
+        var preferred = [0, 1, 2].map(function (i) { return f["d" + i].value; }).filter(Boolean).map(function (v) { return new Date(v).toISOString(); });
+        var body = {
+          type_id: chosen.id, first_name: f.first_name.value.trim(), last_name: f.last_name.value.trim(), email: f.email.value.trim(),
+          phone: f.phone.value.trim(), company: f.company.value.trim(), title: f.title.value.trim(), topic: f.topic.value.trim(),
+          message: f.message.value.trim(), preferred: preferred, sms_opt_in: f.sms.checked && !!f.phone.value.trim(),
+          consent: f.consent.checked, website: f.website.value
+        };
+        if (!body.first_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { err.textContent = t("Please enter your name and email."); return; }
+        if (!body.consent) { err.textContent = t("Please tick the box to agree."); return; }
+        err.textContent = t("Sending…");
+        H.post("?format=request", body).then(function (res) {
+          if (!res.ok) { err.textContent = t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't work. Please try again."); return; }
+          form.outerHTML = '<p class="ok" role="status">' + t("Request sent. You'll get an email when they answer.") + '</p>';
+        }).catch(function () { err.textContent = t("That didn't work. Please try again."); });
+      });
+    }
+    draw();
+  }).catch(function () { H.fail(); });
+})();
+</script>
+</body>
+</html>

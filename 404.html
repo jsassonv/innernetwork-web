@@ -717,6 +717,23 @@
         window.location.replace("https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card?format=go&slug=" + encodeURIComponent(goMatch[1].toLowerCase()));
         return;
       }
+      // Hosted events (Docs/2.0_Hosted_Events_Plan.md): a guest's invitation /i/<token>, a public or unlisted event
+      // /h/<id>, and a member's meeting request form /<personal link>/request.
+      var inviteMatch = window.location.pathname.match(/^\/i\/([0-9a-fA-F]{36})\/?$/);
+      if (inviteMatch) {
+        window.location.replace("/i.html?t=" + inviteMatch[1].toLowerCase() + window.location.search.replace(/^\?/, "&"));
+        return;
+      }
+      var hostedMatch = window.location.pathname.match(/^\/h\/([0-9a-fA-F-]{36})\/?$/);
+      if (hostedMatch) {
+        window.location.replace("/h.html?id=" + hostedMatch[1].toLowerCase());
+        return;
+      }
+      var requestMatch = window.location.pathname.match(/^\/([a-zA-Z0-9](?:[a-zA-Z0-9-]{1,28})[a-zA-Z0-9])\/request\/?$/);
+      if (requestMatch) {
+        window.location.replace("/request.html?h=" + encodeURIComponent(requestMatch[1].toLowerCase()));
+        return;
+      }
       // An extra card's Link in Bio page: /b/<card id>.
       var bioMatch = window.location.pathname.match(/^\/b\/([0-9a-fA-F-]{36})\/?$/);
       if (bioMatch) {
