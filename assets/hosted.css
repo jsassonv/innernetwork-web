@@ -55,3 +55,11 @@ textarea { min-height: 90px; resize: vertical; }
 footer { margin-top: 40px; font-size: 12px; color: var(--muted); text-align: center; }
 @media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } .side { position: static; } .flyer { aspect-ratio: 16 / 10; } }
 @media (max-width: 420px) { .row2 { grid-template-columns: 1fr; } }
+/* Tickets sold here (step F) */
+fieldset.tickets { border: 0; padding: 0; margin: 0 0 4px; display: grid; gap: 8px; }
+fieldset.tickets legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
+.check.ticket { padding: 12px; border: 1px solid #D9D3C7; border-radius: 12px; background: #fff; }
+.check.ticket:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.check.ticket:has(input:disabled) { opacity: .55; }
+.check.ticket span { display: grid; gap: 2px; }
+.check.ticket small { color: var(--muted); font-size: 13px; }

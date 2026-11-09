@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="robots" content="noindex" />
+<title>Payouts · Inner Network</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="stylesheet" href="/assets/hosted.css?v=2">
+<!--
+  Where Stripe sends a host back after setting up payouts for ticket sales (Docs/2.0_Hosted_Events_Plan.md, step F):
+  ?payouts=done when they finished, ?payouts=retry when the setup link expired. The app re-checks on its own.
+-->
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/"><img src="/assets/logo.png" alt="">Inner Network</a>
+  <main id="main"><section class="panel" style="max-width:520px;margin:24px auto"><h1 id="h"></h1><p class="text" id="p"></p></section></main>
+  <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
+</div>
+<script>
+(function () {
+  var es = /^es\b/i.test(navigator.language || ""), retry = new URLSearchParams(location.search).get("payouts") === "retry";
+  var T = retry
+    ? (es ? ["El enlace venció", "Vuelve a Inner Network y toca Configurar pagos otra vez."]
+          : ["That link expired", "Go back to Inner Network and tap Set up payouts again."])
+    : (es ? ["Listo", "Vuelve a Inner Network. Cuando Stripe termine de revisar tus datos, podrás vender entradas."]
+          : ["All set", "Go back to Inner Network. Once Stripe finishes checking your details, you can sell tickets."]);
+  document.documentElement.lang = es ? "es" : "en";
+  document.title = (es ? "Pagos" : "Payouts") + " · Inner Network";
+  document.getElementById("h").textContent = T[0];
+  document.getElementById("p").textContent = T[1];
+})();
+</script>
+</body>
+</html>

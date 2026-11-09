@@ -25,7 +25,12 @@
     "Request sent. You'll get an email when they answer.": "Solicitud enviada. Recibirás un correo cuando respondan.",
     "Request a meeting": "Solicitar una reunión", "minutes": "minutos", "Answer this invitation": "Responde esta invitación",
     "This event has ended.": "Este evento ya terminó.",
-    "Invitation": "Invitación", "Event": "Evento"
+    "Invitation": "Invitación", "Event": "Evento",
+    "Tickets": "Entradas", "Quantity": "Cantidad", "Sold out": "Agotadas", "left": "disponibles", "Total": "Total",
+    "Continue to payment": "Continuar al pago", "Confirming your payment…": "Confirmando tu pago…",
+    "Payment received. Your confirmation is on its way by email.": "Pago recibido. Tu confirmación va en camino por correo.",
+    "Ticket sales aren't available yet.": "La venta de entradas aún no está disponible.",
+    "We couldn't confirm the payment yet. Check your email in a few minutes.": "Aún no pudimos confirmar el pago. Revisa tu correo en unos minutos."
   };
   var EN = {
     consent: "I agree to share these details with this event's hosts. Inner Network keeps them only for this event. ",
@@ -79,6 +84,15 @@
     return fetch(FN + query, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body || {}) })
       .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, status: r.status, body: b }; }); });
   }
+  /** Tickets sold in Inner Network (step F): the tickets function sits next to event-mail. */
+  var TK = FN.replace(/event-mail$/, "tickets");
+  function tget(path) { return fetch(TK + path).then(function (r) { return r.json().then(function (b) { return { ok: r.ok, status: r.status, body: b }; }); }); }
+  function tpost(path, body) {
+    return fetch(TK + path, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body || {}) })
+      .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, status: r.status, body: b }; }); });
+  }
+  /** $25, or $25.50 (US dollars). */
+  function money(cents) { var d = cents / 100; return "$" + (cents % 100 ? d.toFixed(2) : String(d)); }
   function get(query) {
     // ?lang=es asks the function for Spanish dates; the answer says which language the page should use.
     return fetch(FN + query + (SPANISH ? "&lang=es" : "")).then(function (r) {
@@ -90,6 +104,7 @@
   }
   function fail(msg) { var m = document.getElementById("main"); m.innerHTML = '<p class="status">' + esc(msg || t("This page isn't available.")) + '</p>'; }
 
-  window.HOSTED = { FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH };
+  window.HOSTED = { FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
+    tget: tget, tpost: tpost, money: money };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setLang(); }); else setLang();
 })();

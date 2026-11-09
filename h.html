@@ -6,10 +6,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <title>Event · Inner Network</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
-<link rel="stylesheet" href="/assets/hosted.css?v=1">
+<link rel="stylesheet" href="/assets/hosted.css?v=2">
 <!--
   A member's public or unlisted event (Docs/2.0_Hosted_Events_Plan.md): innernetwork.app/h/<id>. Free registration
-  here (with capacity and a waitlist), or a link to the host's outside ticketing. Private events are never shown.
+  here (with capacity and a waitlist), a link to the host's outside ticketing, or tickets sold here through Stripe
+  Checkout (step F; the buyer comes back with ?paid=<session>). Private events are never shown.
 -->
 </head>
 <body>
@@ -18,11 +19,12 @@
   <main id="main"><p class="status">Loading…</p></main>
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
-<script src="/assets/hosted.js?v=2"></script>
+<script src="/assets/hosted.js?v=3"></script>
 <script>
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
-  var id = new URLSearchParams(location.search).get("id") || "";
+  var params = new URLSearchParams(location.search);
+  var id = params.get("id") || "", paid = params.get("paid") || "";
   if (!/^[0-9a-f-]{36}$/i.test(id)) return H.fail();
 
   H.get("?format=event&id=" + id).then(function (r) {
@@ -35,6 +37,7 @@
     var action;
     if (started) action = '<p class="note">' + t("This event has ended.") + '</p>';
     else if (e.ticketing === "external" && /^https:\/\//.test(e.ticket_url)) action = '<a class="btn" href="' + esc(e.ticket_url) + '" target="_blank" rel="noopener noreferrer">' + t("Get tickets") + '</a>';
+    else if (e.ticketing === "platform") action = '<div id="buy"><p class="status">' + t("Loading…") + '</p></div>';
     else if (full && !waitlist) action = '<p class="note">' + t("This event is full.") + '</p>';
     else action =
       '<form id="reg" novalidate>' +
@@ -55,6 +58,7 @@
       '<div class="grid"><div>' + H.flyer(e) + '</div><div class="side">' +
       '<div><div class="kind">' + esc(e.kind_name) + '</div><h1>' + esc(e.name) + '</h1>' + H.facts(e) + '</div>' +
       '<section class="panel">' + action + '</section>' + H.details(e) + '</div></div>';
+    if (e.ticketing === "platform" && !started) return paid ? confirmPaid() : buy(e, questions, full && !waitlist);
     var form = document.getElementById("reg");
     if (!form) return;
     form.addEventListener("submit", function (ev) {
@@ -76,6 +80,84 @@
       }).catch(function () { err.textContent = t("That didn't work. Please try again."); });
     });
   }).catch(function () { H.fail(); });
+
+  // Back from Stripe Checkout: the payment is confirmed by Stripe's webhook, usually within seconds.
+  function confirmPaid() {
+    var box = document.getElementById("buy"), tries = 0;
+    box.innerHTML = '<p class="status">' + t("Confirming your payment…") + '</p>';
+    (function check() {
+      H.tget("/order?session=" + encodeURIComponent(paid)).then(function (r) {
+        if (r.ok && r.body.status === "paid") { box.innerHTML = '<p class="note ok">' + t("Payment received. Your confirmation is on its way by email.") + '</p>'; return; }
+        if (++tries < 10) return setTimeout(check, 2000);
+        box.innerHTML = '<p class="note">' + t("We couldn't confirm the payment yet. Check your email in a few minutes.") + '</p>';
+      }).catch(function () { if (++tries < 10) setTimeout(check, 2000); });
+    })();
+  }
+
+  // Tickets sold here: pick a ticket and how many, the buyer's details, then Stripe Checkout.
+  function buy(e, questions, eventFull) {
+    var box = document.getElementById("buy");
+    if (eventFull) { box.innerHTML = '<p class="note">' + t("This event is full.") + '</p>'; return; }
+    H.tget("/list?id=" + id).then(function (r) {
+      var tickets = r.ok ? (r.body.tickets || []) : [];
+      if (!r.ok || !r.body.selling || !tickets.length) { box.innerHTML = '<p class="note">' + t("Ticket sales aren't available yet.") + '</p>'; return; }
+      var open = tickets.filter(function (k) { return k.left == null || k.left > 0; });
+      if (!open.length) { box.innerHTML = '<p class="note">' + t("Sold out") + '</p>'; return; }
+      box.innerHTML =
+        '<form id="reg" novalidate><fieldset class="tickets"><legend>' + t("Tickets") + '</legend>' +
+        tickets.map(function (k, i) {
+          var out = k.left === 0;
+          return '<label class="check ticket"><input type="radio" name="ticket" value="' + esc(k.id) + '"' + (out ? " disabled" : "") +
+            (!out && k.id === open[0].id ? " checked" : "") + '><span><strong>' + esc(k.name) + ' · ' + H.money(k.price_cents) + '</strong>' +
+            (k.description ? '<small>' + esc(k.description) + '</small>' : '') +
+            (out ? '<small>' + t("Sold out") + '</small>' : k.left != null ? '<small>' + k.left + ' ' + t("left") + '</small>' : '') + '</span></label>';
+        }).join("") + '</fieldset>' +
+        '<label>' + t("Quantity") + '<select name="quantity"></select></label>' +
+        '<p class="note" id="total"></p>' +
+        '<div class="row2"><label>' + t("First name") + '<input name="first_name" autocomplete="given-name" maxlength="80" required></label>' +
+        '<label>' + t("Last name") + '<input name="last_name" autocomplete="family-name" maxlength="80"></label></div>' +
+        '<label>' + t("Email") + '<input name="email" type="email" autocomplete="email" maxlength="200" required></label>' +
+        '<label>' + t("Phone (optional)") + '<input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>' +
+        '<div class="row2"><label>' + t("Company (optional)") + '<input name="company" autocomplete="organization" maxlength="120"></label>' +
+        '<label>' + t("Job title (optional)") + '<input name="title" autocomplete="organization-title" maxlength="120"></label></div>' +
+        questions.map(function (q, i) { return '<label>' + esc(q) + '<input name="q' + i + '" maxlength="500"></label>'; }).join("") +
+        '<input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+        '<label class="check"><input type="checkbox" name="sms"><span>' + esc(t("sms")) + '</span></label>' +
+        '<label class="check"><input type="checkbox" name="consent"><span>' + esc(t("consent")) + '<a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a>.</span></label>' +
+        '<p class="err" id="err" role="alert"></p>' +
+        '<button class="btn" type="submit">' + t("Continue to payment") + '</button></form>';
+      var form = document.getElementById("reg"), f = form.elements;
+      function chosen() { var v = form.querySelector('input[name="ticket"]:checked'); return v && tickets.filter(function (k) { return k.id === v.value; })[0]; }
+      function refresh() {
+        var k = chosen(), max = Math.min(10, k && k.left != null ? k.left : 10), cur = +f.quantity.value || 1, html = "";
+        for (var n = 1; n <= max; n++) html += '<option value="' + n + '"' + (n === Math.min(cur, max) ? " selected" : "") + '>' + n + '</option>';
+        f.quantity.innerHTML = html;
+        document.getElementById("total").textContent = k ? t("Total") + ": " + H.money(k.price_cents * (+f.quantity.value || 1)) : "";
+      }
+      form.addEventListener("change", function (ev) { if (ev.target.name === "ticket" || ev.target.name === "quantity") refresh(); });
+      refresh();
+      form.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var err = document.getElementById("err"), k = chosen();
+        var body = {
+          event_id: id, ticket_id: k ? k.id : "", quantity: +f.quantity.value || 1,
+          first_name: f.first_name.value.trim(), last_name: f.last_name.value.trim(), email: f.email.value.trim(), phone: f.phone.value.trim(),
+          company: f.company.value.trim(), title: f.title.value.trim(), website: f.website.value,
+          answers: questions.map(function (q, i) { return { q: q, a: f["q" + i].value.trim() }; }),
+          sms_opt_in: f.sms.checked && !!f.phone.value.trim(), consent: f.consent.checked
+        };
+        if (!body.first_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { err.textContent = t("Please enter your name and email."); return; }
+        if (!body.consent) { err.textContent = t("Please tick the box to agree."); return; }
+        err.textContent = t("Sending…");
+        H.tpost("/checkout", body).then(function (res) {
+          if (res.ok && /^https:\/\/checkout\.stripe\.com\//.test(res.body.url)) { location.href = res.body.url; return; }
+          var code = res.body && res.body.error && res.body.error.code;
+          err.textContent = code === "SOLD_OUT" ? t("Sold out") : code === "NOT_SET_UP" ? t("Ticket sales aren't available yet.")
+            : t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't work. Please try again.");
+        }).catch(function () { err.textContent = t("That didn't work. Please try again."); });
+      });
+    }).catch(function () { box.innerHTML = '<p class="note">' + t("Ticket sales aren't available yet.") + '</p>'; });
+  }
 })();
 </script>
 </body>
