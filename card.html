@@ -661,12 +661,16 @@
           var c = hex.match(/../g).map(function (v) { v = parseInt(v, 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
           return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2] > 0.5 ? "#1F2330" : "#FFFFFF";
         }
-        profile.fields.slice(0, 30).forEach(function (f) {
+        // Up to 100 fields (migration 2057).
+        profile.fields.slice(0, 100).forEach(function (f) {
           if (!f || typeof f.value !== "string" || !f.value.trim()) return;
           var href = typeof f.href === "string" ? f.href : null;
           if (href && !(/^(tel|sms):\+?[\d]+$/.test(href) || /^mailto:[^\s@]+@[^\s@]+$/.test(href) || safeLinkUrl(href) === href)) href = null;
           var text = (f.label && String(f.label).trim()) ? String(f.label).trim().slice(0, 40) : String(f.value).trim().slice(0, 300);
-          var icon = FIELD_ICON[f.type] || (href && href.indexOf("https:") === 0 ? "link" : "globe");
+          // A custom field (2057) gets the icon of what its value is: a phone, an email, a link, or text.
+          var icon = f.type === "custom"
+            ? (href ? (href.indexOf("tel:") === 0 ? "phone" : href.indexOf("mailto:") === 0 ? "mail" : "link") : "text")
+            : FIELD_ICON[f.type] || (href && href.indexOf("https:") === 0 ? "link" : "globe");
           var brand = standardIcons && Object.prototype.hasOwnProperty.call(BRAND, f.type) ? BRAND[f.type] : null;
           var iconHtml = brand
             ? '<span class="ic" style="background:#' + brand[0] + ';color:' + glyphOn(brand[0]) + ';border:none"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="' + brand[1] + '"/></svg></span>'
