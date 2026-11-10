@@ -4,7 +4,7 @@
   var SPANISH = /^es\b/i.test(navigator.language || "");
   var ES = {
     "Loading…": "Cargando…", "Going": "Voy", "Maybe": "Quizás", "Can't go": "No puedo", "invited you": "te invitó",
-    "When": "Cuándo", "Where": "Dónde", "Hosted by": "Organiza", "Details": "Detalles", "What to know": "Lo que debes saber",
+    "Zoom in": "Acercar", "Zoom out": "Alejar", "When": "Cuándo", "Where": "Dónde", "Hosted by": "Organiza", "Details": "Detalles", "What to know": "Lo que debes saber",
     "Your answer": "Tu respuesta", "Add to calendar": "Agregar al calendario", "Text me reminders": "Envíenme recordatorios por mensaje de texto",
     "Mobile phone": "Teléfono móvil", "Save": "Guardar", "Saved.": "Guardado.", "Sending…": "Enviando…",
     "You're going. See you there.": "Vas a ir. Nos vemos allí.", "Thanks, we let the host know.": "Gracias, se lo avisamos al anfitrión.",
@@ -88,12 +88,34 @@
       (e.headcount ? '<li>' + ICON.people + '<span><small>' + t("Headcount") + '</small><strong>' + esc(e.headcount) + ' ' + t("people") + '</strong></span></li>' : '') +
       '</ul>';
   }
+  /** The map picture with + / - buttons in its corner: the server signs one picture per zoom level; the buttons swap between them. */
+  function mapBox(e, map) {
+    var z = e.map_zooms, levels = z && z.levels && z.levels.length > 1 ? z.levels.filter(function (l) { return https(l.url); }) : [];
+    var idx = 0;
+    for (var i = 0; i < levels.length; i++) if (levels[i].z === z.start) idx = i;
+    var img = '<img class="map" src="' + esc(levels.length ? levels[idx].url : map) + '" alt="' + t("Map") + '" loading="lazy" onerror="this.remove()">';
+    if (levels.length < 2) return img;
+    return '<div class="mapbox" data-i="' + idx + '" data-urls="' + esc(JSON.stringify(levels.map(function (l) { return l.url; }))) + '">' + img +
+      '<div class="mapzoom"><button type="button" data-zoom="1" aria-label="' + t("Zoom in") + '" title="' + t("Zoom in") + '">+</button>' +
+      '<button type="button" data-zoom="-1" aria-label="' + t("Zoom out") + '" title="' + t("Zoom out") + '">\u2212</button></div></div>';
+  }
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest(".mapzoom button");
+    if (!b) return;
+    var box = b.closest(".mapbox"), urls;
+    try { urls = JSON.parse(box.getAttribute("data-urls")); } catch (x) { return; }
+    var i = Math.max(0, Math.min(urls.length - 1, Number(box.getAttribute("data-i")) + Number(b.getAttribute("data-zoom"))));
+    box.setAttribute("data-i", String(i));
+    var img = box.querySelector("img"); if (img) img.src = urls[i];
+    var btns = box.querySelectorAll(".mapzoom button");
+    btns[0].disabled = i >= urls.length - 1; btns[1].disabled = i <= 0;
+  });
   /** The map square and parking (2059). The map link is signed by the server; no Google key on the page. */
   function where(e) {
     var map = https(e.map_url), addr = [e.venue_name, e.venue_address].filter(Boolean).join(", ");
     var gm = addr ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addr) : "";
     return (map || e.parking_info ? '<section class="panel"><h2>' + t("Location") + '</h2>' +
-      (map ? '<img class="map" src="' + esc(map) + '" alt="' + t("Map") + '" loading="lazy" onerror="this.remove()">' : '') +
+      (map ? mapBox(e, map) : '') +
       (addr ? '<p class="text">' + esc(e.place_kind === "city" ? e.venue_address || addr : addr) + (gm ? ' <a href="' + esc(gm) + '" target="_blank" rel="noopener noreferrer">' + t("Open in Google Maps") + '</a>' : '') + '</p>' : '') +
       (e.parking_info ? '<p class="text" style="margin-top:10px"><strong>' + t("Parking") + ':</strong> ' + esc(e.parking_info) + '</p>' : '') +
       '</section>' : '');

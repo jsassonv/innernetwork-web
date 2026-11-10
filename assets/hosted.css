@@ -64,3 +64,11 @@ fieldset.tickets legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
 .check.ticket span { display: grid; gap: 2px; }
 .check.ticket small { color: var(--muted); font-size: 13px; }
 .map { width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 14px; border: 1px solid var(--line, #e5ded0); margin-bottom: 10px; display: block; }
+
+.mapbox { position: relative; margin-bottom: 10px; }
+.mapbox .map { margin-bottom: 0; }
+.mapzoom { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.28); background: #fff; }
+.mapzoom button { width: 36px; height: 36px; border: 0; background: #fff; color: #222; font: 600 20px/1 system-ui, sans-serif; cursor: pointer; }
+.mapzoom button + button { border-top: 1px solid #ddd; }
+.mapzoom button:hover:not(:disabled) { background: #f2f2f2; }
+.mapzoom button:disabled { color: #bbb; cursor: default; }
