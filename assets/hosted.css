@@ -72,3 +72,8 @@ fieldset.tickets legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
 .mapzoom button + button { border-top: 1px solid #ddd; }
 .mapzoom button:hover:not(:disabled) { background: #f2f2f2; }
 .mapzoom button:disabled { color: #bbb; cursor: default; }
+
+.ticket { display: flex; gap: 16px; align-items: center; margin-top: 14px; padding: 14px; border: 1px solid var(--line, #e5ded0); border-radius: 14px; background: #fff; }
+.ticket canvas { width: 140px; height: 140px; flex: none; }
+.ticket p { margin: 0; font-size: 18px; letter-spacing: 2px; }
+.ticket .note { font-size: 13px; letter-spacing: 0; }

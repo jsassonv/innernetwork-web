@@ -4,7 +4,7 @@
   var SPANISH = /^es\b/i.test(navigator.language || "");
   var ES = {
     "Loading…": "Cargando…", "Going": "Voy", "Maybe": "Quizás", "Can't go": "No puedo", "invited you": "te invitó",
-    "Zoom in": "Acercar", "Zoom out": "Alejar", "When": "Cuándo", "Where": "Dónde", "Hosted by": "Organiza", "Details": "Detalles", "What to know": "Lo que debes saber",
+    "Zoom in": "Acercar", "Check-in code": "Código de registro", "Show this at the door to check in.": "Muéstralo en la entrada para registrarte.", "Zoom out": "Alejar", "When": "Cuándo", "Where": "Dónde", "Hosted by": "Organiza", "Details": "Detalles", "What to know": "Lo que debes saber",
     "Your answer": "Tu respuesta", "Add to calendar": "Agregar al calendario", "Text me reminders": "Envíenme recordatorios por mensaje de texto",
     "Mobile phone": "Teléfono móvil", "Save": "Guardar", "Saved.": "Guardado.", "Sending…": "Enviando…",
     "You're going. See you there.": "Vas a ir. Nos vemos allí.", "Thanks, we let the host know.": "Gracias, se lo avisamos al anfitrión.",
@@ -99,6 +99,14 @@
       '<div class="mapzoom"><button type="button" data-zoom="1" aria-label="' + t("Zoom in") + '" title="' + t("Zoom in") + '">+</button>' +
       '<button type="button" data-zoom="-1" aria-label="' + t("Zoom out") + '" title="' + t("Zoom out") + '">\u2212</button></div></div>';
   }
+  /** The guest's check-in QR (2074): drawn after each render when the page has a #ticketqr canvas. */
+  function drawTicket(code) {
+    var cv = document.getElementById("ticketqr"); if (!cv || !window.QRCodeLib || !code) return;
+    var q = new window.QRCodeLib.QRCode(-1, window.QRCodeLib.ErrorCorrectLevel.M); q.addData(code); q.make();
+    var n = q.getModuleCount(), g = cv.getContext("2d"), size = cv.width, s = Math.floor(size / (n + 4)), off = Math.floor((size - s * n) / 2);
+    g.fillStyle = "#FFFFFF"; g.fillRect(0, 0, size, size); g.fillStyle = "#1B1F2B";
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q.isDark(r, c)) g.fillRect(off + c * s, off + r * s, s, s);
+  }
   document.addEventListener("click", function (ev) {
     var b = ev.target.closest && ev.target.closest(".mapzoom button");
     if (!b) return;
@@ -149,7 +157,7 @@
   }
   function fail(msg) { var m = document.getElementById("main"); m.innerHTML = '<p class="status">' + esc(msg || t("This page isn't available.")) + '</p>'; }
 
-  window.HOSTED = { FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
+  window.HOSTED = { drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
     tget: tget, tpost: tpost, money: money };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setLang(); }); else setLang();
 })();

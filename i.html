@@ -21,7 +21,8 @@
   <main id="main"><p class="status">Loading…</p></main>
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
-<script src="/assets/hosted.js?v=3"></script>
+<script src="/assets/qrcode.js"></script>
+<script src="/assets/hosted.js?v=4"></script>
 <script>
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
@@ -54,6 +55,8 @@
         '<p class="err" id="err" role="alert"></p>' +
         (message ? '<p class="ok" role="status">' + esc(message) + '</p>' : '') +
         (going ? '<p style="margin:10px 0 0"><a class="btn out" href="' + H.FN + '?format=ics&token=' + token + '">' + t("Add to calendar") + '</a></p>' : '') +
+        (going && g.checkin_code ? '<div class="ticket"><canvas id="ticketqr" width="180" height="180" aria-label="' + t("Check-in code") + '"></canvas>' +
+          '<p><strong>' + esc(g.checkin_code) + '</strong><br><span class="note">' + t("Show this at the door to check in.") + '</span></p></div>' : '') +
         (going && (questions.length || data.texts_available) ?
           '<form id="more" style="margin-top:14px">' +
           questions.map(function (q, i) { return '<label>' + esc(q) + '<input name="q' + i + '" maxlength="500" value="' + esc(answerOf(q)) + '"></label>'; }).join("") +
@@ -62,6 +65,7 @@
           '<button class="btn" type="submit">' + t("Save") + '</button></form>' : '') +
         '</section>') +
       H.details(e) + '</div></div>';
+    H.drawTicket(g.checkin_code);
     document.querySelectorAll(".answers button").forEach(function (b) { b.addEventListener("click", function () { answer(b.getAttribute("data-s")); }); });
     var more = document.getElementById("more");
     if (more) more.addEventListener("submit", function (ev) {
