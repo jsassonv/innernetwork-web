@@ -94,12 +94,20 @@
     })();
   }
 
-  // Tickets sold here: pick a ticket and how many, the buyer's details, then Stripe Checkout.
+  // A ticket's price: $25, Free, or Donation (suggested and minimum when set).
+  function priceText(k) {
+    if (k.kind === "free") return t("Free");
+    if (k.kind === "donation") return t("Donation") + (k.min_cents ? " (" + t("at least") + " " + H.money(k.min_cents) + ")" : "");
+    return H.money(k.price_cents);
+  }
+
+  // Tickets sold here: pick a ticket and how many, the buyer's details, then Stripe Checkout (or straight in when Free).
   function buy(e, questions, eventFull) {
     var box = document.getElementById("buy");
     if (eventFull) { box.innerHTML = '<p class="note">' + t("This event is full.") + '</p>'; return; }
     H.tget("/list?id=" + id).then(function (r) {
       var tickets = r.ok ? (r.body.tickets || []) : [];
+      tickets = tickets.filter(function (k) { return k.available !== false; });
       if (!r.ok || !r.body.selling || !tickets.length) { box.innerHTML = '<p class="note">' + t("Ticket sales aren't available yet.") + '</p>'; return; }
       var open = tickets.filter(function (k) { return k.left == null || k.left > 0; });
       if (!open.length) { box.innerHTML = '<p class="note">' + t("Sold out") + '</p>'; return; }
@@ -108,10 +116,11 @@
         tickets.map(function (k, i) {
           var out = k.left === 0;
           return '<label class="check ticket"><input type="radio" name="ticket" value="' + esc(k.id) + '"' + (out ? " disabled" : "") +
-            (!out && k.id === open[0].id ? " checked" : "") + '><span><strong>' + esc(k.name) + ' · ' + H.money(k.price_cents) + '</strong>' +
+            (!out && k.id === open[0].id ? " checked" : "") + '><span><strong>' + esc(k.name) + ' · ' + priceText(k) + '</strong>' +
             (k.description ? '<small>' + esc(k.description) + '</small>' : '') +
             (out ? '<small>' + t("Sold out") + '</small>' : k.left != null ? '<small>' + k.left + ' ' + t("left") + '</small>' : '') + '</span></label>';
         }).join("") + '</fieldset>' +
+        '<label id="amountBox" style="display:none">' + t("Your amount") + ' ($)<input name="amount" inputmode="decimal" maxlength="9"></label>' +
         '<label>' + t("Quantity") + '<select name="quantity"></select></label>' +
         '<p class="note" id="total"></p>' +
         '<div class="row2"><label>' + t("First name") + '<input name="first_name" autocomplete="given-name" maxlength="80" required></label>' +
@@ -125,33 +134,51 @@
         '<label class="check"><input type="checkbox" name="sms"><span>' + esc(t("sms")) + '</span></label>' +
         '<label class="check"><input type="checkbox" name="consent"><span>' + esc(t("consent")) + '<a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a>.</span></label>' +
         '<p class="err" id="err" role="alert"></p>' +
-        '<button class="btn" type="submit">' + t("Continue to payment") + '</button></form>';
+        '<button class="btn" type="submit" id="go">' + t("Continue to payment") + '</button></form>';
       var form = document.getElementById("reg"), f = form.elements;
       function chosen() { var v = form.querySelector('input[name="ticket"]:checked'); return v && tickets.filter(function (k) { return k.id === v.value; })[0]; }
+      var lastKind = "";
+      function unit(k) {
+        if (!k || k.kind === "free") return 0;
+        if (k.kind !== "donation") return k.price_cents;
+        var v = f.amount.value.replace(/[$,\s]/g, "");
+        return /^\d+(\.\d{1,2})?$/.test(v) ? Math.round(+v * 100) : NaN;
+      }
       function refresh() {
         var k = chosen(), max = Math.min(10, k && k.left != null ? k.left : 10), cur = +f.quantity.value || 1, html = "";
         for (var n = 1; n <= max; n++) html += '<option value="' + n + '"' + (n === Math.min(cur, max) ? " selected" : "") + '>' + n + '</option>';
         f.quantity.innerHTML = html;
-        document.getElementById("total").textContent = k ? t("Total") + ": " + H.money(k.price_cents * (+f.quantity.value || 1)) : "";
+        var don = !!k && k.kind === "donation";
+        document.getElementById("amountBox").style.display = don ? "" : "none";
+        if (don && lastKind !== k.id) f.amount.value = k.price_cents ? String(k.price_cents / 100) : "";
+        lastKind = k ? k.id : "";
+        var u = unit(k), total = u * (+f.quantity.value || 1);
+        document.getElementById("total").textContent = k && !isNaN(u) ? t("Total") + ": " + (total ? H.money(total) : t("Free")) : "";
+        document.getElementById("go").textContent = t(k && (k.kind === "free" || (don && u === 0)) ? "Get my ticket" : "Continue to payment");
       }
       form.addEventListener("change", function (ev) { if (ev.target.name === "ticket" || ev.target.name === "quantity") refresh(); });
+      form.addEventListener("input", function (ev) { if (ev.target.name === "amount") refresh(); });
       refresh();
       form.addEventListener("submit", function (ev) {
         ev.preventDefault();
         var err = document.getElementById("err"), k = chosen();
         var body = {
-          event_id: id, ticket_id: k ? k.id : "", quantity: +f.quantity.value || 1,
+          event_id: id, ticket_id: k ? k.id : "", quantity: +f.quantity.value || 1, amount_cents: k && k.kind === "donation" ? unit(k) : undefined,
           first_name: f.first_name.value.trim(), last_name: f.last_name.value.trim(), email: f.email.value.trim(), phone: f.phone.value.trim(),
           company: f.company.value.trim(), title: f.title.value.trim(), website: f.website.value,
           answers: questions.map(function (q, i) { return { q: q, a: f["q" + i].value.trim() }; }),
           sms_opt_in: f.sms.checked && !!f.phone.value.trim(), consent: f.consent.checked
         };
         if (!body.first_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { err.textContent = t("Please enter your name and email."); return; }
+        if (k && k.kind === "donation" && isNaN(body.amount_cents)) { err.textContent = t("Please enter an amount."); return; }
         if (!body.consent) { err.textContent = t("Please tick the box to agree."); return; }
         err.textContent = t("Sending…");
         H.tpost("/checkout", body).then(function (res) {
           if (res.ok && /^https:\/\/checkout\.stripe\.com\//.test(res.body.url)) { location.href = res.body.url; return; }
+          // Free (or a $0 donation): no payment, they're on the list now.
+          if (res.ok && res.body.status === "paid") { box.innerHTML = '<p class="note ok">' + t("You're in. Your confirmation is on its way by email.") + '</p>'; return; }
           var code = res.body && res.body.error && res.body.error.code;
+          if (code === "INVALID_AMOUNT") { err.textContent = res.body.error.message; return; }
           err.textContent = code === "SOLD_OUT" ? t("Sold out") : code === "NOT_SET_UP" ? t("Ticket sales aren't available yet.")
             : t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't work. Please try again.");
         }).catch(function () { err.textContent = t("That didn't work. Please try again."); });

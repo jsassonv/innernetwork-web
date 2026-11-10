@@ -63,3 +63,4 @@ fieldset.tickets legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
 .check.ticket:has(input:disabled) { opacity: .55; }
 .check.ticket span { display: grid; gap: 2px; }
 .check.ticket small { color: var(--muted); font-size: 13px; }
+.map { width: 100%; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 14px; border: 1px solid var(--line, #e5ded0); margin-bottom: 10px; display: block; }
