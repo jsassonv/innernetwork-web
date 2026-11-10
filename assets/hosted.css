@@ -67,8 +67,8 @@ fieldset.tickets legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
 
 .mapbox { position: relative; margin-bottom: 10px; }
 .mapbox .map { margin-bottom: 0; }
-.mapzoom { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.28); background: #fff; }
-.mapzoom button { width: 36px; height: 36px; border: 0; background: #fff; color: #222; font: 600 20px/1 system-ui, sans-serif; cursor: pointer; }
+.mapzoom { position: absolute; top: 10px; right: 10px; width: 36px; height: 72px; display: grid; grid-template-rows: 36px 36px; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.28); background: #fff; }
+.mapzoom button { all: unset; box-sizing: border-box; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #fff; color: #222; font: 500 22px/1 system-ui, sans-serif; cursor: pointer; }
 .mapzoom button + button { border-top: 1px solid #ddd; }
 .mapzoom button:hover:not(:disabled) { background: #f2f2f2; }
 .mapzoom button:disabled { color: #bbb; cursor: default; }
