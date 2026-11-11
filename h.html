@@ -19,7 +19,7 @@
   <main id="main"><p class="status">Loading…</p></main>
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
-<script src="/assets/hosted.js?v=5"></script>
+<script src="/assets/hosted.js?v=6"></script>
 <script>
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
@@ -146,6 +146,7 @@
         '<label class="check"><input type="checkbox" name="sms"><span>' + esc(t("sms")) + '</span></label>' +
         '<label class="check"><input type="checkbox" name="consent"><span>' + esc(t("consent")) + '<a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a>.</span></label>' +
         '<p class="err" id="err" role="alert"></p>' +
+        H.refundLine(e) +
         '<button class="btn" type="submit" id="go">' + t("Continue to payment") + '</button></form>';
       var form = document.getElementById("reg"), f = form.elements;
       var apply = document.getElementById("applyCode");

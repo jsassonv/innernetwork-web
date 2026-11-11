@@ -4,7 +4,10 @@
   var SPANISH = /^es\b/i.test(navigator.language || "");
   var ES = {
     "Loading…": "Cargando…", "Going": "Voy", "Maybe": "Quizás", "Can't go": "No puedo", "invited you": "te invitó",
-    "Zoom in": "Acercar", "Bringing someone? (up to {n})": "¿Vienes con alguien? (hasta {n})", "Guest's name": "Nombre del acompañante",
+    "Zoom in": "Acercar", "Refunds": "Reembolsos", "No refunds, except if the event is cancelled.": "Sin reembolsos, salvo si el evento se cancela.",
+    "Full refund until {n} days before the event.": "Reembolso total hasta {n} días antes del evento.", "Ask the host for a refund": "Pedir un reembolso al anfitrión",
+    "You asked for a refund. The host will reply by email.": "Pediste un reembolso. El anfitrión responderá por correo.",
+    "Anything the host should know? (optional)": "¿Algo que el anfitrión deba saber? (opcional)", "Your request was sent to the host.": "Tu solicitud fue enviada al anfitrión.", "Bringing someone? (up to {n})": "¿Vienes con alguien? (hasta {n})", "Guest's name": "Nombre del acompañante",
     "Answers are closed.": "Las respuestas están cerradas.", "The host asked for a yes or no.": "El anfitrión pidió un sí o un no.",
     "That's more guests than the host allows.": "Son más acompañantes de los que permite el anfitrión.", "Registration is closed.": "El registro está cerrado.",
     "The host reviews each request and confirms by email.": "El anfitrión revisa cada solicitud y confirma por correo.", "Registration closes": "El registro cierra",
@@ -107,6 +110,13 @@
       '<div class="mapzoom"><button type="button" data-zoom="1" aria-label="' + t("Zoom in") + '" title="' + t("Zoom in") + '">+</button>' +
       '<button type="button" data-zoom="-1" aria-label="' + t("Zoom out") + '" title="' + t("Zoom out") + '">\u2212</button></div></div>';
   }
+  /** The host's refund rule (2079), shown before buying and on the buyer's page. */
+  function refundLine(e) {
+    var line = e.refund_rule === "none" ? t("No refunds, except if the event is cancelled.")
+      : e.refund_rule === "until_days" && e.refund_until_days != null ? t("Full refund until {n} days before the event.").replace("{n}", e.refund_until_days) : "";
+    var text = [line, e.refund_policy || ""].filter(Boolean).join(" ");
+    return text ? '<p class="note">' + t("Refunds") + ': ' + esc(text) + '</p>' : '';
+  }
   /** Plus-ones (2078): one name field per extra guest the host allows. */
   function plusOnesFields(max, names) {
     max = Math.min(10, Number(max) || 0); names = names || [];
@@ -186,7 +196,7 @@
   }
   function fail(msg) { var m = document.getElementById("main"); m.innerHTML = '<p class="status">' + esc(msg || t("This page isn't available.")) + '</p>'; }
 
-  window.HOSTED = { plusOnesFields: plusOnesFields, plusOnesValue: plusOnesValue, ruleError: ruleError, drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
+  window.HOSTED = { refundLine: refundLine, plusOnesFields: plusOnesFields, plusOnesValue: plusOnesValue, ruleError: ruleError, drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
     tget: tget, tpost: tpost, money: money };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setLang(); }); else setLang();
 })();
