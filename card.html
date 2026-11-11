@@ -349,10 +349,11 @@
       return resolvedId || params.get("id");
     }
 
-    // Where the card was opened from (q = QR code, n = NFC tag), passed on for the member's card insights.
+    // Where the card was opened from (q = QR code, n = NFC tag, l = link, e = email signature), passed on for the
+    // member's card insights.
     function getSource() {
       var s = new URLSearchParams(window.location.search).get("s");
-      return /^[qnl]$/.test(s || "") ? s : "";
+      return /^[qnle]$/.test(s || "") ? s : "";
     }
 
     // Counts a tap on one of the card's links (only the key, nothing about the visitor).
