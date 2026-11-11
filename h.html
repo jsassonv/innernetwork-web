@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <title>Event · Inner Network</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
-<link rel="stylesheet" href="/assets/hosted.css?v=3">
+<link rel="stylesheet" href="/assets/hosted.css?v=4">
 <!--
   A member's public or unlisted event (Docs/2.0_Hosted_Events_Plan.md): innernetwork.app/h/<id>. Free registration
   here (with capacity and a waitlist), a link to the host's outside ticketing, or tickets sold here through Stripe
@@ -19,7 +19,7 @@
   <main id="main"><p class="status">Loading…</p></main>
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
-<script src="/assets/hosted.js?v=6"></script>
+<script src="/assets/hosted.js?v=7"></script>
 <script>
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
@@ -27,7 +27,7 @@
   var id = params.get("id") || "", paid = params.get("paid") || "";
   if (!/^[0-9a-f-]{36}$/i.test(id)) return H.fail();
 
-  H.get("?format=event&id=" + id).then(function (r) {
+  H.get("?format=event&id=" + id + "&view=1" + (H.src() ? "&src=" + encodeURIComponent(H.src()) : "")).then(function (r) {
     if (!r.ok) return H.fail();
     var e = r.body.event, left = r.body.spots_left, full = left === 0, waitlist = r.body.waitlist;
     H.accent(e);
@@ -49,7 +49,7 @@
       '<label>' + t("Phone (optional)") + '<input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>' +
       '<div class="row2"><label>' + t("Company (optional)") + '<input name="company" autocomplete="organization" maxlength="120"></label>' +
       '<label>' + t("Job title (optional)") + '<input name="title" autocomplete="organization-title" maxlength="120"></label></div>' +
-      questions.map(function (q, i) { return '<label>' + esc(q) + '<input name="q' + i + '" maxlength="500"></label>'; }).join("") +
+      H.formFields(e) + H.waiverField(e) +
       H.plusOnesFields(e.plus_ones) +
       '<input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<label class="check"><input type="checkbox" name="sms"><span>' + esc(t("sms")) + '</span></label>' +
@@ -61,7 +61,7 @@
     document.getElementById("main").innerHTML =
       '<div class="grid"><div>' + H.flyer(e) + '</div><div class="side">' +
       '<div><div class="kind">' + esc(e.kind_name) + '</div><h1>' + esc(e.name) + '</h1>' + H.facts(e) + '</div>' +
-      '<section class="panel">' + action + '</section>' + H.details(e) + '</div></div>';
+      '<section class="panel">' + action + '</section>' + H.whosGoing(r.body.guests) + H.details(e) + '</div></div>';
     if (e.ticketing === "platform" && !started) return paid ? confirmPaid() : buy(e, questions, full && !waitlist);
     var form = document.getElementById("reg");
     if (!form) return;
@@ -71,7 +71,7 @@
       var body = {
         first_name: f.first_name.value.trim(), last_name: f.last_name.value.trim(), email: f.email.value.trim(), phone: f.phone.value.trim(),
         company: f.company.value.trim(), title: f.title.value.trim(), website: f.website.value,
-        answers: questions.map(function (q, i) { return { q: q, a: f["q" + i].value.trim() }; }),
+        answers: H.formAnswers(e, form), waiver_accepted: f.waiver ? f.waiver.checked : undefined, src: H.src(),
         sms_opt_in: f.sms.checked && !!f.phone.value.trim(), consent: f.consent.checked, plus_ones: H.plusOnesValue(form)
       };
       if (!body.first_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { err.textContent = t("Please enter your name and email."); return; }
@@ -141,7 +141,7 @@
         '<label>' + t("Phone (optional)") + '<input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>' +
         '<div class="row2"><label>' + t("Company (optional)") + '<input name="company" autocomplete="organization" maxlength="120"></label>' +
         '<label>' + t("Job title (optional)") + '<input name="title" autocomplete="organization-title" maxlength="120"></label></div>' +
-        questions.map(function (q, i) { return '<label>' + esc(q) + '<input name="q' + i + '" maxlength="500"></label>'; }).join("") +
+        H.formFields(e) + H.waiverField(e) +
         '<input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
         '<label class="check"><input type="checkbox" name="sms"><span>' + esc(t("sms")) + '</span></label>' +
         '<label class="check"><input type="checkbox" name="consent"><span>' + esc(t("consent")) + '<a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a>.</span></label>' +
@@ -184,7 +184,7 @@
           event_id: id, ticket_id: k ? k.id : "", quantity: +f.quantity.value || 1, amount_cents: k && k.kind === "donation" ? unit(k) : undefined,
           first_name: f.first_name.value.trim(), last_name: f.last_name.value.trim(), email: f.email.value.trim(), phone: f.phone.value.trim(),
           company: f.company.value.trim(), title: f.title.value.trim(), website: f.website.value,
-          answers: questions.map(function (q, i) { return { q: q, a: f["q" + i].value.trim() }; }),
+          answers: H.formAnswers(e, form), waiver_accepted: f.waiver ? f.waiver.checked : undefined, src: H.src(),
           sms_opt_in: f.sms.checked && !!f.phone.value.trim(), consent: f.consent.checked, code: r.body.code ? r.body.code.code : undefined
         };
         if (!body.first_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { err.textContent = t("Please enter your name and email."); return; }
@@ -197,7 +197,7 @@
           if (res.ok && res.body.status === "paid") { box.innerHTML = '<p class="note ok">' + t("You're in. Your confirmation is on its way by email.") + '</p>'; return; }
           var code = res.body && res.body.error && res.body.error.code;
           if (code === "INVALID_AMOUNT") { err.textContent = res.body.error.message; return; }
-          if (code === "INVALID_CODE" || code === "NOT_ON_SALE") { err.textContent = t(res.body.error.message); return; }
+          if (code === "INVALID_CODE" || code === "NOT_ON_SALE" || code === "REQUIRED" || code === "WAIVER") { err.textContent = t(res.body.error.message); return; }
           err.textContent = code === "SOLD_OUT" ? t("Sold out") : code === "NOT_SET_UP" ? t("Ticket sales aren't available yet.")
             : t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't work. Please try again.");
         }).catch(function () { err.textContent = t("That didn't work. Please try again."); });

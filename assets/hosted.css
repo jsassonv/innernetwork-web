@@ -82,3 +82,12 @@ fieldset.tickets legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
 .plusones legend { font-weight: 600; margin-bottom: 4px; }
 details.code { margin: 8px 0; }
 details.code summary { cursor: pointer; color: var(--accent, #8a6a3a); }
+
+.req { color: #b4532a; }
+fieldset.multi { border: 0; padding: 0; margin: 8px 0; }
+details.waiver { margin: 8px 0; }
+details.waiver p { max-height: 220px; overflow: auto; }
+ul.going { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+ul.going li { display: flex; gap: 10px; align-items: center; }
+ul.going img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+ul.going small { display: block; color: #6b7080; }

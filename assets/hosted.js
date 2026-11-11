@@ -4,7 +4,14 @@
   var SPANISH = /^es\b/i.test(navigator.language || "");
   var ES = {
     "Loading…": "Cargando…", "Going": "Voy", "Maybe": "Quizás", "Can't go": "No puedo", "invited you": "te invitó",
-    "Zoom in": "Acercar", "Refunds": "Reembolsos", "No refunds, except if the event is cancelled.": "Sin reembolsos, salvo si el evento se cancela.",
+    "Zoom in": "Acercar", "Yes": "Sí", "No": "No", "Read the waiver": "Leer la exención de responsabilidad", "I have read and accept the waiver.": "Leí y acepto la exención de responsabilidad.",
+    "Tap OK to accept the waiver.": "Toca Aceptar para aceptar la exención de responsabilidad.", "Who's going": "Quién va", "{n} going": "{n} asistirán",
+    "Give my ticket to someone else": "Dar mi entrada a otra persona", "Their first name": "Su nombre", "Their last name": "Su apellido", "Their email": "Su correo",
+    "Done. They'll get the confirmation by email, and this link no longer works.": "Listo. Recibirá la confirmación por correo, y este enlace ya no funciona.",
+    "Please answer the required questions.": "Por favor responde las preguntas obligatorias.", "Please read and accept the waiver.": "Por favor lee y acepta la exención de responsabilidad.",
+    "Only a confirmed spot can be transferred.": "Solo se puede transferir un lugar confirmado.", "Only tickets bought here can be transferred.": "Solo se pueden transferir entradas compradas aquí.",
+    "The host doesn't allow transfers for this ticket.": "El anfitrión no permite transferir esta entrada.", "That person is already on the list.": "Esa persona ya está en la lista.",
+    "Please enter their first name, last name and email.": "Escribe su nombre, apellido y correo.", "This event can't take changes now.": "Este evento ya no acepta cambios.", "Refunds": "Reembolsos", "No refunds, except if the event is cancelled.": "Sin reembolsos, salvo si el evento se cancela.",
     "Full refund until {n} days before the event.": "Reembolso total hasta {n} días antes del evento.", "Ask the host for a refund": "Pedir un reembolso al anfitrión",
     "You asked for a refund. The host will reply by email.": "Pediste un reembolso. El anfitrión responderá por correo.",
     "Anything the host should know? (optional)": "¿Algo que el anfitrión deba saber? (opcional)", "Your request was sent to the host.": "Tu solicitud fue enviada al anfitrión.", "Bringing someone? (up to {n})": "¿Vienes con alguien? (hasta {n})", "Guest's name": "Nombre del acompañante",
@@ -110,6 +117,43 @@
       '<div class="mapzoom"><button type="button" data-zoom="1" aria-label="' + t("Zoom in") + '" title="' + t("Zoom in") + '">+</button>' +
       '<button type="button" data-zoom="-1" aria-label="' + t("Zoom out") + '" title="' + t("Zoom out") + '">\u2212</button></div></div>';
   }
+  /** Questions for guests (2080): the host's typed form (text, single choice, several choices, yes or no, required), or
+   *  the plain list. `answers` fills them in again. */
+  function formFields(e, answers) {
+    answers = answers || [];
+    var val = function (q) { var a = answers.filter(function (x) { return x.q === q; })[0]; return a ? a.a : ""; };
+    var form = Array.isArray(e.rsvp_form) && e.rsvp_form.length ? e.rsvp_form : (e.questions || []).map(function (q) { return { q: q, type: "text" }; });
+    return form.map(function (f, i) {
+      var label = esc(f.q) + (f.required ? ' <span class="req">*</span>' : ''), name = "q" + i, cur = val(f.q), opts = Array.isArray(f.options) ? f.options : [];
+      if (f.type === "choice") return '<label>' + label + '<select name="' + name + '"><option value=""></option>' + opts.map(function (o) { return '<option' + (o === cur ? " selected" : "") + '>' + esc(o) + '</option>'; }).join("") + '</select></label>';
+      if (f.type === "yesno") return '<label>' + label + '<select name="' + name + '"><option value=""></option><option value="' + t("Yes") + '"' + (cur === t("Yes") ? " selected" : "") + '>' + t("Yes") + '</option><option value="' + t("No") + '"' + (cur === t("No") ? " selected" : "") + '>' + t("No") + '</option></select></label>';
+      if (f.type === "multi") return '<fieldset class="multi"><legend>' + label + '</legend>' + opts.map(function (o) { return '<label class="check"><input type="checkbox" name="' + name + '" value="' + esc(o) + '"' + (cur.split(", ").indexOf(o) >= 0 ? " checked" : "") + '><span>' + esc(o) + '</span></label>'; }).join("") + '</fieldset>';
+      return '<label>' + label + '<input name="' + name + '" maxlength="500" value="' + esc(cur) + '"></label>';
+    }).join("");
+  }
+  function formAnswers(e, formEl) {
+    var form = Array.isArray(e.rsvp_form) && e.rsvp_form.length ? e.rsvp_form : (e.questions || []).map(function (q) { return { q: q }; });
+    return form.map(function (f, i) {
+      var els = formEl.querySelectorAll('[name="q' + i + '"]'), a = "";
+      if (els.length > 1 || (els[0] && els[0].type === "checkbox")) a = Array.prototype.filter.call(els, function (x) { return x.checked; }).map(function (x) { return x.value; }).join(", ");
+      else if (els[0]) a = els[0].value.trim();
+      return { q: f.q, a: a };
+    });
+  }
+  function waiverField(e) {
+    if (!e.waiver_text) return "";
+    return '<details class="waiver"><summary>' + t("Read the waiver") + '</summary><p class="text">' + esc(e.waiver_text) + '</p></details>' +
+      '<label class="check"><input type="checkbox" name="waiver"><span>' + t("I have read and accept the waiver.") + '</span></label>';
+  }
+  /** Who's going (2080): the count, and first names of members who show in Discovery when the host allows it. */
+  function whosGoing(gs) {
+    if (!gs || !gs.count) return "";
+    var names = Array.isArray(gs.names) ? gs.names : [];
+    return '<section class="panel"><h2>' + t("Who's going") + '</h2><p class="text">' + t("{n} going").replace("{n}", gs.count) + '</p>' +
+      (names.length ? '<ul class="going">' + names.map(function (p) { return '<li>' + (p.photo && /^https:\/\//.test(p.photo) ? '<img src="' + esc(p.photo) + '" alt="">' : '') + '<span><strong>' + esc(p.name) + '</strong><small>' + esc([p.title, p.company].filter(Boolean).join(", ")) + '</small></span></li>'; }).join("") + '</ul>' : '') + '</section>';
+  }
+  /** The ?src= tag the host put on the link (for their insights). */
+  function src() { try { return (new URLSearchParams(location.search).get("src") || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40); } catch (x) { return ""; } }
   /** The host's refund rule (2079), shown before buying and on the buyer's page. */
   function refundLine(e) {
     var line = e.refund_rule === "none" ? t("No refunds, except if the event is cancelled.")
@@ -133,6 +177,8 @@
   function ruleError(res) {
     var c = res.body && res.body.error;
     if (c === "full") return t("This event is full.");
+    if (c === "required_missing") return t("Please answer the required questions.");
+    if (c === "waiver_missing") return t("Please read and accept the waiver.");
     if (c === "answers_closed") return t("Answers are closed.");
     if (c === "maybe_off") return t("The host asked for a yes or no.");
     if (c === "too_many_guests") return t("That's more guests than the host allows.");
@@ -196,7 +242,7 @@
   }
   function fail(msg) { var m = document.getElementById("main"); m.innerHTML = '<p class="status">' + esc(msg || t("This page isn't available.")) + '</p>'; }
 
-  window.HOSTED = { refundLine: refundLine, plusOnesFields: plusOnesFields, plusOnesValue: plusOnesValue, ruleError: ruleError, drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
+  window.HOSTED = { formFields: formFields, formAnswers: formAnswers, waiverField: waiverField, whosGoing: whosGoing, src: src, refundLine: refundLine, plusOnesFields: plusOnesFields, plusOnesValue: plusOnesValue, ruleError: ruleError, drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
     tget: tget, tpost: tpost, money: money };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setLang(); }); else setLang();
 })();
