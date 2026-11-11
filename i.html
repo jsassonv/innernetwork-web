@@ -8,7 +8,7 @@
 <meta name="referrer" content="no-referrer" />
 <title>Invitation · Inner Network</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
-<link rel="stylesheet" href="/assets/hosted.css?v=2">
+<link rel="stylesheet" href="/assets/hosted.css?v=3">
 <!--
   A guest's own invitation (Docs/2.0_Hosted_Events_Plan.md): innernetwork.app/i/<token>, from the invitation email.
   The token is the only key, so the page never shows anyone else's details. ?a=going|maybe|declined answers straight
@@ -22,7 +22,7 @@
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
 <script src="/assets/qrcode.js"></script>
-<script src="/assets/hosted.js?v=4"></script>
+<script src="/assets/hosted.js?v=5"></script>
 <script>
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
@@ -34,6 +34,7 @@
 
   function render(message) {
     var e = data.event, g = data.guest, going = g.status === "going";
+    var closed = !!(e.rsvp_by && new Date(e.rsvp_by).getTime() < Date.now());
     var ended = new Date(e.ends_at).getTime() < Date.now();
     // Only an invitation says "invited you"; someone who registered themselves just sees their answer.
     var inviters = g.source === "host" ? H.hostNames(data.inviters) : "";
@@ -51,17 +52,22 @@
       H.facts(e) + '</div>' +
       (ended ? '<p class="note">' + t("This event has ended.") + '</p>' :
         '<section class="panel" aria-labelledby="ans"><h2 id="ans">' + t(g.status === "invited" ? "Answer this invitation" : "Your answer") + '</h2>' +
-        '<div class="answers">' + choice("going", "👍", "Going") + choice("maybe", "🤔", "Maybe") + choice("declined", "🙁", "Can't go") + '</div>' +
+        (closed ? '<p class="note">' + t("Answers are closed. You can still tell the host you can't go.") + '</p>' : '') +
+        (g.status === "pending" ? '<p class="note">' + t("Your request was sent. The host will confirm by email.") + '</p>' : '') +
+        '<div class="answers">' + (closed && g.status !== "going" ? '' : choice("going", "👍", e.require_approval && g.status !== "going" && g.status !== "pending" ? "Request to join" : "Going")) +
+          (e.allow_maybe === false || closed ? '' : choice("maybe", "🤔", "Maybe")) + choice("declined", "🙁", "Can't go") + '</div>' +
+        (e.rsvp_by && !closed ? '<p class="note">' + t("Answers close") + ' ' + esc(new Date(e.rsvp_by).toLocaleString()) + '</p>' : '') +
         '<p class="err" id="err" role="alert"></p>' +
         (message ? '<p class="ok" role="status">' + esc(message) + '</p>' : '') +
         (going ? '<p style="margin:10px 0 0"><a class="btn out" href="' + H.FN + '?format=ics&token=' + token + '">' + t("Add to calendar") + '</a></p>' : '') +
         (going && g.checkin_code ? '<div class="ticket"><canvas id="ticketqr" width="180" height="180" aria-label="' + t("Check-in code") + '"></canvas>' +
           '<p><strong>' + esc(g.checkin_code) + '</strong><br><span class="note">' + t("Show this at the door to check in.") + '</span></p></div>' : '') +
-        (going && (questions.length || data.texts_available) ?
+        (going && (questions.length || data.texts_available || e.plus_ones > 0) ?
           '<form id="more" style="margin-top:14px">' +
           questions.map(function (q, i) { return '<label>' + esc(q) + '<input name="q' + i + '" maxlength="500" value="' + esc(answerOf(q)) + '"></label>'; }).join("") +
           (data.texts_available ? '<label class="check"><input type="checkbox" name="sms"' + (g.sms_opt_in ? " checked" : "") + '><span>' + esc(t("sms")) + '</span></label>' +
             '<label>' + t("Mobile phone") + '<input name="phone" type="tel" autocomplete="tel" maxlength="30" placeholder="' + (g.has_phone ? "••• ••• ••••" : "") + '"></label>' : '') +
+          H.plusOnesFields(e.plus_ones, g.plus_ones) +
           '<button class="btn" type="submit">' + t("Save") + '</button></form>' : '') +
         '</section>') +
       H.details(e) + '</div></div>';
@@ -73,22 +79,24 @@
       answer("going", {
         answers: questions.map(function (q, i) { return { q: q, a: (more.elements["q" + i] || {}).value || "" }; }),
         sms_opt_in: !!(more.elements.sms && more.elements.sms.checked),
-        phone: more.elements.phone ? more.elements.phone.value : ""
+        phone: more.elements.phone ? more.elements.phone.value : "",
+        plus_ones: H.plusOnesValue(more)
       }, t("Saved."));
     });
   }
 
   function answer(status, extra, okMessage) {
-    var body = Object.assign({ status: status, answers: data.guest.answers || [] }, extra || {});
+    var body = Object.assign({ status: status, answers: data.guest.answers || [], plus_ones: data.guest.plus_ones || [] }, extra || {});
     var err = document.getElementById("err"); if (err) err.textContent = t("Sending…");
     H.post("?format=rsvp&token=" + token, body).then(function (r) {
       if (!r.ok) {
-        if (err) err.textContent = r.body && r.body.error === "full" ? t("This event is full.") : t(r.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't work. Please try again.");
+        if (err) err.textContent = H.ruleError(r);
         return;
       }
       data.guest.status = r.body.status;
+      data.guest.plus_ones = r.body.status === "going" ? (body.plus_ones || []) : [];
       if (extra) { data.guest.answers = body.answers; data.guest.sms_opt_in = body.sms_opt_in; if (body.phone) data.guest.has_phone = true; }
-      render(okMessage || (r.body.status === "going" ? t("You're going. See you there.") : r.body.status === "waitlist" ? t("You're on the waitlist. We'll email you if a spot opens.") : t("Thanks, we let the host know.")));
+      render(okMessage || (r.body.status === "going" ? t("You're going. See you there.") : r.body.status === "waitlist" ? t("You're on the waitlist. We'll email you if a spot opens.") : r.body.status === "pending" ? t("Your request was sent. The host will confirm by email.") : t("Thanks, we let the host know.")));
     }).catch(function () { if (err) err.textContent = t("That didn't work. Please try again."); });
   }
 

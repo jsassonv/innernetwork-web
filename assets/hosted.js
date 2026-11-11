@@ -4,7 +4,15 @@
   var SPANISH = /^es\b/i.test(navigator.language || "");
   var ES = {
     "Loading…": "Cargando…", "Going": "Voy", "Maybe": "Quizás", "Can't go": "No puedo", "invited you": "te invitó",
-    "Zoom in": "Acercar", "Check-in code": "Código de registro", "Show this at the door to check in.": "Muéstralo en la entrada para registrarte.", "Zoom out": "Alejar", "When": "Cuándo", "Where": "Dónde", "Hosted by": "Organiza", "Details": "Detalles", "What to know": "Lo que debes saber",
+    "Zoom in": "Acercar", "Bringing someone? (up to {n})": "¿Vienes con alguien? (hasta {n})", "Guest's name": "Nombre del acompañante",
+    "Answers are closed.": "Las respuestas están cerradas.", "The host asked for a yes or no.": "El anfitrión pidió un sí o un no.",
+    "That's more guests than the host allows.": "Son más acompañantes de los que permite el anfitrión.", "Registration is closed.": "El registro está cerrado.",
+    "The host reviews each request and confirms by email.": "El anfitrión revisa cada solicitud y confirma por correo.", "Registration closes": "El registro cierra",
+    "Request to join": "Solicitar unirme", "Your request was sent. The host will confirm by email.": "Tu solicitud fue enviada. El anfitrión confirmará por correo.",
+    "Answers close": "Las respuestas cierran", "Answers are closed. You can still tell the host you can't go.": "Las respuestas están cerradas. Aún puedes avisar que no podrás ir.",
+    "Tickets go on sale": "Las entradas salen a la venta", "Code applied": "Código aplicado", "Have a code?": "¿Tienes un código?", "Apply": "Aplicar",
+    "That code isn't valid.": "Ese código no es válido.", "Sales for this ticket haven't started.": "La venta de esta entrada aún no empieza.",
+    "Sales for this ticket have ended.": "La venta de esta entrada terminó.", "Check-in code": "Código de registro", "Show this at the door to check in.": "Muéstralo en la entrada para registrarte.", "Zoom out": "Alejar", "When": "Cuándo", "Where": "Dónde", "Hosted by": "Organiza", "Details": "Detalles", "What to know": "Lo que debes saber",
     "Your answer": "Tu respuesta", "Add to calendar": "Agregar al calendario", "Text me reminders": "Envíenme recordatorios por mensaje de texto",
     "Mobile phone": "Teléfono móvil", "Save": "Guardar", "Saved.": "Guardado.", "Sending…": "Enviando…",
     "You're going. See you there.": "Vas a ir. Nos vemos allí.", "Thanks, we let the host know.": "Gracias, se lo avisamos al anfitrión.",
@@ -99,6 +107,27 @@
       '<div class="mapzoom"><button type="button" data-zoom="1" aria-label="' + t("Zoom in") + '" title="' + t("Zoom in") + '">+</button>' +
       '<button type="button" data-zoom="-1" aria-label="' + t("Zoom out") + '" title="' + t("Zoom out") + '">\u2212</button></div></div>';
   }
+  /** Plus-ones (2078): one name field per extra guest the host allows. */
+  function plusOnesFields(max, names) {
+    max = Math.min(10, Number(max) || 0); names = names || [];
+    if (!max) return "";
+    var html = '<fieldset class="plusones"><legend>' + t("Bringing someone? (up to {n})").replace("{n}", max) + '</legend>';
+    for (var i = 0; i < max; i++) html += '<input name="plus' + i + '" maxlength="80" placeholder="' + t("Guest's name") + '" value="' + esc(names[i] || "") + '">';
+    return html + '</fieldset>';
+  }
+  function plusOnesValue(form) {
+    var out = []; for (var i = 0; i < 10; i++) { var el = form.elements["plus" + i]; if (el && el.value.trim()) out.push(el.value.trim()); }
+    return out;
+  }
+  /** Turns a refused answer into words (2078 rules). */
+  function ruleError(res) {
+    var c = res.body && res.body.error;
+    if (c === "full") return t("This event is full.");
+    if (c === "answers_closed") return t("Answers are closed.");
+    if (c === "maybe_off") return t("The host asked for a yes or no.");
+    if (c === "too_many_guests") return t("That's more guests than the host allows.");
+    return t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't work. Please try again.");
+  }
   /** The guest's check-in QR (2074): drawn after each render when the page has a #ticketqr canvas. */
   function drawTicket(code) {
     var cv = document.getElementById("ticketqr"); if (!cv || !window.QRCodeLib || !code) return;
@@ -157,7 +186,7 @@
   }
   function fail(msg) { var m = document.getElementById("main"); m.innerHTML = '<p class="status">' + esc(msg || t("This page isn't available.")) + '</p>'; }
 
-  window.HOSTED = { drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
+  window.HOSTED = { plusOnesFields: plusOnesFields, plusOnesValue: plusOnesValue, ruleError: ruleError, drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
     tget: tget, tpost: tpost, money: money };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setLang(); }); else setLang();
 })();

@@ -77,3 +77,8 @@ fieldset.tickets legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
 .ticket canvas { width: 140px; height: 140px; flex: none; }
 .ticket p { margin: 0; font-size: 18px; letter-spacing: 2px; }
 .ticket .note { font-size: 13px; letter-spacing: 0; }
+
+.plusones { border: 0; padding: 0; margin: 10px 0; display: grid; gap: 6px; }
+.plusones legend { font-weight: 600; margin-bottom: 4px; }
+details.code { margin: 8px 0; }
+details.code summary { cursor: pointer; color: var(--accent, #8a6a3a); }
