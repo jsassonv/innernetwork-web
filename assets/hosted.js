@@ -4,7 +4,10 @@
   var SPANISH = /^es\b/i.test(navigator.language || "");
   var ES = {
     "Loading…": "Cargando…", "Going": "Voy", "Maybe": "Quizás", "Can't go": "No puedo", "invited you": "te invitó",
-    "Zoom in": "Acercar", "Yes": "Sí", "No": "No", "Read the waiver": "Leer la exención de responsabilidad", "I have read and accept the waiver.": "Leí y acepto la exención de responsabilidad.",
+    "Zoom in": "Acercar", "You're opted out": "Ya no recibirás correos", "You won't get event emails from any Inner Network host at this address.": "No recibirás correos de eventos de ningún anfitrión de Inner Network en esta dirección.",
+    "Stop event emails": "Dejar de recibir correos de eventos", "Enter your email and we'll send a link to confirm. After that, no Inner Network host can email you about events at this address.": "Escribe tu correo y te enviaremos un enlace para confirmar. Después, ningún anfitrión de Inner Network podrá escribirte sobre eventos a esta dirección.",
+    "Send the link": "Enviar el enlace", "To stop texts, reply STOP to any text from us.": "Para dejar de recibir mensajes de texto, responde STOP a cualquiera de ellos.",
+    "Check your email": "Revisa tu correo", "Open the link we sent to finish.": "Abre el enlace que te enviamos para terminar.", "Yes": "Sí", "No": "No", "Read the waiver": "Leer la exención de responsabilidad", "I have read and accept the waiver.": "Leí y acepto la exención de responsabilidad.",
     "Tap OK to accept the waiver.": "Toca Aceptar para aceptar la exención de responsabilidad.", "Who's going": "Quién va", "{n} going": "{n} asistirán",
     "Give my ticket to someone else": "Dar mi entrada a otra persona", "Their first name": "Su nombre", "Their last name": "Su apellido", "Their email": "Su correo",
     "Done. They'll get the confirmation by email, and this link no longer works.": "Listo. Recibirá la confirmación por correo, y este enlace ya no funciona.",
