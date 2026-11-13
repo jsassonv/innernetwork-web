@@ -1,0 +1,251 @@
+/* Hosted events pages: shared pieces (the event-mail function's address, Spanish, escaping, the event's facts). */
+(function () {
+  var FN = "https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/event-mail";
+  var SPANISH = /^es\b/i.test(navigator.language || "");
+  var ES = {
+    "Loading…": "Cargando…", "Going": "Voy", "Maybe": "Quizás", "Can't go": "No puedo", "invited you": "te invitó",
+    "Zoom in": "Acercar", "You're opted out": "Ya no recibirás correos", "You won't get event emails from any Inner Network host at this address.": "No recibirás correos de eventos de ningún anfitrión de Inner Network en esta dirección.",
+    "Stop event emails": "Dejar de recibir correos de eventos", "Enter your email and we'll send a link to confirm. After that, no Inner Network host can email you about events at this address.": "Escribe tu correo y te enviaremos un enlace para confirmar. Después, ningún anfitrión de Inner Network podrá escribirte sobre eventos a esta dirección.",
+    "Send the link": "Enviar el enlace", "To stop texts, reply STOP to any text from us.": "Para dejar de recibir mensajes de texto, responde STOP a cualquiera de ellos.",
+    "Check your email": "Revisa tu correo", "Open the link we sent to finish.": "Abre el enlace que te enviamos para terminar.", "Yes": "Sí", "No": "No", "Read the waiver": "Leer la exención de responsabilidad", "I have read and accept the waiver.": "Leí y acepto la exención de responsabilidad.",
+    "Tap OK to accept the waiver.": "Toca Aceptar para aceptar la exención de responsabilidad.", "Who's going": "Quién va", "{n} going": "{n} asistirán",
+    "Give my ticket to someone else": "Dar mi entrada a otra persona", "Their first name": "Su nombre", "Their last name": "Su apellido", "Their email": "Su correo",
+    "Done. They'll get the confirmation by email, and this link no longer works.": "Listo. Recibirá la confirmación por correo, y este enlace ya no funciona.",
+    "Please answer the required questions.": "Por favor responde las preguntas obligatorias.", "Please read and accept the waiver.": "Por favor lee y acepta la exención de responsabilidad.",
+    "Only a confirmed spot can be transferred.": "Solo se puede transferir un lugar confirmado.", "Only tickets bought here can be transferred.": "Solo se pueden transferir entradas compradas aquí.",
+    "The host doesn't allow transfers for this ticket.": "El anfitrión no permite transferir esta entrada.", "That person is already on the list.": "Esa persona ya está en la lista.",
+    "Please enter their first name, last name and email.": "Escribe su nombre, apellido y correo.", "This event can't take changes now.": "Este evento ya no acepta cambios.", "Refunds": "Reembolsos", "No refunds, except if the event is cancelled.": "Sin reembolsos, salvo si el evento se cancela.",
+    "Full refund until {n} days before the event.": "Reembolso total hasta {n} días antes del evento.", "Ask the host for a refund": "Pedir un reembolso al anfitrión",
+    "You asked for a refund. The host will reply by email.": "Pediste un reembolso. El anfitrión responderá por correo.",
+    "Anything the host should know? (optional)": "¿Algo que el anfitrión deba saber? (opcional)", "Your request was sent to the host.": "Tu solicitud fue enviada al anfitrión.", "Bringing someone? (up to {n})": "¿Vienes con alguien? (hasta {n})", "Guest's name": "Nombre del acompañante",
+    "Answers are closed.": "Las respuestas están cerradas.", "The host asked for a yes or no.": "El anfitrión pidió un sí o un no.",
+    "That's more guests than the host allows.": "Son más acompañantes de los que permite el anfitrión.", "Registration is closed.": "El registro está cerrado.",
+    "The host reviews each request and confirms by email.": "El anfitrión revisa cada solicitud y confirma por correo.", "Registration closes": "El registro cierra",
+    "Request to join": "Solicitar unirme", "Your request was sent. The host will confirm by email.": "Tu solicitud fue enviada. El anfitrión confirmará por correo.",
+    "Answers close": "Las respuestas cierran", "Answers are closed. You can still tell the host you can't go.": "Las respuestas están cerradas. Aún puedes avisar que no podrás ir.",
+    "Tickets go on sale": "Las entradas salen a la venta", "Code applied": "Código aplicado", "Have a code?": "¿Tienes un código?", "Apply": "Aplicar",
+    "That code isn't valid.": "Ese código no es válido.", "Sales for this ticket haven't started.": "La venta de esta entrada aún no empieza.",
+    "Sales for this ticket have ended.": "La venta de esta entrada terminó.", "Check-in code": "Código de registro", "Show this at the door to check in.": "Muéstralo en la entrada para registrarte.", "Zoom out": "Alejar", "When": "Cuándo", "Where": "Dónde", "Hosted by": "Organiza", "Details": "Detalles", "What to know": "Lo que debes saber",
+    "Your answer": "Tu respuesta", "Add to calendar": "Agregar al calendario", "Text me reminders": "Envíenme recordatorios por mensaje de texto",
+    "Mobile phone": "Teléfono móvil", "Save": "Guardar", "Saved.": "Guardado.", "Sending…": "Enviando…",
+    "You're going. See you there.": "Vas a ir. Nos vemos allí.", "Thanks, we let the host know.": "Gracias, se lo avisamos al anfitrión.",
+    "You're on the waitlist. We'll email you if a spot opens.": "Estás en la lista de espera. Te escribiremos si se libera un lugar.",
+    "This event is full.": "Este evento está lleno.", "That didn't work. Please try again.": "No funcionó. Inténtalo de nuevo.",
+    "Too many tries. Please wait a few minutes.": "Demasiados intentos. Espera unos minutos.",
+    "You won't get more emails about this event.": "No recibirás más correos sobre este evento.",
+    "Confirmed. Thank you.": "Confirmado. Gracias.", "This page isn't available.": "Esta página no está disponible.",
+    "Register": "Registrarme", "Get tickets": "Comprar entradas", "First name": "Nombre", "Last name": "Apellido", "Email": "Correo electrónico",
+    "Phone (optional)": "Teléfono (opcional)", "Company (optional)": "Empresa (opcional)", "Job title (optional)": "Cargo (opcional)",
+    "spots left": "lugares disponibles", "Join the waitlist": "Unirme a la lista de espera",
+    "consent": "Acepto compartir estos datos con los anfitriones de este evento. Inner Network los guarda solo para este evento. ",
+    "sms": "Envíenme recordatorios de este evento por mensaje de texto. Pueden aplicar tarifas de mensajes. Responde STOP para dejar de recibirlos.",
+    "Privacy Policy": "Política de Privacidad", "Please tick the box to agree.": "Marca la casilla para aceptar.",
+    "Please enter your name and email.": "Escribe tu nombre y correo electrónico.", "Online": "En línea", "Cancellation policy": "Política de cancelación",
+    "Headcount": "Asistentes", "people": "personas", "Send request": "Enviar solicitud", "What would you like to request?": "¿Qué te gustaría solicitar?",
+    "Topic": "Tema", "Tell them more (optional)": "Cuéntales más (opcional)", "Preferred dates and times (up to 3)": "Fechas y horas preferidas (hasta 3)",
+    "Request sent. You'll get an email when they answer.": "Solicitud enviada. Recibirás un correo cuando respondan.",
+    "Request a meeting": "Solicitar una reunión", "minutes": "minutos", "Answer this invitation": "Responde esta invitación",
+    "This event has ended.": "Este evento ya terminó.",
+    "Invitation": "Invitación", "Event": "Evento",
+    "Tickets": "Entradas", "Quantity": "Cantidad", "Sold out": "Agotadas", "left": "disponibles", "Total": "Total",
+    "Continue to payment": "Continuar al pago", "Confirming your payment…": "Confirmando tu pago…",
+    "Payment received. Your confirmation is on its way by email.": "Pago recibido. Tu confirmación va en camino por correo.",
+    "Ticket sales aren't available yet.": "La venta de entradas aún no está disponible.",
+    "We couldn't confirm the payment yet. Check your email in a few minutes.": "Aún no pudimos confirmar el pago. Revisa tu correo en unos minutos.",
+    "Free": "Gratis", "Donation": "Donación", "Your amount": "Tu monto", "Suggested": "Sugerido", "at least": "mínimo",
+    "Get my ticket": "Obtener mi entrada", "Not available yet": "Aún no disponible",
+    "You're in. Your confirmation is on its way by email.": "Ya estás dentro. Tu confirmación va en camino por correo.",
+    "Please enter an amount.": "Escribe un monto.", "Ages": "Edades", "All ages": "Todas las edades", "Parking": "Estacionamiento",
+    "Location": "Ubicación", "Open in Google Maps": "Abrir en Google Maps", "Map": "Mapa", "Hosted by": "Organizado por"
+  };
+  var EN = {
+    consent: "I agree to share these details with this event's hosts. Inner Network keeps them only for this event. ",
+    sms: "Text me reminders about this event. Message rates may apply. Reply STOP to opt out."
+  };
+  function t(k) { return (SPANISH ? ES[k] : EN[k]) || k; }
+  /** Spanish when the visitor's browser is Spanish or the event (or request type) was made in Spanish. */
+  function setLang(l) {
+    SPANISH = SPANISH || l === "es";
+    document.documentElement.lang = SPANISH ? "es" : "en";
+    if (window.HOSTED) window.HOSTED.SPANISH = SPANISH;
+    if (SPANISH) {
+      var parts = document.title.split(" · ");
+      if (ES[parts[0]]) document.title = ES[parts[0]] + " · " + parts.slice(1).join(" · ");
+      var st = document.querySelector("#main > p.status");
+      if (st && ES[st.textContent]) st.textContent = ES[st.textContent];
+    }
+  }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  var ICON = {
+    cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+    person: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+    id: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h4M14 14h4"/></svg>',
+    people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.4 3.2-5.2 6.5-5.2s5.9 1.8 6.5 5.2M16 5.6a3.4 3.4 0 0 1 0 6.4M18 14.9c1.9.6 3.1 2.2 3.5 5.1"/></svg>'
+  };
+  function hostNames(h) { h = (h || []).filter(Boolean); return h.length <= 1 ? (h[0] || "") : h.slice(0, -1).join(", ") + (SPANISH ? " y " : " and ") + h[h.length - 1]; }
+  function https(u) { return typeof u === "string" && /^https:\/\/[^\s<>"]+$/.test(u) ? u : ""; }
+  function accent(e) { var a = /^#[0-9A-Fa-f]{6}$/.test(e.accent_hex) ? e.accent_hex : "#B08D57"; document.documentElement.style.setProperty("--accent", a); return a; }
+
+  /** The flyer (or a colored panel with the name) and the facts list. */
+  function flyer(e) {
+    return https(e.cover_url) ? '<img class="flyer" src="' + esc(e.cover_url) + '" alt="">'
+      : '<div class="flyer none" style="background:' + esc(accent(e)) + '">' + esc(e.name) + '</div>';
+  }
+  /** Who it's by (2059): the organization for a company event, else the hosts. */
+  function hostedBy(e) {
+    var o = e.organizer;
+    if (o && o.kind === "company" && o.name) return o.name;
+    return hostNames(e.hosts);
+  }
+  function facts(e) {
+    var online = https(e.online_url), age = e.age_restriction === "18" || e.age_restriction === "21" ? e.age_restriction + "+" : "";
+    return '<ul class="facts">' +
+      '<li>' + ICON.cal + '<span><strong>' + esc(e.when.date) + '</strong>' + (e.when.time ? '<small>' + esc(e.when.time) + '</small>' : '') + '</span></li>' +
+      (e.place ? '<li>' + ICON.pin + '<span><strong>' + esc(e.venue_name || e.place) + '</strong>' + (e.venue_address && e.venue_name ? '<small>' + esc(e.venue_address) + '</small>' : '') +
+        (online ? '<small><a href="' + esc(online) + '" target="_blank" rel="noopener noreferrer">' + esc(online.replace(/^https:\/\//, "")) + '</a></small>' : '') + '</span></li>' : '') +
+      (hostedBy(e) ? '<li>' + ICON.person + '<span><small>' + t("Hosted by") + '</small><strong>' + esc(hostedBy(e)) + '</strong></span></li>' : '') +
+      (age ? '<li>' + ICON.id + '<span><small>' + t("Ages") + '</small><strong>' + age + '</strong></span></li>' : '') +
+      (e.headcount ? '<li>' + ICON.people + '<span><small>' + t("Headcount") + '</small><strong>' + esc(e.headcount) + ' ' + t("people") + '</strong></span></li>' : '') +
+      '</ul>';
+  }
+  /** The map picture with + / - buttons in its corner: the server signs one picture per zoom level; the buttons swap between them. */
+  function mapBox(e, map) {
+    var z = e.map_zooms, levels = z && z.levels && z.levels.length > 1 ? z.levels.filter(function (l) { return https(l.url); }) : [];
+    var idx = 0;
+    for (var i = 0; i < levels.length; i++) if (levels[i].z === z.start) idx = i;
+    var img = '<img class="map" src="' + esc(levels.length ? levels[idx].url : map) + '" alt="' + t("Map") + '" loading="lazy" onerror="this.remove()">';
+    if (levels.length < 2) return img;
+    return '<div class="mapbox" data-i="' + idx + '" data-urls="' + esc(JSON.stringify(levels.map(function (l) { return l.url; }))) + '">' + img +
+      '<div class="mapzoom"><button type="button" data-zoom="1" aria-label="' + t("Zoom in") + '" title="' + t("Zoom in") + '">+</button>' +
+      '<button type="button" data-zoom="-1" aria-label="' + t("Zoom out") + '" title="' + t("Zoom out") + '">\u2212</button></div></div>';
+  }
+  /** Questions for guests (2080): the host's typed form (text, single choice, several choices, yes or no, required), or
+   *  the plain list. `answers` fills them in again. */
+  function formFields(e, answers) {
+    answers = answers || [];
+    var val = function (q) { var a = answers.filter(function (x) { return x.q === q; })[0]; return a ? a.a : ""; };
+    var form = Array.isArray(e.rsvp_form) && e.rsvp_form.length ? e.rsvp_form : (e.questions || []).map(function (q) { return { q: q, type: "text" }; });
+    return form.map(function (f, i) {
+      var label = esc(f.q) + (f.required ? ' <span class="req">*</span>' : ''), name = "q" + i, cur = val(f.q), opts = Array.isArray(f.options) ? f.options : [];
+      if (f.type === "choice") return '<label>' + label + '<select name="' + name + '"><option value=""></option>' + opts.map(function (o) { return '<option' + (o === cur ? " selected" : "") + '>' + esc(o) + '</option>'; }).join("") + '</select></label>';
+      if (f.type === "yesno") return '<label>' + label + '<select name="' + name + '"><option value=""></option><option value="' + t("Yes") + '"' + (cur === t("Yes") ? " selected" : "") + '>' + t("Yes") + '</option><option value="' + t("No") + '"' + (cur === t("No") ? " selected" : "") + '>' + t("No") + '</option></select></label>';
+      if (f.type === "multi") return '<fieldset class="multi"><legend>' + label + '</legend>' + opts.map(function (o) { return '<label class="check"><input type="checkbox" name="' + name + '" value="' + esc(o) + '"' + (cur.split(", ").indexOf(o) >= 0 ? " checked" : "") + '><span>' + esc(o) + '</span></label>'; }).join("") + '</fieldset>';
+      return '<label>' + label + '<input name="' + name + '" maxlength="500" value="' + esc(cur) + '"></label>';
+    }).join("");
+  }
+  function formAnswers(e, formEl) {
+    var form = Array.isArray(e.rsvp_form) && e.rsvp_form.length ? e.rsvp_form : (e.questions || []).map(function (q) { return { q: q }; });
+    return form.map(function (f, i) {
+      var els = formEl.querySelectorAll('[name="q' + i + '"]'), a = "";
+      if (els.length > 1 || (els[0] && els[0].type === "checkbox")) a = Array.prototype.filter.call(els, function (x) { return x.checked; }).map(function (x) { return x.value; }).join(", ");
+      else if (els[0]) a = els[0].value.trim();
+      return { q: f.q, a: a };
+    });
+  }
+  function waiverField(e) {
+    if (!e.waiver_text) return "";
+    return '<details class="waiver"><summary>' + t("Read the waiver") + '</summary><p class="text">' + esc(e.waiver_text) + '</p></details>' +
+      '<label class="check"><input type="checkbox" name="waiver"><span>' + t("I have read and accept the waiver.") + '</span></label>';
+  }
+  /** Who's going (2080): the count, and first names of members who show in Discovery when the host allows it. */
+  function whosGoing(gs) {
+    if (!gs || !gs.count) return "";
+    var names = Array.isArray(gs.names) ? gs.names : [];
+    return '<section class="panel"><h2>' + t("Who's going") + '</h2><p class="text">' + t("{n} going").replace("{n}", gs.count) + '</p>' +
+      (names.length ? '<ul class="going">' + names.map(function (p) { return '<li>' + (p.photo && /^https:\/\//.test(p.photo) ? '<img src="' + esc(p.photo) + '" alt="">' : '') + '<span><strong>' + esc(p.name) + '</strong><small>' + esc([p.title, p.company].filter(Boolean).join(", ")) + '</small></span></li>'; }).join("") + '</ul>' : '') + '</section>';
+  }
+  /** The ?src= tag the host put on the link (for their insights). */
+  function src() { try { return (new URLSearchParams(location.search).get("src") || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40); } catch (x) { return ""; } }
+  /** The host's refund rule (2079), shown before buying and on the buyer's page. */
+  function refundLine(e) {
+    var line = e.refund_rule === "none" ? t("No refunds, except if the event is cancelled.")
+      : e.refund_rule === "until_days" && e.refund_until_days != null ? t("Full refund until {n} days before the event.").replace("{n}", e.refund_until_days) : "";
+    var text = [line, e.refund_policy || ""].filter(Boolean).join(" ");
+    return text ? '<p class="note">' + t("Refunds") + ': ' + esc(text) + '</p>' : '';
+  }
+  /** Plus-ones (2078): one name field per extra guest the host allows. */
+  function plusOnesFields(max, names) {
+    max = Math.min(10, Number(max) || 0); names = names || [];
+    if (!max) return "";
+    var html = '<fieldset class="plusones"><legend>' + t("Bringing someone? (up to {n})").replace("{n}", max) + '</legend>';
+    for (var i = 0; i < max; i++) html += '<input name="plus' + i + '" maxlength="80" placeholder="' + t("Guest's name") + '" value="' + esc(names[i] || "") + '">';
+    return html + '</fieldset>';
+  }
+  function plusOnesValue(form) {
+    var out = []; for (var i = 0; i < 10; i++) { var el = form.elements["plus" + i]; if (el && el.value.trim()) out.push(el.value.trim()); }
+    return out;
+  }
+  /** Turns a refused answer into words (2078 rules). */
+  function ruleError(res) {
+    var c = res.body && res.body.error;
+    if (c === "full") return t("This event is full.");
+    if (c === "required_missing") return t("Please answer the required questions.");
+    if (c === "waiver_missing") return t("Please read and accept the waiver.");
+    if (c === "answers_closed") return t("Answers are closed.");
+    if (c === "maybe_off") return t("The host asked for a yes or no.");
+    if (c === "too_many_guests") return t("That's more guests than the host allows.");
+    return t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't work. Please try again.");
+  }
+  /** The guest's check-in QR (2074): drawn after each render when the page has a #ticketqr canvas. */
+  function drawTicket(code) {
+    var cv = document.getElementById("ticketqr"); if (!cv || !window.QRCodeLib || !code) return;
+    var q = new window.QRCodeLib.QRCode(-1, window.QRCodeLib.ErrorCorrectLevel.M); q.addData(code); q.make();
+    var n = q.getModuleCount(), g = cv.getContext("2d"), size = cv.width, s = Math.floor(size / (n + 4)), off = Math.floor((size - s * n) / 2);
+    g.fillStyle = "#FFFFFF"; g.fillRect(0, 0, size, size); g.fillStyle = "#1B1F2B";
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q.isDark(r, c)) g.fillRect(off + c * s, off + r * s, s, s);
+  }
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest(".mapzoom button");
+    if (!b) return;
+    var box = b.closest(".mapbox"), urls;
+    try { urls = JSON.parse(box.getAttribute("data-urls")); } catch (x) { return; }
+    var i = Math.max(0, Math.min(urls.length - 1, Number(box.getAttribute("data-i")) + Number(b.getAttribute("data-zoom"))));
+    box.setAttribute("data-i", String(i));
+    var img = box.querySelector("img"); if (img) img.src = urls[i];
+    var btns = box.querySelectorAll(".mapzoom button");
+    btns[0].disabled = i >= urls.length - 1; btns[1].disabled = i <= 0;
+  });
+  /** The map square and parking (2059). The map link is signed by the server; no Google key on the page. */
+  function where(e) {
+    var map = https(e.map_url), addr = [e.venue_name, e.venue_address].filter(Boolean).join(", ");
+    var gm = addr ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addr) : "";
+    return (map || e.parking_info ? '<section class="panel"><h2>' + t("Location") + '</h2>' +
+      (map ? mapBox(e, map) : '') +
+      (addr ? '<p class="text">' + esc(e.place_kind === "city" ? e.venue_address || addr : addr) + (gm ? ' <a href="' + esc(gm) + '" target="_blank" rel="noopener noreferrer">' + t("Open in Google Maps") + '</a>' : '') + '</p>' : '') +
+      (e.parking_info ? '<p class="text" style="margin-top:10px"><strong>' + t("Parking") + ':</strong> ' + esc(e.parking_info) + '</p>' : '') +
+      '</section>' : '');
+  }
+  function details(e) {
+    return where(e) + (e.description ? '<section class="panel"><h2>' + t("Details") + '</h2><p class="text">' + esc(e.description) + '</p></section>' : '') +
+      (e.requirements ? '<section class="panel"><h2>' + t("What to know") + '</h2><p class="text">' + esc(e.requirements) + '</p>' +
+        (e.cancellation_policy ? '<p class="note" style="margin-top:10px">' + t("Cancellation policy") + ': ' + esc(e.cancellation_policy) + '</p>' : '') + '</section>' : '');
+  }
+  function post(query, body) {
+    return fetch(FN + query, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body || {}) })
+      .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, status: r.status, body: b }; }); });
+  }
+  /** Tickets sold in Inner Network (step F): the tickets function sits next to event-mail. */
+  var TK = FN.replace(/event-mail$/, "tickets");
+  function tget(path) { return fetch(TK + path).then(function (r) { return r.json().then(function (b) { return { ok: r.ok, status: r.status, body: b }; }); }); }
+  function tpost(path, body) {
+    return fetch(TK + path, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body || {}) })
+      .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, status: r.status, body: b }; }); });
+  }
+  /** $25, or $25.50 (US dollars). */
+  function money(cents) { var d = cents / 100; return "$" + (cents % 100 ? d.toFixed(2) : String(d)); }
+  function get(query) {
+    // ?lang=es asks the function for Spanish dates; the answer says which language the page should use.
+    return fetch(FN + query + (SPANISH ? "&lang=es" : "")).then(function (r) {
+      return r.json().then(function (b) {
+        if (b) setLang(b.lang || (b.event && b.event.lang));
+        return { ok: r.ok, status: r.status, body: b };
+      });
+    });
+  }
+  function fail(msg) { var m = document.getElementById("main"); m.innerHTML = '<p class="status">' + esc(msg || t("This page isn't available.")) + '</p>'; }
+
+  window.HOSTED = { formFields: formFields, formAnswers: formAnswers, waiverField: waiverField, whosGoing: whosGoing, src: src, refundLine: refundLine, plusOnesFields: plusOnesFields, plusOnesValue: plusOnesValue, ruleError: ruleError, drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
+    tget: tget, tpost: tpost, money: money };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setLang(); }); else setLang();
+})();

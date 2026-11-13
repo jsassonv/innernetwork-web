@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="referrer" content="no-referrer" />
+<title>Invitation · Inner Network</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="stylesheet" href="/assets/hosted.css?v=4">
+<!--
+  A guest's own invitation (Docs/2.0_Hosted_Events_Plan.md): innernetwork.app/i/<token>, from the invitation email.
+  The token is the only key, so the page never shows anyone else's details. ?a=going|maybe|declined answers straight
+  from the email's buttons; ?a=confirm confirms a meeting; ?a=unsubscribe stops emails about this event.
+-->
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/"><img src="/assets/logo.png" alt="">Inner Network</a>
+  <main id="main"><p class="status">Loading…</p></main>
+  <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
+</div>
+<script src="/assets/qrcode.js"></script>
+<script src="/assets/hosted.js?v=8"></script>
+<script>
+(function () {
+  var H = window.HOSTED, t = H.t, esc = H.esc;
+  var params = new URLSearchParams(location.search);
+  var token = (params.get("t") || "").toLowerCase();
+  var action = params.get("a") || "";
+  var data = null;
+  if (!/^[0-9a-f]{36}$/.test(token)) return H.fail();
+
+  function render(message) {
+    var e = data.event, g = data.guest, going = g.status === "going";
+    var closed = !!(e.rsvp_by && new Date(e.rsvp_by).getTime() < Date.now());
+    var ended = new Date(e.ends_at).getTime() < Date.now();
+    // Only an invitation says "invited you"; someone who registered themselves just sees their answer.
+    var inviters = g.source === "host" ? H.hostNames(data.inviters) : "";
+    var questions = Array.isArray(e.questions) ? e.questions : [];
+    var answers = Array.isArray(g.answers) ? g.answers : [];
+    var answerOf = function (q) { var a = answers.filter(function (x) { return x.q === q; })[0]; return a ? a.a : ""; };
+    document.title = e.name + " · Inner Network";
+    var choice = function (s, emoji, label) {
+      return '<button type="button" data-s="' + s + '" aria-pressed="' + (g.status === s) + '"><span aria-hidden="true">' + emoji + '</span>' + t(label) + '</button>';
+    };
+    document.getElementById("main").innerHTML =
+      '<div class="grid"><div>' + H.flyer(e) + '</div><div class="side">' +
+      '<div><div class="kind">' + esc(e.kind_name) + '</div><h1>' + esc(e.name) + '</h1>' +
+      (inviters ? '<p class="invited">' + (g.first_name ? esc(g.first_name) + ', ' : '') + '<strong>' + esc(inviters) + '</strong> ' + t("invited you") + '.</p>' : '') +
+      H.facts(e) + '</div>' +
+      (ended ? '<p class="note">' + t("This event has ended.") + '</p>' :
+        '<section class="panel" aria-labelledby="ans"><h2 id="ans">' + t(g.status === "invited" ? "Answer this invitation" : "Your answer") + '</h2>' +
+        (closed ? '<p class="note">' + t("Answers are closed. You can still tell the host you can't go.") + '</p>' : '') +
+        (g.status === "pending" ? '<p class="note">' + t("Your request was sent. The host will confirm by email.") + '</p>' : '') +
+        '<div class="answers">' + (closed && g.status !== "going" ? '' : choice("going", "👍", e.require_approval && g.status !== "going" && g.status !== "pending" ? "Request to join" : "Going")) +
+          (e.allow_maybe === false || closed ? '' : choice("maybe", "🤔", "Maybe")) + choice("declined", "🙁", "Can't go") + '</div>' +
+        (e.rsvp_by && !closed ? '<p class="note">' + t("Answers close") + ' ' + esc(new Date(e.rsvp_by).toLocaleString()) + '</p>' : '') +
+        '<p class="err" id="err" role="alert"></p>' +
+        (message ? '<p class="ok" role="status">' + esc(message) + '</p>' : '') +
+        (going ? '<p style="margin:10px 0 0"><a class="btn out" href="' + H.FN + '?format=ics&token=' + token + '">' + t("Add to calendar") + '</a></p>' : '') +
+        (data.ticket && data.ticket.can_request ? '<p style="margin:10px 0 0"><button class="link" type="button" id="askRefund">' + t("Ask the host for a refund") + '</button></p>' : '') +
+        (data.ticket && data.ticket.requested ? '<p class="note">' + t("You asked for a refund. The host will reply by email.") + '</p>' : '') +
+        (data.ticket ? H.refundLine(e) : '') +
+        (data.ticket && going && !data.ticket.requested ? '<p style="margin:6px 0 0"><button class="link" type="button" id="giveTicket">' + t("Give my ticket to someone else") + '</button></p>' : '') +
+        (going && g.checkin_code ? '<div class="ticket"><canvas id="ticketqr" width="180" height="180" aria-label="' + t("Check-in code") + '"></canvas>' +
+          '<p><strong>' + esc(g.checkin_code) + '</strong><br><span class="note">' + t("Show this at the door to check in.") + '</span></p></div>' : '') +
+        (going && (questions.length || (e.rsvp_form && e.rsvp_form.length) || data.texts_available || e.plus_ones > 0) ?
+          '<form id="more" style="margin-top:14px">' +
+          H.formFields(e, g.answers) +
+          (data.texts_available ? '<label class="check"><input type="checkbox" name="sms"' + (g.sms_opt_in ? " checked" : "") + '><span>' + esc(t("sms")) + '</span></label>' +
+            '<label>' + t("Mobile phone") + '<input name="phone" type="tel" autocomplete="tel" maxlength="30" placeholder="' + (g.has_phone ? "••• ••• ••••" : "") + '"></label>' : '') +
+          H.plusOnesFields(e.plus_ones, g.plus_ones) +
+          '<button class="btn" type="submit">' + t("Save") + '</button></form>' : '') +
+        '</section>') +
+      H.details(e) + '</div></div>';
+    H.drawTicket(g.checkin_code);
+    var give = document.getElementById("giveTicket");
+    if (give) give.addEventListener("click", function () {
+      var first = window.prompt(t("Their first name")); if (!first) return;
+      var last = window.prompt(t("Their last name")); if (!last) return;
+      var email = window.prompt(t("Their email")); if (!email) return;
+      H.post("?format=transfer&token=" + token, { first_name: first, last_name: last, email: email }).then(function (r) {
+        if (r.ok) { document.getElementById("main").innerHTML = '<p class="status">' + esc(t("Done. They'll get the confirmation by email, and this link no longer works.")) + '</p>'; return; }
+        render(r.body && r.body.error ? t(r.body.error) : t("That didn't work. Please try again."));
+      });
+    });
+    var ask = document.getElementById("askRefund");
+    if (ask) ask.addEventListener("click", function () {
+      var note = window.prompt(t("Anything the host should know? (optional)")) ;
+      if (note === null) return;
+      H.post("?format=refund_request&token=" + token, { note: note }).then(function (r) {
+        if (r.ok) { data.ticket.can_request = false; data.ticket.requested = true; render(t("Your request was sent to the host.")); }
+        else render(t("That didn't work. Please try again."));
+      });
+    });
+    document.querySelectorAll(".answers button").forEach(function (b) { b.addEventListener("click", function () { answer(b.getAttribute("data-s")); }); });
+    var more = document.getElementById("more");
+    if (more) more.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      answer("going", {
+        answers: H.formAnswers(e, more),
+        sms_opt_in: !!(more.elements.sms && more.elements.sms.checked),
+        phone: more.elements.phone ? more.elements.phone.value : "",
+        plus_ones: H.plusOnesValue(more)
+      }, t("Saved."));
+    });
+  }
+
+  function answer(status, extra, okMessage) {
+    var ev = data.event, wa;
+    // 2080: going needs the host's waiver accepted (shown in full) and required questions answered.
+    if (status === "going" && ev.waiver_text && !data.guest.waiver_accepted) {
+      if (!window.confirm(ev.waiver_text + "\n\n" + t("Tap OK to accept the waiver."))) return;
+      wa = true;
+    }
+    var body = Object.assign({ status: status, answers: data.guest.answers || [], plus_ones: data.guest.plus_ones || [], waiver_accepted: wa }, extra || {});
+    var err = document.getElementById("err"); if (err) err.textContent = t("Sending…");
+    H.post("?format=rsvp&token=" + token, body).then(function (r) {
+      if (!r.ok) {
+        if (err) err.textContent = H.ruleError(r);
+        return;
+      }
+      data.guest.status = r.body.status;
+      if (wa) data.guest.waiver_accepted = true;
+      data.guest.plus_ones = r.body.status === "going" ? (body.plus_ones || []) : [];
+      if (extra) { data.guest.answers = body.answers; data.guest.sms_opt_in = body.sms_opt_in; if (body.phone) data.guest.has_phone = true; }
+      render(okMessage || (r.body.status === "going" ? t("You're going. See you there.") : r.body.status === "waitlist" ? t("You're on the waitlist. We'll email you if a spot opens.") : r.body.status === "pending" ? t("Your request was sent. The host will confirm by email.") : t("Thanks, we let the host know.")));
+    }).catch(function () { if (err) err.textContent = t("That didn't work. Please try again."); });
+  }
+
+  H.get("?format=invite&token=" + token).then(function (r) {
+    if (!r.ok) return H.fail();
+    data = r.body;
+    H.accent(data.event);
+    // Answers straight from the email's buttons, once.
+    if (action === "unsubscribe") {
+      H.post("?format=unsubscribe&token=" + token).then(function () { render(t("You won't get more emails about this event.")); });
+    } else if (action === "confirm") {
+      answer("going", null, t("Confirmed. Thank you."));
+    } else if (/^(going|maybe|declined)$/.test(action) && data.guest.status !== action) {
+      render(); answer(action);
+    } else {
+      render();
+    }
+    if (action) history.replaceState(null, "", location.pathname + "?t=" + token);
+  }).catch(function () { H.fail(); });
+})();
+</script>
+</body>
+</html>

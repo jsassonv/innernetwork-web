@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<title>Event · Inner Network</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="stylesheet" href="/assets/hosted.css?v=4">
+<!--
+  A member's public or unlisted event (Docs/2.0_Hosted_Events_Plan.md): innernetwork.app/h/<id>. Free registration
+  here (with capacity and a waitlist), a link to the host's outside ticketing, or tickets sold here through Stripe
+  Checkout (step F; the buyer comes back with ?paid=<session>). Private events are never shown.
+-->
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/"><img src="/assets/logo.png" alt="">Inner Network</a>
+  <main id="main"><p class="status">Loading…</p></main>
+  <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
+</div>
+<script src="/assets/hosted.js?v=8"></script>
+<script>
+(function () {
+  var H = window.HOSTED, t = H.t, esc = H.esc;
+  var params = new URLSearchParams(location.search);
+  var id = params.get("id") || "", paid = params.get("paid") || "";
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return H.fail();
+
+  H.get("?format=event&id=" + id + "&view=1" + (H.src() ? "&src=" + encodeURIComponent(H.src()) : "")).then(function (r) {
+    if (!r.ok) return H.fail();
+    var e = r.body.event, left = r.body.spots_left, full = left === 0, waitlist = r.body.waitlist;
+    H.accent(e);
+    document.title = e.name + " · Inner Network";
+    var started = new Date(e.starts_at).getTime() < Date.now();
+    var questions = Array.isArray(e.questions) ? e.questions : [];
+    var action;
+    if (started) action = '<p class="note">' + t("This event has ended.") + '</p>';
+    else if (e.ticketing === "external" && /^https:\/\//.test(e.ticket_url)) action = '<a class="btn" href="' + esc(e.ticket_url) + '" target="_blank" rel="noopener noreferrer">' + t("Get tickets") + '</a>';
+    else if (e.ticketing === "platform") action = '<div id="buy"><p class="status">' + t("Loading…") + '</p></div>';
+    else if (full && !waitlist) action = '<p class="note">' + t("This event is full.") + '</p>';
+    else if (e.rsvp_by && new Date(e.rsvp_by).getTime() < Date.now()) action = '<p class="note">' + t("Registration is closed.") + '</p>';
+    else action =
+      '<form id="reg" novalidate>' +
+      (left != null && !full ? '<p class="note">' + left + ' ' + t("spots left") + '</p>' : '') +
+      '<div class="row2"><label>' + t("First name") + '<input name="first_name" autocomplete="given-name" maxlength="80" required></label>' +
+      '<label>' + t("Last name") + '<input name="last_name" autocomplete="family-name" maxlength="80"></label></div>' +
+      '<label>' + t("Email") + '<input name="email" type="email" autocomplete="email" maxlength="200" required></label>' +
+      '<label>' + t("Phone (optional)") + '<input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>' +
+      '<div class="row2"><label>' + t("Company (optional)") + '<input name="company" autocomplete="organization" maxlength="120"></label>' +
+      '<label>' + t("Job title (optional)") + '<input name="title" autocomplete="organization-title" maxlength="120"></label></div>' +
+      H.formFields(e) + H.waiverField(e) +
+      H.plusOnesFields(e.plus_ones) +
+      '<input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+      '<label class="check"><input type="checkbox" name="sms"><span>' + esc(t("sms")) + '</span></label>' +
+      '<label class="check"><input type="checkbox" name="consent"><span>' + esc(t("consent")) + '<a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a>.</span></label>' +
+      (e.require_approval ? '<p class="note">' + t("The host reviews each request and confirms by email.") + '</p>' : '') +
+      (e.rsvp_by ? '<p class="note">' + t("Registration closes") + ' ' + esc(new Date(e.rsvp_by).toLocaleString()) + '</p>' : '') +
+      '<p class="err" id="err" role="alert"></p>' +
+      '<button class="btn" type="submit">' + t(full ? "Join the waitlist" : e.require_approval ? "Request to join" : "Register") + '</button></form>';
+    document.getElementById("main").innerHTML =
+      '<div class="grid"><div>' + H.flyer(e) + '</div><div class="side">' +
+      '<div><div class="kind">' + esc(e.kind_name) + '</div><h1>' + esc(e.name) + '</h1>' + H.facts(e) + '</div>' +
+      '<section class="panel">' + action + '</section>' + H.whosGoing(r.body.guests) + H.details(e) + '</div></div>';
+    if (e.ticketing === "platform" && !started) return paid ? confirmPaid() : buy(e, questions, full && !waitlist);
+    var form = document.getElementById("reg");
+    if (!form) return;
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var f = form.elements, err = document.getElementById("err");
+      var body = {
+        first_name: f.first_name.value.trim(), last_name: f.last_name.value.trim(), email: f.email.value.trim(), phone: f.phone.value.trim(),
+        company: f.company.value.trim(), title: f.title.value.trim(), website: f.website.value,
+        answers: H.formAnswers(e, form), waiver_accepted: f.waiver ? f.waiver.checked : undefined, src: H.src(),
+        sms_opt_in: f.sms.checked && !!f.phone.value.trim(), consent: f.consent.checked, plus_ones: H.plusOnesValue(form)
+      };
+      if (!body.first_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { err.textContent = t("Please enter your name and email."); return; }
+      if (!body.consent) { err.textContent = t("Please tick the box to agree."); return; }
+      err.textContent = t("Sending…");
+      H.post("?format=register&id=" + id, body).then(function (res) {
+        if (!res.ok) { err.textContent = H.ruleError(res); return; }
+        // Their own page from now on: their answer, the calendar invite, and changes later.
+        location.href = "/i/" + res.body.token;
+      }).catch(function () { err.textContent = t("That didn't work. Please try again."); });
+    });
+  }).catch(function () { H.fail(); });
+
+  // Back from Stripe Checkout: the payment is confirmed by Stripe's webhook, usually within seconds.
+  function confirmPaid() {
+    var box = document.getElementById("buy"), tries = 0;
+    box.innerHTML = '<p class="status">' + t("Confirming your payment…") + '</p>';
+    (function check() {
+      H.tget("/order?session=" + encodeURIComponent(paid)).then(function (r) {
+        if (r.ok && r.body.status === "paid") { box.innerHTML = '<p class="note ok">' + t("Payment received. Your confirmation is on its way by email.") + '</p>'; return; }
+        if (++tries < 10) return setTimeout(check, 2000);
+        box.innerHTML = '<p class="note">' + t("We couldn't confirm the payment yet. Check your email in a few minutes.") + '</p>';
+      }).catch(function () { if (++tries < 10) setTimeout(check, 2000); });
+    })();
+  }
+
+  // A ticket's price: $25, Free, or Donation (suggested and minimum when set).
+  function priceText(k) {
+    if (k.kind === "free") return t("Free");
+    if (k.kind === "donation") return t("Donation") + (k.min_cents ? " (" + t("at least") + " " + H.money(k.min_cents) + ")" : "");
+    return H.money(k.price_cents);
+  }
+
+  // Tickets sold here: pick a ticket and how many, the buyer's details, then Stripe Checkout (or straight in when Free).
+  function buy(e, questions, eventFull) {
+    var box = document.getElementById("buy");
+    if (eventFull) { box.innerHTML = '<p class="note">' + t("This event is full.") + '</p>'; return; }
+    var code = (new URLSearchParams(location.search).get("code") || sessionStorage.getItem("in-code-" + id) || "").trim().toUpperCase();
+    H.tget("/list?id=" + id + (code ? "&code=" + encodeURIComponent(code) : "")).then(function (r) {
+      if (r.ok && r.body.code) { try { sessionStorage.setItem("in-code-" + id, code); } catch (x) { /* storage off */ } }
+      var tickets = r.ok ? (r.body.tickets || []) : [];
+      var later = tickets.filter(function (k) { return k.on_sale === false && k.sales_start && new Date(k.sales_start).getTime() > Date.now(); });
+      tickets = tickets.filter(function (k) { return k.available !== false; });
+      if (!tickets.length && later.length) { box.innerHTML = '<p class="note">' + t("Tickets go on sale") + ' ' + esc(new Date(later[0].sales_start).toLocaleString()) + '</p>'; return; }
+      if (!r.ok || !r.body.selling || !tickets.length) { box.innerHTML = '<p class="note">' + t("Ticket sales aren't available yet.") + '</p>'; return; }
+      var open = tickets.filter(function (k) { return k.left == null || k.left > 0; });
+      if (!open.length) { box.innerHTML = '<p class="note">' + t("Sold out") + '</p>'; return; }
+      box.innerHTML =
+        '<form id="reg" novalidate><fieldset class="tickets"><legend>' + t("Tickets") + '</legend>' +
+        tickets.map(function (k, i) {
+          var out = k.left === 0;
+          return '<label class="check ticket"><input type="radio" name="ticket" value="' + esc(k.id) + '"' + (out ? " disabled" : "") +
+            (!out && k.id === open[0].id ? " checked" : "") + '><span><strong>' + esc(k.name) + ' · ' + priceText(k) +
+            (k.full_price_cents && k.full_price_cents > k.price_cents ? ' <s class="muted">' + H.money(k.full_price_cents) + '</s>' : '') + '</strong>' +
+            (k.description ? '<small>' + esc(k.description) + '</small>' : '') +
+            (out ? '<small>' + t("Sold out") + '</small>' : k.left != null ? '<small>' + k.left + ' ' + t("left") + '</small>' : '') + '</span></label>';
+        }).join("") + '</fieldset>' +
+        (r.body.code ? '<p class="note ok">' + t("Code applied") + ': ' + esc(r.body.code.code) + '</p>' :
+          '<details class="code"><summary>' + t("Have a code?") + '</summary><div class="row2"><input name="code" maxlength="30" autocapitalize="characters"' + (code ? ' value="' + esc(code) + '"' : '') + '>' +
+          '<button class="btn out" type="button" id="applyCode">' + t("Apply") + '</button></div>' + (r.body.code_invalid ? '<small class="err">' + t("That code isn't valid.") + '</small>' : '') + '</details>') +
+        '<label id="amountBox" style="display:none">' + t("Your amount") + ' ($)<input name="amount" inputmode="decimal" maxlength="9"></label>' +
+        '<label>' + t("Quantity") + '<select name="quantity"></select></label>' +
+        '<p class="note" id="total"></p>' +
+        '<div class="row2"><label>' + t("First name") + '<input name="first_name" autocomplete="given-name" maxlength="80" required></label>' +
+        '<label>' + t("Last name") + '<input name="last_name" autocomplete="family-name" maxlength="80"></label></div>' +
+        '<label>' + t("Email") + '<input name="email" type="email" autocomplete="email" maxlength="200" required></label>' +
+        '<label>' + t("Phone (optional)") + '<input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>' +
+        '<div class="row2"><label>' + t("Company (optional)") + '<input name="company" autocomplete="organization" maxlength="120"></label>' +
+        '<label>' + t("Job title (optional)") + '<input name="title" autocomplete="organization-title" maxlength="120"></label></div>' +
+        H.formFields(e) + H.waiverField(e) +
+        '<input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+        '<label class="check"><input type="checkbox" name="sms"><span>' + esc(t("sms")) + '</span></label>' +
+        '<label class="check"><input type="checkbox" name="consent"><span>' + esc(t("consent")) + '<a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a>.</span></label>' +
+        '<p class="err" id="err" role="alert"></p>' +
+        H.refundLine(e) +
+        '<button class="btn" type="submit" id="go">' + t("Continue to payment") + '</button></form>';
+      var form = document.getElementById("reg"), f = form.elements;
+      var apply = document.getElementById("applyCode");
+      if (apply) apply.addEventListener("click", function () {
+        var c = (f.code.value || "").trim().toUpperCase(); if (!c) return;
+        var u = new URL(location.href); u.searchParams.set("code", c); location.href = u.toString();
+      });
+      function chosen() { var v = form.querySelector('input[name="ticket"]:checked'); return v && tickets.filter(function (k) { return k.id === v.value; })[0]; }
+      var lastKind = "";
+      function unit(k) {
+        if (!k || k.kind === "free") return 0;
+        if (k.kind !== "donation") return k.price_cents;
+        var v = f.amount.value.replace(/[$,\s]/g, "");
+        return /^\d+(\.\d{1,2})?$/.test(v) ? Math.round(+v * 100) : NaN;
+      }
+      function refresh() {
+        var k = chosen(), max = Math.min(k && k.max_per_order ? k.max_per_order : 10, k && k.left != null ? k.left : 10), cur = +f.quantity.value || 1, html = "";
+        for (var n = 1; n <= max; n++) html += '<option value="' + n + '"' + (n === Math.min(cur, max) ? " selected" : "") + '>' + n + '</option>';
+        f.quantity.innerHTML = html;
+        var don = !!k && k.kind === "donation";
+        document.getElementById("amountBox").style.display = don ? "" : "none";
+        if (don && lastKind !== k.id) f.amount.value = k.price_cents ? String(k.price_cents / 100) : "";
+        lastKind = k ? k.id : "";
+        var u = unit(k), total = u * (+f.quantity.value || 1);
+        document.getElementById("total").textContent = k && !isNaN(u) ? t("Total") + ": " + (total ? H.money(total) : t("Free")) : "";
+        document.getElementById("go").textContent = t(k && (k.kind === "free" || (don && u === 0)) ? "Get my ticket" : "Continue to payment");
+      }
+      form.addEventListener("change", function (ev) { if (ev.target.name === "ticket" || ev.target.name === "quantity") refresh(); });
+      form.addEventListener("input", function (ev) { if (ev.target.name === "amount") refresh(); });
+      refresh();
+      form.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var err = document.getElementById("err"), k = chosen();
+        var body = {
+          event_id: id, ticket_id: k ? k.id : "", quantity: +f.quantity.value || 1, amount_cents: k && k.kind === "donation" ? unit(k) : undefined,
+          first_name: f.first_name.value.trim(), last_name: f.last_name.value.trim(), email: f.email.value.trim(), phone: f.phone.value.trim(),
+          company: f.company.value.trim(), title: f.title.value.trim(), website: f.website.value,
+          answers: H.formAnswers(e, form), waiver_accepted: f.waiver ? f.waiver.checked : undefined, src: H.src(),
+          sms_opt_in: f.sms.checked && !!f.phone.value.trim(), consent: f.consent.checked, code: r.body.code ? r.body.code.code : undefined
+        };
+        if (!body.first_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { err.textContent = t("Please enter your name and email."); return; }
+        if (k && k.kind === "donation" && isNaN(body.amount_cents)) { err.textContent = t("Please enter an amount."); return; }
+        if (!body.consent) { err.textContent = t("Please tick the box to agree."); return; }
+        err.textContent = t("Sending…");
+        H.tpost("/checkout", body).then(function (res) {
+          if (res.ok && /^https:\/\/checkout\.stripe\.com\//.test(res.body.url)) { location.href = res.body.url; return; }
+          // Free (or a $0 donation): no payment, they're on the list now.
+          if (res.ok && res.body.status === "paid") { box.innerHTML = '<p class="note ok">' + t("You're in. Your confirmation is on its way by email.") + '</p>'; return; }
+          var code = res.body && res.body.error && res.body.error.code;
+          if (code === "INVALID_AMOUNT") { err.textContent = res.body.error.message; return; }
+          if (code === "INVALID_CODE" || code === "NOT_ON_SALE" || code === "REQUIRED" || code === "WAIVER") { err.textContent = t(res.body.error.message); return; }
+          err.textContent = code === "SOLD_OUT" ? t("Sold out") : code === "NOT_SET_UP" ? t("Ticket sales aren't available yet.")
+            : t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't work. Please try again.");
+        }).catch(function () { err.textContent = t("That didn't work. Please try again."); });
+      });
+    }).catch(function () { box.innerHTML = '<p class="note">' + t("Ticket sales aren't available yet.") + '</p>'; });
+  }
+})();
+</script>
+</body>
+</html>
