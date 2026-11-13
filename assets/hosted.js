@@ -38,7 +38,7 @@
     "Phone (optional)": "Teléfono (opcional)", "Company (optional)": "Empresa (opcional)", "Job title (optional)": "Cargo (opcional)",
     "spots left": "lugares disponibles", "Join the waitlist": "Unirme a la lista de espera",
     "consent": "Acepto compartir estos datos con los anfitriones de este evento. Inner Network los guarda solo para este evento. ",
-    "sms": "Envíenme recordatorios de este evento por mensaje de texto. Pueden aplicar tarifas de mensajes. Responde STOP para dejar de recibirlos.",
+    "sms": "Envíenme recordatorios de este evento por mensaje de texto de Inner Network (de 1 a 3 mensajes para este evento). Pueden aplicar tarifas de mensajes y datos. Responde HELP para ayuda o STOP para dejar de recibirlos. El consentimiento no es condición para comprar ni asistir.",
     "Privacy Policy": "Política de Privacidad", "Please tick the box to agree.": "Marca la casilla para aceptar.",
     "Please enter your name and email.": "Escribe tu nombre y correo electrónico.", "Online": "En línea", "Cancellation policy": "Política de cancelación",
     "Headcount": "Asistentes", "people": "personas", "Send request": "Enviar solicitud", "What would you like to request?": "¿Qué te gustaría solicitar?",
@@ -60,7 +60,7 @@
   };
   var EN = {
     consent: "I agree to share these details with this event's hosts. Inner Network keeps them only for this event. ",
-    sms: "Text me reminders about this event. Message rates may apply. Reply STOP to opt out."
+    sms: "Text me reminders about this event from Inner Network (about 1 to 3 texts for this event). Msg & data rates may apply. Reply HELP for help or STOP to opt out. Consent is not a condition of any purchase or attendance."
   };
   function t(k) { return (SPANISH ? ES[k] : EN[k]) || k; }
   /** Spanish when the visitor's browser is Spanish or the event (or request type) was made in Spanish. */
