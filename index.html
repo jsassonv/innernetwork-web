@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+/* Sign-in safety net (Joe 2026-11-12): if a sign-in (LinkedIn, Google, email link) ever lands on this homepage instead of
+   the web app, pass it straight on to app.innernetwork.app with everything it came with so the person is still signed in. */
+(function(){var q=location.search,h=location.hash;
+if(/[?&](code|error|error_description)=/.test(q)||/[#&](access_token|error|error_description)=/.test(h)){
+location.replace("https://app.innernetwork.app/"+q+h);}})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F6F1E7">
 <title>Inner Network: industry events and networking for construction and real estate</title>
