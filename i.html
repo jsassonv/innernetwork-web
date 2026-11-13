@@ -70,6 +70,7 @@
           '<form id="more" style="margin-top:14px">' +
           H.formFields(e, g.answers) +
           (data.texts_available ? '<label class="check"><input type="checkbox" name="sms"' + (g.sms_opt_in ? " checked" : "") + '><span>' + esc(t("sms")) + '</span></label>' +
+            '<p class="note"><a href="/sms-terms.html" target="_blank" rel="noopener">SMS Terms</a> · <a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a></p>' +
             '<label>' + t("Mobile phone") + '<input name="phone" type="tel" autocomplete="tel" maxlength="30" placeholder="' + (g.has_phone ? "••• ••• ••••" : "") + '"></label>' : '') +
           H.plusOnesFields(e.plus_ones, g.plus_ones) +
           '<button class="btn" type="submit">' + t("Save") + '</button></form>' : '') +
