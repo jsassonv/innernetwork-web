@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <title>Event · Inner Network</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
-<link rel="stylesheet" href="/assets/hosted.css?v=4">
+<link rel="stylesheet" href="/assets/hosted.css?v=5">
 <!--
   A member's public or unlisted event (Docs/2.0_Hosted_Events_Plan.md): innernetwork.app/h/<id>. Free registration
   here (with capacity and a waitlist), a link to the host's outside ticketing, or tickets sold here through Stripe
@@ -19,7 +19,7 @@
   <main id="main"><p class="status">Loading…</p></main>
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
-<script src="/assets/hosted.js?v=9"></script>
+<script src="/assets/hosted.js?v=10"></script>
 <script>
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
@@ -59,9 +59,10 @@
       '<p class="err" id="err" role="alert"></p>' +
       '<button class="btn" type="submit">' + t(full ? "Join the waitlist" : e.require_approval ? "Request to join" : "Register") + '</button></form>';
     document.getElementById("main").innerHTML =
-      '<div class="grid"><div>' + H.flyer(e) + '</div><div class="side">' +
-      '<div><div class="kind">' + esc(e.kind_name) + '</div><h1>' + esc(e.name) + '</h1>' + H.facts(e) + '</div>' +
-      '<section class="panel">' + action + '</section>' + H.whosGoing(r.body.guests) + H.details(e) + '</div></div>';
+      '<div class="grid"><div class="g-head">' + H.flyer(e) +
+      '<div class="kind">' + esc(e.kind_name) + '</div><h1>' + esc(e.name) + '</h1>' + H.facts(e) + '</div>' +
+      '<div class="side"><section class="panel">' + action + '</section></div>' +
+      '<div class="g-body">' + H.whosGoing(r.body.guests) + H.details(e) + '</div></div>';
     if (e.ticketing === "platform" && !started) return paid ? confirmPaid() : buy(e, questions, full && !waitlist);
     var form = document.getElementById("reg");
     if (!form) return;
@@ -111,30 +112,32 @@
     if (eventFull) { box.innerHTML = '<p class="note">' + t("This event is full.") + '</p>'; return; }
     var code = (new URLSearchParams(location.search).get("code") || sessionStorage.getItem("in-code-" + id) || "").trim().toUpperCase();
     H.tget("/list?id=" + id + (code ? "&code=" + encodeURIComponent(code) : "")).then(function (r) {
-      if (r.ok && r.body.code) { try { sessionStorage.setItem("in-code-" + id, code); } catch (x) { /* storage off */ } }
-      var tickets = r.ok ? (r.body.tickets || []) : [];
+      var data = r.body || {};
+      if (r.ok && data.code) { try { sessionStorage.setItem("in-code-" + id, code); } catch (x) { /* storage off */ } }
+      var shown = function (list) { return (list || []).filter(function (k) { return k.available !== false; }); };
+      var tickets = r.ok ? (data.tickets || []) : [];
       var later = tickets.filter(function (k) { return k.on_sale === false && k.sales_start && new Date(k.sales_start).getTime() > Date.now(); });
-      tickets = tickets.filter(function (k) { return k.available !== false; });
+      tickets = shown(tickets);
       if (!tickets.length && later.length) { box.innerHTML = '<p class="note">' + t("Tickets go on sale") + ' ' + esc(new Date(later[0].sales_start).toLocaleString()) + '</p>'; return; }
-      if (!r.ok || !r.body.selling || !tickets.length) { box.innerHTML = '<p class="note">' + t("Ticket sales aren't available yet.") + '</p>'; return; }
+      if (!r.ok || !data.selling || !tickets.length) { box.innerHTML = '<p class="note">' + t("Ticket sales aren't available yet.") + '</p>'; return; }
       var open = tickets.filter(function (k) { return k.left == null || k.left > 0; });
       if (!open.length) { box.innerHTML = '<p class="note">' + t("Sold out") + '</p>'; return; }
-      box.innerHTML =
-        '<form id="reg" novalidate><fieldset class="tickets"><legend>' + t("Tickets") + '</legend>' +
-        tickets.map(function (k, i) {
+      function ticketsHtml(keepId) {
+        var openNow = tickets.filter(function (k) { return k.left == null || k.left > 0; });
+        var pick = openNow.filter(function (k) { return k.id === keepId; })[0] || openNow[0];
+        return tickets.map(function (k) {
           var out = k.left === 0;
           return '<label class="check ticket"><input type="radio" name="ticket" value="' + esc(k.id) + '"' + (out ? " disabled" : "") +
-            (!out && k.id === open[0].id ? " checked" : "") + '><span><strong>' + esc(k.name) + ' · ' + priceText(k) +
+            (!out && pick && k.id === pick.id ? " checked" : "") + '><span><strong>' + esc(k.name) + ' · ' + priceText(k) +
             (k.full_price_cents && k.full_price_cents > k.price_cents ? ' <s class="muted">' + H.money(k.full_price_cents) + '</s>' : '') + '</strong>' +
             (k.description ? '<small>' + esc(k.description) + '</small>' : '') +
             (out ? '<small>' + t("Sold out") + '</small>' : k.left != null ? '<small>' + k.left + ' ' + t("left") + '</small>' : '') + '</span></label>';
-        }).join("") + '</fieldset>' +
-        (r.body.code ? '<p class="note ok">' + t("Code applied") + ': ' + esc(r.body.code.code) + '</p>' :
-          '<details class="code"><summary>' + t("Have a code?") + '</summary><div class="row2"><input name="code" maxlength="30" autocapitalize="characters"' + (code ? ' value="' + esc(code) + '"' : '') + '>' +
-          '<button class="btn out" type="button" id="applyCode">' + t("Apply") + '</button></div>' + (r.body.code_invalid ? '<small class="err">' + t("That code isn't valid.") + '</small>' : '') + '</details>') +
+        }).join("");
+      }
+      box.innerHTML =
+        '<form id="reg" novalidate><fieldset class="tickets"><legend>' + t("Tickets") + '</legend><div id="ticketList">' + ticketsHtml() + '</div></fieldset>' +
         '<label id="amountBox" style="display:none">' + t("Your amount") + ' ($)<input name="amount" inputmode="decimal" maxlength="9"></label>' +
         '<label>' + t("Quantity") + '<select name="quantity"></select></label>' +
-        '<p class="note" id="total"></p>' +
         '<div class="row2"><label>' + t("First name") + '<input name="first_name" autocomplete="given-name" maxlength="80" required></label>' +
         '<label>' + t("Last name") + '<input name="last_name" autocomplete="family-name" maxlength="80"></label></div>' +
         '<label>' + t("Email") + '<input name="email" type="email" autocomplete="email" maxlength="200" required></label>' +
@@ -145,15 +148,38 @@
         '<input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">' +
         '<label class="check"><input type="checkbox" name="sms"><span>' + esc(t("sms")) + '</span></label>' +
         '<label class="check"><input type="checkbox" name="consent"><span>' + esc(t("consent")) + '<a href="/privacy-policy.html" target="_blank" rel="noopener">' + t("Privacy Policy") + '</a>.</span></label>' +
+        // The promo code sits at the end, right above the total and the pay button (Joe, 2026-11-24): always open, with its own Apply.
+        '<div class="promo"><label for="promo-code">' + t("Promo code") + '</label><div class="promo-row">' +
+        '<input id="promo-code" name="code" maxlength="30" autocapitalize="characters" autocomplete="off" spellcheck="false"' + (code ? ' value="' + esc(code) + '"' : '') + '>' +
+        '<button class="btn out" type="button" id="applyCode">' + t("Apply") + '</button></div>' +
+        '<small id="codeMsg" role="status">' + (data.code ? '<span class="ok">' + t("Code applied") + ': ' + esc(data.code.code) + '</span>' :
+          data.code_invalid ? '<span class="err">' + t("That code isn\'t valid.") + '</span>' : '') + '</small></div>' +
+        '<p class="note" id="total"></p>' +
         '<p class="err" id="err" role="alert"></p>' +
         H.refundLine(e) +
         '<button class="btn" type="submit" id="go">' + t("Continue to payment") + '</button></form>';
       var form = document.getElementById("reg"), f = form.elements;
-      var apply = document.getElementById("applyCode");
-      if (apply) apply.addEventListener("click", function () {
-        var c = (f.code.value || "").trim().toUpperCase(); if (!c) return;
-        var u = new URL(location.href); u.searchParams.set("code", c); location.href = u.toString();
-      });
+      var apply = document.getElementById("applyCode"), codeMsg = document.getElementById("codeMsg");
+      function say(ok, text) { codeMsg.innerHTML = '<span class="' + (ok ? "ok" : "err") + '">' + esc(text) + '</span>'; }
+      // Checks the code on the server and updates the prices in place, so nothing typed in the form is lost.
+      function applyCode() {
+        var c = (f.code.value || "").trim().toUpperCase();
+        if (!c) { say(false, t("Enter a code first.")); return; }
+        apply.disabled = true;
+        H.tget("/list?id=" + id + "&code=" + encodeURIComponent(c)).then(function (r2) {
+          apply.disabled = false;
+          if (r2.ok && r2.body && r2.body.code) {
+            var keep = chosen() ? chosen().id : "";
+            data = r2.body; tickets = shown(data.tickets);
+            try { sessionStorage.setItem("in-code-" + id, c); } catch (x) { /* storage off */ }
+            document.getElementById("ticketList").innerHTML = ticketsHtml(keep);
+            f.code.value = c; refresh();
+            say(true, t("Code applied") + ": " + data.code.code);
+          } else { say(false, t("That code isn't valid.")); }
+        }).catch(function () { apply.disabled = false; say(false, t("That didn't work. Please try again.")); });
+      }
+      apply.addEventListener("click", applyCode);
+      f.code.addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); applyCode(); } });
       function chosen() { var v = form.querySelector('input[name="ticket"]:checked'); return v && tickets.filter(function (k) { return k.id === v.value; })[0]; }
       var lastKind = "";
       function unit(k) {
@@ -185,7 +211,7 @@
           first_name: f.first_name.value.trim(), last_name: f.last_name.value.trim(), email: f.email.value.trim(), phone: f.phone.value.trim(),
           company: f.company.value.trim(), title: f.title.value.trim(), website: f.website.value,
           answers: H.formAnswers(e, form), waiver_accepted: f.waiver ? f.waiver.checked : undefined, src: H.src(),
-          sms_opt_in: f.sms.checked && !!f.phone.value.trim(), consent: f.consent.checked, code: r.body.code ? r.body.code.code : undefined
+          sms_opt_in: f.sms.checked && !!f.phone.value.trim(), consent: f.consent.checked, code: data.code ? data.code.code : undefined
         };
         if (!body.first_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) { err.textContent = t("Please enter your name and email."); return; }
         if (k && k.kind === "donation" && isNaN(body.amount_cents)) { err.textContent = t("Please enter an amount."); return; }
@@ -197,7 +223,7 @@
           if (res.ok && res.body.status === "paid") { box.innerHTML = '<p class="note ok">' + t("You're in. Your confirmation is on its way by email.") + '</p>'; return; }
           var code = res.body && res.body.error && res.body.error.code;
           if (code === "INVALID_AMOUNT") { err.textContent = res.body.error.message; return; }
-          if (code === "INVALID_CODE" || code === "NOT_ON_SALE" || code === "REQUIRED" || code === "WAIVER") { err.textContent = t(res.body.error.message); return; }
+          if (code === "INVALID_CODE" || code === "NOT_ON_SALE" || code === "REQUIRED" || code === "WAIVER" || code === "PAYMENT_UNAVAILABLE") { err.textContent = t(res.body.error.message); return; }
           err.textContent = code === "SOLD_OUT" ? t("Sold out") : code === "NOT_SET_UP" ? t("Ticket sales aren't available yet.")
             : t(res.status === 429 ? "Too many tries. Please wait a few minutes." : "That didn't work. Please try again.");
         }).catch(function () { err.textContent = t("That didn't work. Please try again."); });
