@@ -62,7 +62,7 @@
   };
   var EN = {
     consent: "I agree to share these details with this event's hosts. Inner Network keeps them only for this event. ",
-    sms: "Text me reminders about this event from Inner Network (about 1 to 3 texts for this event). Msg & data rates may apply. Reply HELP for help or STOP to opt out. Consent is not a condition of any purchase or attendance."
+    sms: "Text me reminders about this event from Inner Network (about 1 to 3 texts for this event). Message frequency varies. Msg & data rates may apply. Reply HELP for help or STOP to opt out. Consent is not a condition of any purchase or attendance."
   };
   function t(k) { return (SPANISH ? ES[k] : EN[k]) || k; }
   /** Spanish when the visitor's browser is Spanish or the event (or request type) was made in Spanish. */
