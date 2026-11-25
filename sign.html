@@ -41,7 +41,7 @@
   #nextBtn { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 10; border: 0; border-radius: 999px; padding: 13px 20px; background: #1F2330; color: #fff;
     font: inherit; font-weight: 600; font-size: 15px; box-shadow: 0 4px 14px rgba(31,35,48,.35); cursor: pointer; }
   .bar label { display: block; font-size: 13px; font-weight: 600; margin: 0 0 4px; }
-  .bar input[type=text] { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid #D9D3C7; border-radius: 12px; font: inherit; font-size: 16px; }
+  .bar input[type=text], .bar input#email { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid #D9D3C7; border-radius: 12px; font: inherit; font-size: 16px; }
   .bar .agree { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0; font-size: 14px; line-height: 1.4; font-weight: 400; }
   .bar .agree input { width: 20px; height: 20px; margin-top: 1px; flex: none; }
   .bar .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
@@ -74,6 +74,10 @@
 (function () {
   var params = new URLSearchParams(location.search);
   var token = (params.get("t") || "").toLowerCase();
+  // ?p=<code>: a template, an open link that many people can sign (a waiver, a sign-in sheet). Each person types
+  // their name and email, signs, and gets their own copy.
+  var pub = (params.get("p") || "").toLowerCase();
+  var isTemplate = !!pub;
   var FN = "https://" + (params.get("test") === "1" ? "eanaccexbjiebxqlouzb" : "dwfuvfcjptvycqyedetb") + ".supabase.co/functions/v1/esign";
   var main = document.getElementById("main");
   var data = null, signature = null, values = {}, busy = false;
@@ -92,7 +96,8 @@
     consent_needed: "Please tick the box to agree to sign electronically.",
     name_needed: "Please type your full name.",
     signature_needed: "Please add your signature.",
-    field_needed: "Please fill in every required box."
+    field_needed: "Please fill in every required box.",
+    email_needed: "Please type your email address, so we can send you your copy."
   };
   function reasonText(res) {
     var e = res && res.body && res.body.error;
@@ -101,11 +106,11 @@
   }
   function today() { return new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }); }
 
-  if (!/^[0-9a-f]{40}$/.test(token)) return box("Link not valid", REASONS.not_found);
+  if (isTemplate ? !/^[0-9a-f]{24}$/.test(pub) : !/^[0-9a-f]{40}$/.test(token)) return box("Link not valid", REASONS.not_found);
   load();
 
   function load() {
-    call({ action: "view", token: token }).then(function (res) {
+    call(isTemplate ? { action: "view_template", public: pub } : { action: "view", token: token }).then(function (res) {
       if (!res.ok) return box("We couldn't open this", reasonText(res));
       data = res.body;
       render();
@@ -118,7 +123,8 @@
 
   function render() {
     var d = data.document, st = d.status, me = data.me;
-    if (st === "voided") return box("This document was canceled", data.sender.name + " canceled this request. There is nothing to sign.");
+    if (st === "voided") return isTemplate ? box("This form is closed", data.sender.name + " is no longer collecting signatures on it.")
+      : box("This document was canceled", data.sender.name + " canceled this request. There is nothing to sign.");
     if (st === "declined") return box("This document is closed", me.status === "declined" ? "You declined to sign. " + data.sender.name + " has been told." : "A signer declined, so this document is closed.");
     if (st === "completed") return box("Everyone has signed", '"' + d.title + '" is complete. A copy was also emailed to you.', downloadLink("Download the signed document"));
     if (me.status === "signed") {
@@ -127,14 +133,15 @@
     }
     main.innerHTML =
       '<div class="doc-head"><h1>' + esc(d.title) + '</h1>' +
-      '<p class="from">' + esc(data.sender.name) + ' sent you this to sign.</p>' +
+      '<p class="from">' + esc(data.sender.name) + (isTemplate ? ' asks you to sign this.' : ' sent you this to sign.') + '</p>' +
       (d.message.trim() ? '<p class="msg">' + esc(d.message.trim()) + '</p>' : '') +
-      '<p class="steps"><strong>How it works:</strong> read the document, tap each gold box to fill it in, then type your name, tick the box and press Finish at the bottom.</p></div>' +
+      '<p class="steps"><strong>How it works:</strong> read the document, tap each gold box to fill it in, then type your name' + (isTemplate ? ' and email' : '') + ', tick the box and press Finish at the bottom.</p></div>' +
       '<div id="pages"><p class="status">Loading the document…</p></div>' +
       '<div class="bar"><label for="fullname">Your full name</label><input type="text" id="fullname" autocomplete="name" maxlength="120" value="' + esc(me.name) + '">' +
+      (isTemplate ? '<label for="email" style="margin-top:10px">Your email (your signed copy is sent here)</label><input type="text" inputmode="email" id="email" autocomplete="email" maxlength="200" autocapitalize="off" spellcheck="false">' : '') +
       '<label class="agree"><input type="checkbox" id="agree"><span>I agree to sign this document electronically. My electronic signature has the same effect as signing on paper.</span></label>' +
       '<p class="err" id="err" role="alert"></p>' +
-      '<div class="row"><button class="btn" type="button" id="finish">Finish and sign</button><button class="link" type="button" id="decline">Decline to sign</button></div></div>' +
+      '<div class="row"><button class="btn" type="button" id="finish">Finish and sign</button>' + (isTemplate ? '' : '<button class="link" type="button" id="decline">Decline to sign</button>') + '</div></div>' +
       '<button type="button" id="nextBtn">Start</button>';
     document.getElementById("nextBtn").addEventListener("click", function () {
       var n = document.querySelector(".fld.next");
@@ -142,7 +149,7 @@
       if (!n) document.getElementById("fullname").focus({ preventScroll: true });
     });
     document.getElementById("finish").addEventListener("click", finish);
-    document.getElementById("decline").addEventListener("click", declineIt);
+    if (!isTemplate) document.getElementById("decline").addEventListener("click", declineIt);
     document.getElementById("fullname").addEventListener("input", refreshAuto);
     drawPdf();
   }
@@ -286,12 +293,22 @@
     if (!signature) { err.textContent = REASONS.signature_needed; scrollToNext(); return; }
     if (missingText) { err.textContent = REASONS.field_needed; scrollToNext(); return; }
     if (name.length < 2) { err.textContent = REASONS.name_needed; return; }
+    var email = isTemplate ? document.getElementById("email").value.trim() : "";
+    if (isTemplate && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = REASONS.email_needed; return; }
     if (!document.getElementById("agree").checked) { err.textContent = REASONS.consent_needed; return; }
     busy = true; var b = document.getElementById("finish"); b.disabled = true; b.textContent = "Signing…";
-    call({ action: "sign", token: token, consent: true, typed_name: name, signature: signature, values: values, date: today(), initials: initialsOf(name) }).then(function (res) {
+    var payload = { action: isTemplate ? "sign_template" : "sign", consent: true, typed_name: name, signature: signature, values: values, date: today(), initials: initialsOf(name) };
+    if (isTemplate) { payload.public = pub; payload.email = email; } else payload.token = token;
+    call(payload).then(function (res) {
       busy = false;
       if (!res.ok) { b.disabled = false; b.textContent = "Finish and sign"; err.textContent = reasonText(res); return; }
-      load(); window.scrollTo(0, 0);
+      window.scrollTo(0, 0);
+      if (isTemplate) {
+        // Each person gets their own finished copy right away (and by email).
+        return box("Thanks, you've signed", 'Your signed copy of "' + data.document.title + '" was emailed to ' + email + ".",
+          res.body.pdf_url ? '<p><a class="btn" href="' + esc(res.body.pdf_url) + '" target="_blank" rel="noopener">Download your signed copy</a></p>' : "");
+      }
+      load();
     }).catch(function () { busy = false; b.disabled = false; b.textContent = "Finish and sign"; err.textContent = "Check your connection and try again."; });
   }
   function scrollToNext() { var n = document.querySelector(".fld.next"); if (n) n.scrollIntoView({ behavior: "smooth", block: "center" }); }
