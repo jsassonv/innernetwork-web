@@ -31,7 +31,9 @@
     font-size: 12px; font-weight: 600; color: #725A34; cursor: pointer; padding: 0; overflow: hidden; font-family: inherit; }
   .fld.done { background: rgba(255,255,255,.75); border-color: #4B7357; color: #1F2330; font-weight: 500; }
   .fld img { max-width: 100%; max-height: 100%; display: block; }
-  .fld input { width: 100%; height: 100%; border: 0; background: transparent; font: inherit; font-weight: 500; color: #1F2330; padding: 0 6px; min-width: 0; font-size: 14px; }
+  .fld { white-space: nowrap; line-height: 1; }
+  .fld input { width: 100%; height: 100%; border: 0; background: transparent; font: inherit; font-weight: 500; color: #1F2330; padding: 0 4px; min-width: 0; font-size: 16px; transform-origin: left top; position: absolute; left: 0; top: 0; }
+  #nextBtn[hidden] { display: none; }
   .fld.auto { cursor: default; }
   .fld.next { animation: pulse 1.2s ease-in-out infinite; }
   @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(176,141,87,.28); } }
@@ -45,7 +47,9 @@
   .bar .agree { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0; font-size: 14px; line-height: 1.4; font-weight: 400; }
   .bar .agree input { width: 20px; height: 20px; margin-top: 1px; flex: none; }
   .bar .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  .bar .btn { flex: 1 1 200px; text-align: center; }
+  .bar .row { flex-wrap: nowrap; }
+  .bar .btn { flex: 1 1 0; min-width: 0; text-align: center; padding-left: 10px; padding-right: 10px; }
+  .bar .row.single .btn { flex: 0 1 280px; }
   .bar .btn[disabled] { opacity: .5; cursor: not-allowed; }
   .dialog-back { position: fixed; inset: 0; background: rgba(31,35,48,.55); display: flex; align-items: flex-end; justify-content: center; z-index: 20; }
   .dialog { background: #fff; width: 100%; max-width: 560px; border-radius: 20px 20px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
@@ -81,6 +85,7 @@
   var FN = "https://" + (params.get("test") === "1" ? "eanaccexbjiebxqlouzb" : "dwfuvfcjptvycqyedetb") + ".supabase.co/functions/v1/esign";
   var main = document.getElementById("main");
   var data = null, signature = null, values = {}, busy = false;
+  var applied = {};   // signature and initials boxes the signer has tapped (each place is signed on purpose)
 
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function box(title, text, extra) { main.innerHTML = '<div class="done-box"><h1>' + esc(title) + '</h1><p class="status">' + esc(text) + '</p>' + (extra || "") + '</div>'; }
@@ -135,18 +140,22 @@
       '<div class="doc-head"><h1>' + esc(d.title) + '</h1>' +
       '<p class="from">' + esc(data.sender.name) + (isTemplate ? ' asks you to sign this.' : ' sent you this to sign.') + '</p>' +
       (d.message.trim() ? '<p class="msg">' + esc(d.message.trim()) + '</p>' : '') +
-      '<p class="steps"><strong>How it works:</strong> read the document, tap each gold box to fill it in, then type your name' + (isTemplate ? ' and email' : '') + ', tick the box and press Finish at the bottom.</p></div>' +
+      '<p class="steps"><strong>How it works:</strong> press Start at the bottom right. It takes you to each gold box that needs you. Tap the box to sign or fill it in. At the end, type your name' + (isTemplate ? ' and email' : '') + ', tick the box and press Finish.</p></div>' +
       '<div id="pages"><p class="status">Loading the document…</p></div>' +
       '<div class="bar"><label for="fullname">Your full name</label><input type="text" id="fullname" autocomplete="name" maxlength="120" value="' + esc(me.name) + '">' +
       (isTemplate ? '<label for="email" style="margin-top:10px">Your email (your signed copy is sent here)</label><input type="text" inputmode="email" id="email" autocomplete="email" maxlength="200" autocapitalize="off" spellcheck="false">' : '') +
       '<label class="agree"><input type="checkbox" id="agree"><span>I agree to sign this document electronically. My electronic signature has the same effect as signing on paper.</span></label>' +
       '<p class="err" id="err" role="alert"></p>' +
-      '<div class="row"><button class="btn" type="button" id="finish">Finish and sign</button>' + (isTemplate ? '' : '<button class="link" type="button" id="decline">Decline to sign</button>') + '</div></div>' +
+      '<div class="row' + (isTemplate ? ' single' : '') + '"><button class="btn" type="button" id="finish">Finish and sign</button>' + (isTemplate ? '' : '<button class="btn out" type="button" id="decline">Decline to sign</button>') + '</div></div>' +
       '<button type="button" id="nextBtn">Start</button>';
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (entries) { var nb = document.getElementById("nextBtn"); if (nb) nb.hidden = entries[0].isIntersecting && !document.querySelector(".fld.next"); }, { threshold: 0.35 })
+        .observe(document.querySelector(".bar"));
+    }
     document.getElementById("nextBtn").addEventListener("click", function () {
-      var n = document.querySelector(".fld.next");
+      started = true;
+      var n = markNext();
       (n || document.querySelector(".bar")).scrollIntoView({ behavior: "smooth", block: "center" });
-      if (!n) document.getElementById("fullname").focus({ preventScroll: true });
     });
     document.getElementById("finish").addEventListener("click", finish);
     if (!isTemplate) document.getElementById("decline").addEventListener("click", declineIt);
@@ -159,25 +168,29 @@
     if (!data.pdf_url) { pagesEl.innerHTML = '<p class="err">The document couldn\'t be loaded. Please reload the page.</p>'; return; }
     pdfjsLib.GlobalWorkerOptions.workerSrc = "/assets/pdfjs/pdf.worker.min.js";
     pdfjsLib.getDocument({ url: data.pdf_url }).promise.then(function (pdf) {
-      pagesEl.innerHTML = "";
-      var chain = Promise.resolve();
-      for (var n = 1; n <= pdf.numPages; n++) (function (n) {
-        chain = chain.then(function () { return pdf.getPage(n); }).then(function (page) {
-          var width = Math.min(pagesEl.clientWidth || 800, 860);
+      var nums = []; for (var n = 1; n <= pdf.numPages; n++) nums.push(n);
+      // Every page's frame and boxes go up first (so the count of what's left is right from the start); the pages
+      // themselves are then drawn one after another.
+      return Promise.all(nums.map(function (n) { return pdf.getPage(n); })).then(function (pages) {
+        pagesEl.innerHTML = "";
+        var width = Math.min(pagesEl.clientWidth || 800, 860);
+        var jobs = pages.map(function (page, i) {
           var base = page.getViewport({ scale: 1 });
-          var scale = (width / base.width) * Math.min(window.devicePixelRatio || 1, 2);
-          var vp = page.getViewport({ scale: scale });
-          var holder = document.createElement("div"); holder.className = "page"; holder.dataset.page = n;
+          var vp = page.getViewport({ scale: (width / base.width) * Math.min(window.devicePixelRatio || 1, 2) });
+          var holder = document.createElement("div"); holder.className = "page"; holder.dataset.page = i + 1;
           var canvas = document.createElement("canvas"); canvas.width = vp.width; canvas.height = vp.height;
           holder.appendChild(canvas);
-          var num = document.createElement("span"); num.className = "num"; num.textContent = "Page " + n + " of " + pdf.numPages; holder.appendChild(num);
+          var num = document.createElement("span"); num.className = "num"; num.textContent = "Page " + (i + 1) + " of " + pdf.numPages; holder.appendChild(num);
           pagesEl.appendChild(holder);
-          placeFields(holder, n);
-          return page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+          placeFields(holder, i + 1);
+          return { page: page, canvas: canvas, vp: vp };
         });
-      })(n);
-      return chain;
-    }).then(markNext).catch(function () { pagesEl.innerHTML = '<p class="err">The document couldn\'t be loaded. Please reload the page.</p>'; });
+        markNext();
+        return jobs.reduce(function (chain, j) {
+          return chain.then(function () { return j.page.render({ canvasContext: j.canvas.getContext("2d"), viewport: j.vp }).promise; });
+        }, Promise.resolve());
+      });
+    }).catch(function () { pagesEl.innerHTML = '<p class="err">The document couldn\'t be loaded. Please reload the page.</p>'; });
   }
 
   var LABEL = { signature: "Sign here", initials: "Initials", name: "Name", date: "Date", text: "Fill in" };
@@ -187,17 +200,31 @@
       if (f.kind !== "text") el.type = "button";
       el.className = "fld"; el.dataset.id = f.id; el.dataset.kind = f.kind;
       el.style.left = (f.x * 100) + "%"; el.style.top = (f.y * 100) + "%"; el.style.width = (f.w * 100) + "%"; el.style.height = (f.h * 100) + "%";
-      if (f.kind === "signature") { el.textContent = LABEL.signature; el.setAttribute("aria-label", "Add your signature"); el.addEventListener("click", openPad); }
+      if (f.kind === "signature") { el.textContent = LABEL.signature; el.setAttribute("aria-label", "Sign here"); el.addEventListener("click", function () { signBox(el); }); }
+      else if (f.kind === "initials") { el.textContent = LABEL.initials; el.setAttribute("aria-label", "Add your initials here"); el.addEventListener("click", function () { initialBox(el); }); }
       else if (f.kind === "text") {
         var input = document.createElement("input"); input.type = "text"; input.maxLength = 500; input.placeholder = f.label || LABEL.text;
         input.setAttribute("aria-label", f.label || "Fill in"); input.dataset.required = f.required ? "1" : "";
         input.addEventListener("input", function () { values[f.id] = input.value; el.classList.toggle("done", !!input.value.trim()); markNext(); });
+        input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); input.blur(); advance(); } });
         el.appendChild(input);
       } else { el.classList.add("auto"); el.disabled = true; }
       holder.appendChild(el);
     });
-    refreshAuto();
+    refreshAuto(); fitText();
   }
+  /** Text in a box scales with the box, so it fits on a phone as well as on a computer. */
+  function fitText() {
+    document.querySelectorAll(".fld").forEach(function (el) {
+      var h = el.clientHeight; if (!h) return;
+      var size = Math.max(6, Math.min(15, h * 0.58));
+      el.style.fontSize = size + "px";
+      // A typing box keeps 16px letters (smaller ones make iPhones zoom the page) and is shrunk as a whole to fit.
+      var input = el.querySelector("input");
+      if (input) { var k = Math.min(1, size / 16); input.style.width = (100 / k) + "%"; input.style.height = (100 / k) + "%"; input.style.transform = "scale(" + k + ")"; }
+    });
+  }
+  window.addEventListener("resize", fitText);
 
   function initialsOf(name) { return name.trim().split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 6).toUpperCase(); }
   function refreshAuto() {
@@ -206,22 +233,49 @@
       var k = el.dataset.kind;
       if (k === "name") { el.textContent = name.trim() || LABEL.name; el.classList.toggle("done", !!name.trim()); }
       if (k === "date") { el.textContent = today(); el.classList.add("done"); }
-      if (k === "initials") { el.textContent = initialsOf(name) || LABEL.initials; el.classList.toggle("done", !!name.trim()); }
+      if (k === "initials" && applied[el.dataset.id]) { el.textContent = initialsOf(name) || LABEL.initials; }
     });
   }
+  function isPending(el) {
+    var k = el.dataset.kind;
+    if (k === "signature" || k === "initials") return !applied[el.dataset.id];
+    if (k === "text") { var i = el.querySelector("input"); return !!i.dataset.required && !i.value.trim(); }
+    return false;
+  }
   function markNext() {
-    var found = false;
+    var left = 0, first = null;
     document.querySelectorAll(".fld").forEach(function (el) {
       el.classList.remove("next");
-      var pending = (el.dataset.kind === "signature" && !signature) || (el.dataset.kind === "text" && el.querySelector("input").dataset.required && !el.querySelector("input").value.trim());
-      if (pending && !found) { el.classList.add("next"); found = true; }
+      if (isPending(el)) { left++; if (!first) first = el; }
     });
+    if (first) first.classList.add("next");
     var nb = document.getElementById("nextBtn");
-    if (nb) nb.textContent = found ? (signature || Object.keys(values).length ? "Next box" : "Start") : "Go to Finish";
+    if (nb) nb.textContent = first ? (started ? "Next" : "Start") + " (" + left + " left)" : "Go to Finish";
+    return first;
+  }
+  var started = false;
+  /** After a box is filled, move on to the next one that needs the signer (or to the Finish area). */
+  function advance() {
+    started = true;
+    var n = markNext();
+    setTimeout(function () { (n || document.querySelector(".bar")).scrollIntoView({ behavior: "smooth", block: "center" }); }, 250);
+  }
+  function showSignature(el) {
+    el.innerHTML = ""; var img = document.createElement("img"); img.src = signature; img.alt = "Your signature"; el.appendChild(img); el.classList.add("done");
+  }
+  /** A Signature box: the first one opens the pad; after that a tap places the same signature. Tapping a signed box lets them redo it. */
+  function signBox(el) {
+    if (!signature || applied[el.dataset.id]) return openPad(el);
+    applied[el.dataset.id] = true; showSignature(el); advance();
+  }
+  function initialBox(el) {
+    var name = document.getElementById("fullname").value.trim();
+    if (name.length < 2) { document.getElementById("err").textContent = REASONS.name_needed; document.querySelector(".bar").scrollIntoView({ behavior: "smooth", block: "center" }); document.getElementById("fullname").focus({ preventScroll: true }); return; }
+    applied[el.dataset.id] = true; el.textContent = initialsOf(name); el.classList.add("done"); advance();
   }
 
   // ---- The signature pad: draw with a finger or mouse, or type the name in a script font. ----
-  function openPad() {
+  function openPad(target) {
     var back = document.createElement("div"); back.className = "dialog-back";
     back.innerHTML = '<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="padTitle"><h2 id="padTitle">Add your signature</h2>' +
       '<div class="tabs"><button type="button" id="tabDraw" aria-pressed="true">Draw</button><button type="button" id="tabType" aria-pressed="false">Type</button></div>' +
@@ -264,10 +318,10 @@
       }
       out = trimmed(mode === "draw" ? pad : c) || out;
       signature = out;
-      document.querySelectorAll('.fld[data-kind="signature"]').forEach(function (el) {
-        el.innerHTML = ""; var img = document.createElement("img"); img.src = out; img.alt = "Your signature"; el.appendChild(img); el.classList.add("done");
-      });
-      close(); markNext();
+      if (target && target.dataset) applied[target.dataset.id] = true;
+      // The box they tapped, plus any they had already signed (so a redone signature is the same everywhere).
+      document.querySelectorAll('.fld[data-kind="signature"]').forEach(function (el) { if (applied[el.dataset.id]) showSignature(el); });
+      close(); advance();
     });
   }
 
@@ -289,9 +343,9 @@
     if (busy) return;
     var err = document.getElementById("err"), name = document.getElementById("fullname").value.trim();
     err.textContent = "";
-    var missingText = Array.prototype.some.call(document.querySelectorAll('.fld[data-kind="text"] input'), function (i) { return i.dataset.required && !i.value.trim(); });
-    if (!signature) { err.textContent = REASONS.signature_needed; scrollToNext(); return; }
-    if (missingText) { err.textContent = REASONS.field_needed; scrollToNext(); return; }
+    var pending = markNext();
+    if (pending) { err.textContent = pending.dataset.kind === "signature" ? "Please sign in every Sign here box (" + document.querySelectorAll('.fld[data-kind="signature"]').length + " in this document)." : REASONS.field_needed; scrollToNext(); return; }
+    if (!signature) { err.textContent = REASONS.signature_needed; return; }
     if (name.length < 2) { err.textContent = REASONS.name_needed; return; }
     var email = isTemplate ? document.getElementById("email").value.trim() : "";
     if (isTemplate && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = REASONS.email_needed; return; }
