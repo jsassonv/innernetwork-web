@@ -23,7 +23,8 @@
     "The host reviews each request and confirms by email.": "El anfitrión revisa cada solicitud y confirma por correo.", "Registration closes": "El registro cierra",
     "Request to join": "Solicitar unirme", "Your request was sent. The host will confirm by email.": "Tu solicitud fue enviada. El anfitrión confirmará por correo.",
     "Answers close": "Las respuestas cierran", "Answers are closed. You can still tell the host you can't go.": "Las respuestas están cerradas. Aún puedes avisar que no podrás ir.",
-    "Tickets go on sale": "Las entradas salen a la venta", "Code applied": "Código aplicado", "Have a code?": "¿Tienes un código?", "Apply": "Aplicar", "Promo code": "Código promocional", "Enter a code first.": "Escribe un código primero.",
+    "Tickets go on sale": "Las entradas salen a la venta", "Code applied": "Código aplicado", "Have a code?": "¿Tienes un código?", "Apply": "Aplicar", "Add to calendar": "Agregar al calendario", "More from {name}": "Más de {name}", "this host": "este anfitrión",
+    "Receipt": "Recibo", "Order": "Pedido", "Total": "Total", "Refunded": "Reembolsado", "Payment received. Your ticket is below.": "Pago recibido. Tu entrada está abajo.", "and {n} more": "y {n} más", "Promo code": "Código promocional", "Enter a code first.": "Escribe un código primero.",
     "Payments aren't available for this event right now. Please try again later.": "Los pagos no están disponibles para este evento por ahora. Inténtalo más tarde.",
     "That code isn't valid.": "Ese código no es válido.", "Sales for this ticket haven't started.": "La venta de esta entrada aún no empieza.",
     "Sales for this ticket have ended.": "La venta de esta entrada terminó.", "Check-in code": "Código de registro", "Show this at the door to check in.": "Muéstralo en la entrada para registrarte.", "Zoom out": "Alejar", "When": "Cuándo", "Where": "Dónde", "Hosted by": "Organiza", "Details": "Detalles", "What to know": "Lo que debes saber",
@@ -152,9 +153,15 @@
   /** Who's going (2080): the count, and first names of members who show in Discovery when the host allows it. */
   function whosGoing(gs) {
     if (!gs || !gs.count) return "";
-    var names = Array.isArray(gs.names) ? gs.names : [];
-    return '<section class="panel"><h2>' + t("Who's going") + '</h2><p class="text">' + t("{n} going").replace("{n}", gs.count) + '</p>' +
-      (names.length ? '<ul class="going">' + names.map(function (p) { return '<li>' + (p.photo && /^https:\/\//.test(p.photo) ? '<img src="' + esc(p.photo) + '" alt="">' : '') + '<span><strong>' + esc(p.name) + '</strong><small>' + esc([p.title, p.company].filter(Boolean).join(", ")) + '</small></span></li>'; }).join("") + '</ul>' : '') + '</section>';
+    var names = Array.isArray(gs.names) ? gs.names.slice(0, 10) : [];
+    var rest = gs.count - names.length;
+    // Up to ten photo circles (a letter when there is no photo) and "+N" for the rest.
+    var strip = names.length ? '<div class="avatars" role="list">' + names.map(function (p) {
+      var photo = p.photo && /^https:\/\//.test(p.photo);
+      return '<span class="av" role="listitem" title="' + esc(p.name) + '">' + (photo ? '<img src="' + esc(p.photo) + '" alt="' + esc(p.name) + '">' : '<b aria-hidden="true">' + esc((String(p.name || "?").trim().charAt(0) || "?").toUpperCase()) + '</b>') + '</span>';
+    }).join("") + (rest > 0 ? '<span class="av rest" aria-hidden="true">+' + rest + '</span>' : '') + '</div>' : '';
+    return '<section class="panel"><h2>' + t("Who's going") + '</h2>' + strip + '<p class="text">' + t("{n} going").replace("{n}", gs.count) + '</p>' +
+      (names.length ? '<ul class="going">' + names.slice(0, 5).map(function (p) { return '<li>' + (p.photo && /^https:\/\//.test(p.photo) ? '<img src="' + esc(p.photo) + '" alt="">' : '') + '<span><strong>' + esc(p.name) + '</strong><small>' + esc([p.title, p.company].filter(Boolean).join(", ")) + '</small></span></li>'; }).join("") + '</ul>' : '') + '</section>';
   }
   /** The ?src= tag the host put on the link (for their insights). */
   function src() { try { return (new URLSearchParams(location.search).get("src") || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40); } catch (x) { return ""; } }
@@ -246,7 +253,37 @@
   }
   function fail(msg) { var m = document.getElementById("main"); m.innerHTML = '<p class="status">' + esc(msg || t("This page isn't available.")) + '</p>'; }
 
-  window.HOSTED = { formFields: formFields, formAnswers: formAnswers, waiverField: waiverField, whosGoing: whosGoing, src: src, refundLine: refundLine, plusOnesFields: plusOnesFields, plusOnesValue: plusOnesValue, ruleError: ruleError, drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
+  /** Add the event to a calendar before buying anything: Google Calendar, or a calendar file for Apple and Outlook. */
+  function calendarLinks(e) {
+    if (!e || !e.starts_at || !e.ends_at) return "";
+    var utc = function (iso) { return new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); };
+    var ics = function (x) { return String(x || "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/[,;]/g, function (c) { return "\\" + c; }); };
+    var page = "https://innernetwork.app/h/" + e.id, details = ((e.description ? e.description + "\n\n" : "") + page).trim();
+    var google = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(e.name) + "&dates=" + utc(e.starts_at) + "/" + utc(e.ends_at) +
+      "&details=" + encodeURIComponent(details) + "&location=" + encodeURIComponent(e.place || "");
+    var file = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Inner Network//Events//EN", "BEGIN:VEVENT", "UID:" + e.id + "@innernetwork.app", "DTSTAMP:" + utc(new Date().toISOString()),
+      "DTSTART:" + utc(e.starts_at), "DTEND:" + utc(e.ends_at), "SUMMARY:" + ics(e.name), "LOCATION:" + ics(e.place), "DESCRIPTION:" + ics(details), "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    return '<p class="calrow"><span class="small muted">' + t("Add to calendar") + '</span>' +
+      '<a class="btn out sm" href="' + google + '" target="_blank" rel="noopener">Google</a>' +
+      '<a class="btn out sm" href="data:text/calendar;charset=utf-8,' + encodeURIComponent(file) + '" download="event.ics">Apple / Outlook</a></p>';
+  }
+  /** "More from <host>": the next public events by the same host or organization, under the details. */
+  function loadMore(id, into) {
+    if (!into) return;
+    fetch(FN + "?format=more&id=" + encodeURIComponent(id)).then(function (r) { return r.ok ? r.json() : null; }).then(function (b) {
+      if (!b || !b.events || !b.events.length) return;
+      var cards = b.events.map(function (x) {
+        var bg = https(x.cover_url) ? 'background:center/cover url(' + JSON.stringify(x.cover_url) + ')' : 'background:' + esc(/^#[0-9A-Fa-f]{6}$/.test(x.accent_hex || "") ? x.accent_hex : "#B08D57");
+        return '<a class="mcard" href="/h/' + esc(x.id) + '"><span class="mthumb" style="' + bg + '"></span><span class="mtext"><strong>' + esc(x.name) + '</strong><small>' + esc(x.when) + '</small>' + (x.place ? '<small>' + esc(x.place) + '</small>' : '') + '</span></a>';
+      }).join("");
+      var sec = document.createElement("section");
+      sec.className = "panel";
+      sec.innerHTML = '<h2>' + t("More from {name}").replace("{name}", esc(b.organizer || t("this host"))) + '</h2><div class="morelist">' + cards + '</div>';
+      into.appendChild(sec);
+    }).catch(function () { /* optional: the page works without it */ });
+  }
+
+  window.HOSTED = { calendarLinks: calendarLinks, loadMore: loadMore, formFields: formFields, formAnswers: formAnswers, waiverField: waiverField, whosGoing: whosGoing, src: src, refundLine: refundLine, plusOnesFields: plusOnesFields, plusOnesValue: plusOnesValue, ruleError: ruleError, drawTicket: drawTicket, FN: FN, t: t, esc: esc, flyer: flyer, facts: facts, details: details, post: post, get: get, fail: fail, hostNames: hostNames, accent: accent, SPANISH: SPANISH,
     tget: tget, tpost: tpost, money: money };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setLang(); }); else setLang();
 })();

@@ -8,7 +8,7 @@
 <meta name="referrer" content="no-referrer" />
 <title>Invitation · Inner Network</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
-<link rel="stylesheet" href="/assets/hosted.css?v=5">
+<link rel="stylesheet" href="/assets/hosted.css?v=7">
 <!--
   A guest's own invitation (Docs/2.0_Hosted_Events_Plan.md): innernetwork.app/i/<token>, from the invitation email.
   The token is the only key, so the page never shows anyone else's details. ?a=going|maybe|declined answers straight
@@ -17,12 +17,12 @@
 </head>
 <body>
 <div class="wrap">
-  <a class="brand" href="/"><img src="/assets/logo.png" alt="">Inner Network</a>
+  <a class="brand" href="/"><img src="/assets/home/mark.png" alt="" width="13" height="34">Inner Network</a>
   <main id="main"><p class="status">Loading…</p></main>
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
 <script src="/assets/qrcode.js"></script>
-<script src="/assets/hosted.js?v=10"></script>
+<script src="/assets/hosted.js?v=12"></script>
 <script>
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
@@ -50,6 +50,7 @@
       '<div class="kind">' + esc(e.kind_name) + '</div><h1>' + esc(e.name) + '</h1>' +
       (inviters ? '<p class="invited">' + (g.first_name ? esc(g.first_name) + ', ' : '') + '<strong>' + esc(inviters) + '</strong> ' + t("invited you") + '.</p>' : '') +
       H.facts(e) + '</div><div class="side">' +
+      (new URLSearchParams(location.search).has("paid") ? '<section class="panel"><p class="ok" role="status">' + t("Payment received. Your ticket is below.") + '</p></section>' : '') +
       (ended ? '<p class="note">' + t("This event has ended.") + '</p>' :
         '<section class="panel" aria-labelledby="ans"><h2 id="ans">' + t(g.status === "invited" ? "Answer this invitation" : "Your answer") + '</h2>' +
         (closed ? '<p class="note">' + t("Answers are closed. You can still tell the host you can't go.") + '</p>' : '') +
@@ -75,7 +76,13 @@
           H.plusOnesFields(e.plus_ones, g.plus_ones) +
           '<button class="btn" type="submit">' + t("Save") + '</button></form>' : '') +
         '</section>') +
+      // The receipt for what was bought here: what, how much, and the order number.
+      (data.ticket && data.ticket.orders && data.ticket.orders.length ? '<section class="panel"><h2>' + t("Receipt") + '</h2>' + data.ticket.orders.map(function (o) {
+        return '<p class="text"><strong>' + esc(o.quantity) + ' × ' + esc(o.ticket) + '</strong><br>' + t("Total") + ': ' + (o.amount_cents ? H.money(o.amount_cents) : t("Free")) +
+          (o.refunded_cents ? ' · ' + t("Refunded") + ' ' + H.money(o.refunded_cents) : '') + '<br><small class="muted">' + t("Order") + ' ' + esc(o.ref) + '</small></p>';
+      }).join("") + '</section>' : '') +
       '</div><div class="g-body">' + H.details(e) + '</div></div>';
+    H.loadMore(e.id, document.querySelector(".g-body"));
     H.drawTicket(g.checkin_code);
     var give = document.getElementById("giveTicket");
     if (give) give.addEventListener("click", function () {

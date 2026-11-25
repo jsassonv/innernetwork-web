@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <title>Event · Inner Network</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
-<link rel="stylesheet" href="/assets/hosted.css?v=5">
+<link rel="stylesheet" href="/assets/hosted.css?v=7">
 <!--
   A member's public or unlisted event (Docs/2.0_Hosted_Events_Plan.md): innernetwork.app/h/<id>. Free registration
   here (with capacity and a waitlist), a link to the host's outside ticketing, or tickets sold here through Stripe
@@ -15,11 +15,11 @@
 </head>
 <body>
 <div class="wrap">
-  <a class="brand" href="/"><img src="/assets/logo.png" alt="">Inner Network</a>
+  <a class="brand" href="/"><img src="/assets/home/mark.png" alt="" width="13" height="34">Inner Network</a>
   <main id="main"><p class="status">Loading…</p></main>
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
-<script src="/assets/hosted.js?v=10"></script>
+<script src="/assets/hosted.js?v=12"></script>
 <script>
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
@@ -60,9 +60,10 @@
       '<button class="btn" type="submit">' + t(full ? "Join the waitlist" : e.require_approval ? "Request to join" : "Register") + '</button></form>';
     document.getElementById("main").innerHTML =
       '<div class="grid"><div class="g-head">' + H.flyer(e) +
-      '<div class="kind">' + esc(e.kind_name) + '</div><h1>' + esc(e.name) + '</h1>' + H.facts(e) + '</div>' +
+      '<div class="kind">' + esc(e.kind_name) + '</div><h1>' + esc(e.name) + '</h1>' + H.facts(e) + H.calendarLinks(e) + '</div>' +
       '<div class="side"><section class="panel">' + action + '</section></div>' +
       '<div class="g-body">' + H.whosGoing(r.body.guests) + H.details(e) + '</div></div>';
+    H.loadMore(id, document.querySelector(".g-body"));
     if (e.ticketing === "platform" && !started) return paid ? confirmPaid() : buy(e, questions, full && !waitlist);
     var form = document.getElementById("reg");
     if (!form) return;
@@ -92,7 +93,11 @@
     box.innerHTML = '<p class="status">' + t("Confirming your payment…") + '</p>';
     (function check() {
       H.tget("/order?session=" + encodeURIComponent(paid)).then(function (r) {
-        if (r.ok && r.body.status === "paid") { box.innerHTML = '<p class="note ok">' + t("Payment received. Your confirmation is on its way by email.") + '</p>'; return; }
+        if (r.ok && r.body.status === "paid") {
+          // Their own ticket page: QR code, calendar, receipt and answers.
+          if (r.body.token) { location.replace("/i/" + r.body.token + "?paid=1"); return; }
+          box.innerHTML = '<p class="note ok">' + t("Payment received. Your confirmation is on its way by email.") + '</p>'; return;
+        }
         if (++tries < 10) return setTimeout(check, 2000);
         box.innerHTML = '<p class="note">' + t("We couldn't confirm the payment yet. Check your email in a few minutes.") + '</p>';
       }).catch(function () { if (++tries < 10) setTimeout(check, 2000); });

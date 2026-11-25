@@ -9,7 +9,7 @@ body { background: var(--bg); color: var(--ink); font: 16px/1.5 "Inter", system-
 a { color: inherit; }
 .wrap { max-width: 1040px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom)); }
 .brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; margin-bottom: 18px; }
-.brand img { width: 10px; height: 26px; }
+.brand img { width: 13px; height: 34px; display: block; }
 /* Banner 16:9 (how it is cropped in the editor and the apps), title and facts on the left, tickets on the right (below the
    facts on a phone), then the details. Joe 2026-11-24. */
 .grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; grid-template-areas: "head side" "body side"; column-gap: 28px; row-gap: 14px; align-items: start; }
@@ -85,6 +85,18 @@ fieldset.tickets legend { font-weight: 600; margin-bottom: 6px; padding: 0; }
 
 .plusones { border: 0; padding: 0; margin: 10px 0; display: grid; gap: 6px; }
 .plusones legend { font-weight: 600; margin-bottom: 4px; }
+.btn.sm { padding: 8px 14px; font-size: 14px; }
+.calrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 6px; }
+.calrow .btn { width: auto; flex: none; }
+.avatars { display: flex; flex-wrap: wrap; margin: 2px 0 10px 8px; }
+.av { width: 40px; height: 40px; border-radius: 50%; margin-left: -8px; border: 2px solid var(--card); overflow: hidden; background: #E9E1CF; display: inline-grid; place-items: center; font-size: 15px; color: var(--muted); }
+.av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.av.rest { background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; }
+.morelist { display: grid; gap: 10px; }
+.mcard { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: center; text-decoration: none; }
+.mthumb { aspect-ratio: 16 / 9; border-radius: 12px; display: block; }
+.mtext { display: grid; gap: 2px; }
+.mtext small { color: var(--muted); }
 .promo { display: grid; gap: 6px; }
 .promo label { font-weight: 600; }
 .promo-row { display: flex; gap: 8px; }
