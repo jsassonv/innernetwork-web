@@ -60,7 +60,7 @@
         (e.rsvp_by && !closed ? '<p class="note">' + t("Answers close") + ' ' + esc(new Date(e.rsvp_by).toLocaleString()) + '</p>' : '') +
         '<p class="err" id="err" role="alert"></p>' +
         (message ? '<p class="ok" role="status">' + esc(message) + '</p>' : '') +
-        (going ? '<p style="margin:10px 0 0"><a class="btn out" href="' + H.FN + '?format=ics&token=' + token + '">' + t("Add to calendar") + '</a> <a class="btn out" href="' + H.FN.replace('event-mail', 'wallet-pass') + '?ticket=' + token + '">' + t("Add to Google Wallet") + '</a></p>' : '') +
+        (going ? '<p style="margin:10px 0 0"><a class="btn out" href="' + H.FN + '?format=ics&token=' + token + '">' + t("Add to calendar") + '</a> <a href="' + H.FN.replace('event-mail', 'wallet-pass') + '?ticket=' + token + '" style="display:inline-block;vertical-align:middle;margin-left:6px"><img src="/assets/wallet/add-to-google-wallet.png" width="170" height="47" alt="' + t("Add to Google Wallet") + '" style="display:block"></a></p>' : '') +
         (data.ticket && data.ticket.can_request ? '<p style="margin:10px 0 0"><button class="link" type="button" id="askRefund">' + t("Ask the host for a refund") + '</button></p>' : '') +
         (data.ticket && data.ticket.requested ? '<p class="note">' + t("You asked for a refund. The host will reply by email.") + '</p>' : '') +
         (data.ticket ? H.refundLine(e) : '') +
