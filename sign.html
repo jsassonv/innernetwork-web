@@ -104,6 +104,23 @@
     #menuBtn { display: inline-block; }
   }
   @media (prefers-reduced-motion: reduce) { .side { transition: none; } }
+  /* The gate (shown when a visitor taps a member feature): headline first, one gold button, the rest quieter. */
+  .dialog.gate { position: relative; max-width: 440px; padding: 22px 20px calc(16px + env(safe-area-inset-bottom, 0px)); text-align: left; }
+  .gate .gate-x { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; background: none; font-size: 26px; line-height: 1; color: #5B6170; cursor: pointer; border-radius: 50%; }
+  .gate .gate-x:hover, .gate .gate-x:focus-visible { background: #F1EBDD; outline: none; }
+  .gate .gate-label { margin: 0 44px 4px 0; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #5B6170; }
+  .gate h2 { margin: 0 44px 8px 0; font: 700 24px/1.2 "Playfair Display", Georgia, serif; color: #1F2330; text-wrap: balance; }
+  .gate .gate-body { margin: 0 0 16px; font-size: 15px; line-height: 1.45; color: #5B6170; }
+  .gate .gate-join { display: flex; align-items: center; justify-content: center; min-height: 48px; width: 100%; box-sizing: border-box; text-align: center; }
+  .gate .gate-login { margin: 10px 0 14px; font-size: 14px; color: #5B6170; text-align: center; }
+  .gate .gate-login a { font-weight: 600; color: #725A34; display: inline-block; padding: 8px 4px; }
+  .gate .gate-app { margin: 0 0 8px; font-size: 13px; color: #5B6170; text-align: center; }
+  .gate .gate-badges { display: flex; gap: 10px; justify-content: center; align-items: center; }
+  .gate .gate-badges a { display: flex; align-items: center; min-height: 44px; }
+  .gate .gate-badges img { height: 40px; width: auto; display: block; }
+  @media (max-width: 359px) { .gate .gate-badges { flex-direction: column; } }
+  .gate .gate-no { display: block; width: 100%; min-height: 44px; margin-top: 8px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: #5B6170; cursor: pointer; border-radius: 12px; }
+  .gate .gate-no:hover, .gate .gate-no:focus-visible { background: #F6F1E7; outline: none; }
   .join-list { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
   .join-list a { display: flex; justify-content: center; }
   .join-list img { height: 46px; width: auto; display: block; }
@@ -151,25 +168,79 @@
   function setOpen(on) { document.body.classList.toggle("side-open", on); menuBtn.setAttribute("aria-expanded", on ? "true" : "false"); }
   menuBtn.addEventListener("click", function () { setOpen(!document.body.classList.contains("side-open")); });
   document.getElementById("sideBack").addEventListener("click", function () { setOpen(false); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { setOpen(false); var d = document.getElementById("inviteBack"); if (d) d.remove(); } });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") setOpen(false); });
+
+  // ---- The gate: what a visitor who isn't signed in sees when they tap a feature in the menu. ----
+  // Copy per feature (one map; a feature without an entry falls back to its menu name and description).
+  var GATE_COPY = {
+    contacts: { headline: "Never lose track of who you meet", body: "Keep the people you've connected with and the leads who shared their details, all in one place." },
+    whos_going: { headline: "See who's going before you show up", body: "Know which events are worth your time, and who you'll meet there." },
+    digital_card: { headline: "Share your card in one tap", body: "Make your digital business card and send it anywhere, with no paper needed." },
+    documents: { headline: "Send it. Sign it. Done.", body: "Send documents and get them signed without leaving Inner Network." },
+    events: { headline: "Save the events worth your time", body: "Build your own calendar of events and get reminded before they happen." }
+  };
+  var FEATURE_ID = { "Contacts": "contacts", "My Cards": "digital_card", "Documents": "documents", "Events": "events" };
+  var GATE_FIXED = "Joining is free, and it works on your phone or in your browser.";
+
+  /** Analytics: gate_shown and gate_click, with the feature and the action. Goes to window.dataLayer (when a tag
+      manager is on the page) and out as an "in:analytics" event that any tool on the page can listen for. */
+  function track(name, props) {
+    try {
+      var payload = Object.assign({ event: name }, props || {});
+      (window.dataLayer = window.dataLayer || []).push(payload);
+      document.dispatchEvent(new CustomEvent("in:analytics", { detail: payload }));
+    } catch (e) { /* tracking never gets in the way */ }
+  }
 
   function invite(name, text) {
     setOpen(false);
     var old = document.getElementById("inviteBack"); if (old) old.remove();
+    var opener = document.activeElement;
+    var id = FEATURE_ID[name] || name.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    var copy = GATE_COPY[id] || { headline: name, body: text };
+    var utm = "utm_source=web_gate&utm_campaign=logged_out&utm_content=" + encodeURIComponent(id);
     var back = document.createElement("div"); back.className = "dialog-back"; back.id = "inviteBack";
-    back.innerHTML = '<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="invTitle"><h2 id="invTitle"></h2><p id="invText" style="margin:0 0 10px"></p>' +
-      '<p class="note" style="margin:0">This is part of Inner Network. Joining is free, and you can use it on your phone or in your browser.</p>' +
-      '<ul class="join-list">' +
-      '<li><a class="btn" href="https://app.innernetwork.app/?join=1" target="_blank" rel="noopener">Join free in your browser</a></li>' +
-      '<li><a href="https://apps.apple.com/app/id6804337610" target="_blank" rel="noopener"><img src="/assets/badges/app-store.svg" alt="Download on the App Store"></a></li>' +
-      '<li><a href="https://play.google.com/store/apps/details?id=com.innernetwork.app" target="_blank" rel="noopener"><img src="/assets/badges/google-play-tight.png" alt="Get it on Google Play"></a></li>' +
-      '</ul><div class="row"><button class="btn out" type="button" id="invNo">Not now</button></div></div>';
+    back.innerHTML = '<div class="dialog gate" role="dialog" aria-modal="true" aria-labelledby="gateHead" aria-describedby="gateBody">' +
+      '<button type="button" class="gate-x" data-act="close" aria-label="Close">&times;</button>' +
+      (GATE_COPY[id] ? '<p class="gate-label" id="gateLabel"></p>' : '') +
+      '<h2 id="gateHead"></h2><p class="gate-body" id="gateBody"></p>' +
+      '<a class="btn gate-join" data-act="join_web" href="https://app.innernetwork.app/?join=1&' + utm + '" target="_blank" rel="noopener">Join free in your browser</a>' +
+      '<p class="gate-login">Already have an account? <a data-act="login" href="https://app.innernetwork.app/?' + utm + '" target="_blank" rel="noopener">Log in</a></p>' +
+      '<p class="gate-app">Or get the app:</p>' +
+      '<div class="gate-badges">' +
+      '<a data-act="app_store" href="https://apps.apple.com/app/id6804337610?' + utm + '&ct=web_gate_' + encodeURIComponent(id) + '" target="_blank" rel="noopener"><img src="/assets/badges/app-store.svg" alt="Download on the App Store"></a>' +
+      '<a data-act="google_play" href="https://play.google.com/store/apps/details?id=com.innernetwork.app&referrer=' + encodeURIComponent(utm) + '" target="_blank" rel="noopener"><img src="/assets/badges/google-play-tight.png" alt="Get it on Google Play"></a>' +
+      '</div><button class="gate-no" type="button" data-act="not_now">Not now</button></div>';
     document.body.appendChild(back);
-    back.querySelector("#invTitle").textContent = name;
-    back.querySelector("#invText").textContent = text;
-    back.querySelector("#invNo").addEventListener("click", function () { back.remove(); });
-    back.addEventListener("click", function (e) { if (e.target === back) back.remove(); });
-    back.querySelector("#invNo").focus();
+    var label = back.querySelector("#gateLabel"); if (label) label.textContent = name;
+    back.querySelector("#gateHead").textContent = copy.headline;
+    back.querySelector("#gateBody").textContent = copy.body + " " + GATE_FIXED;
+    track("gate_shown", { feature: id });
+
+    function close(action) {
+      if (!back.isConnected) return;
+      if (action) track("gate_click", { feature: id, action: action });
+      back.remove(); document.removeEventListener("keydown", onKey, true);
+      if (opener && opener.focus && opener.isConnected) opener.focus();   // back to what they tapped
+    }
+    back.closeGate = close;
+    function onKey(e) {
+      if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close("close"); return; }
+      if (e.key !== "Tab") return;
+      // Keep the keyboard inside the dialog while it is open.
+      var f = back.querySelectorAll("a[href], button"); var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+    document.addEventListener("keydown", onKey, true);
+    back.addEventListener("click", function (e) {
+      if (e.target === back) return close("close");
+      var el = e.target.closest ? e.target.closest("[data-act]") : null;
+      if (!el) return;
+      var act = el.getAttribute("data-act");
+      if (el.tagName === "BUTTON") close(act); else track("gate_click", { feature: id, action: act });
+    });
+    back.querySelector(".gate-join").focus();
   }
 })();
 </script>
