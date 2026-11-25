@@ -63,6 +63,12 @@
   .dialog .row { display: flex; gap: 10px; margin-top: 12px; }
   .dialog .row .btn { flex: 1; text-align: center; }
   .done-box { text-align: center; padding: 30px 10px; }
+  .promo { margin: 28px 0 0; padding: 18px; background: #fff; border-radius: 18px; text-align: center; box-shadow: 0 1px 6px rgba(31,35,48,.10); }
+  .promo p { margin: 0 0 8px; }
+  .promo .promo-text { color: #5B6170; font-size: 14px; line-height: 1.45; max-width: 420px; margin-left: auto; margin-right: auto; }
+  .promo .promo-badges { margin: 12px 0 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .promo img { height: 44px; width: auto; display: block; }
+  body:has(#nextBtn:not([hidden])) .promo { margin-bottom: 70px; }
   .done-box h1 { margin: 0 0 8px; }
   .done-box .status { margin: 0 0 22px; padding: 0; min-height: 0; }
 </style>
@@ -71,6 +77,14 @@
 <div class="wrap">
   <a class="brand" href="/"><img src="/assets/home/mark.png" alt="" width="13" height="34">Inner Network</a>
   <main id="main"><p class="status">Loading…</p></main>
+  <aside class="promo" aria-label="About Inner Network">
+    <p><strong>Signed with Inner Network</strong></p>
+    <p class="promo-text">The app where professionals share a digital business card, find industry events and stay connected.</p>
+    <p class="promo-badges">
+      <a href="https://apps.apple.com/app/id6804337610" target="_blank" rel="noopener"><img src="/assets/badges/app-store.svg" alt="Download on the App Store" height="44"></a>
+      <a href="https://play.google.com/store/apps/details?id=com.innernetwork.app" target="_blank" rel="noopener"><img src="/assets/badges/google-play.png" alt="Get it on Google Play" height="44"></a>
+    </p>
+  </aside>
   <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
 </div>
 <script src="/assets/pdfjs/pdf.min.js"></script>
