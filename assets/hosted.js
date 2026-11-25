@@ -28,7 +28,7 @@
     "Payments aren't available for this event right now. Please try again later.": "Los pagos no están disponibles para este evento por ahora. Inténtalo más tarde.",
     "That code isn't valid.": "Ese código no es válido.", "Sales for this ticket haven't started.": "La venta de esta entrada aún no empieza.",
     "Sales for this ticket have ended.": "La venta de esta entrada terminó.", "Check-in code": "Código de registro", "Show this at the door to check in.": "Muéstralo en la entrada para registrarte.", "Zoom out": "Alejar", "When": "Cuándo", "Where": "Dónde", "Hosted by": "Organiza", "Details": "Detalles", "What to know": "Lo que debes saber",
-    "Your answer": "Tu respuesta", "Add to calendar": "Agregar al calendario", "Text me reminders": "Envíenme recordatorios por mensaje de texto",
+    "Your answer": "Tu respuesta", "Add to calendar": "Agregar al calendario", "Add to Google Wallet": "Agregar a Google Wallet", "Text me reminders": "Envíenme recordatorios por mensaje de texto",
     "Mobile phone": "Teléfono móvil", "Save": "Guardar", "Saved.": "Guardado.", "Sending…": "Enviando…",
     "You're going. See you there.": "Vas a ir. Nos vemos allí.", "Thanks, we let the host know.": "Gracias, se lo avisamos al anfitrión.",
     "You're on the waitlist. We'll email you if a spot opens.": "Estás en la lista de espera. Te escribiremos si se libera un lugar.",
