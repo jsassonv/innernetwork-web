@@ -43,7 +43,14 @@
   #nextBtn { border: 0; border-radius: 999px; padding: 13px 20px; background: #1F2330; color: #fff;
     font: inherit; font-weight: 600; font-size: 15px; box-shadow: 0 4px 14px rgba(31,35,48,.35); cursor: pointer; }
   .bar label { display: block; font-size: 13px; font-weight: 600; margin: 0 0 4px; }
-  .bar input[type=text], .bar input#email { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid #D9D3C7; border-radius: 12px; font: inherit; font-size: 16px; }
+  .mine { margin: 0 0 14px; background: #fff; border-radius: 18px; box-shadow: 0 1px 6px rgba(31,35,48,.16); padding: 16px; }
+  .mine h2 { margin: 0 0 10px; font: 600 16px/1.3 "Inter", system-ui, sans-serif; }
+  .mine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+  @media (max-width: 480px) { .mine-grid { grid-template-columns: 1fr; } }
+  .mine label { display: block; font-size: 13px; font-weight: 600; margin: 0 0 4px; }
+  .mine .hint { font-weight: 400; color: #5B6170; }
+  .mine .err { margin: 8px 0 0; }
+  .mine input, .bar input[type=text], .bar input#email { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid #D9D3C7; border-radius: 12px; font: inherit; font-size: 16px; }
   .bar .agree { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0; font-size: 14px; line-height: 1.4; font-weight: 400; }
   .bar .agree input { width: 20px; height: 20px; margin-top: 1px; flex: none; }
   .bar .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
@@ -74,8 +81,14 @@
   .promo .promo-text { max-width: 520px; }
 
   /* The Start / Next button sits at the top left of the document and stays there while scrolling. */
-  .nextbar { position: sticky; top: 10px; z-index: 10; height: 0; }
-  .nextbar #nextBtn { position: relative; top: 8px; left: 8px; }
+  /* Start / Next: on a computer it floats in the space to the left of the document, never on top of it. On a
+     phone there is no space beside the document, so it is a slim bar that stays at the top of the screen. */
+  .nextbar { position: sticky; top: 0; z-index: 10; margin: 0 -16px 10px; padding: 8px 16px; background: var(--bg, #F6F1E7); }
+  .nextbar:has(#nextBtn[hidden]) { display: none; }
+  @media (min-width: 1180px) {
+    .nextbar { position: sticky; top: 24px; height: 0; margin: 0; padding: 0; background: none; }
+    .nextbar #nextBtn { position: absolute; right: 100%; top: 0; margin-right: 18px; width: 136px; white-space: normal; line-height: 1.25; padding: 12px 10px; }
+  }
 
   /* The platform's menu, shown to people who aren't members yet: every item is there to look at, grayed out, and
      tapping one invites them to sign up. A column on the left on a computer; behind the Menu button on a phone. */
@@ -96,7 +109,7 @@
   .side .join a { display: block; margin-top: 10px; text-align: center; padding: 10px; border-radius: 12px; background: #8C6D3F; color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; }
   #menuBtn { display: none; float: right; border: 1px solid #D9D3C7; background: #fff; border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
   .side-back { display: none; }
-  @media (min-width: 1180px) { body.has-side .wrap { margin-left: max(292px, calc(50vw - 430px + 138px)); margin-right: auto; } .wrap > .brand { visibility: hidden; height: 0; margin: 0; } }
+  @media (min-width: 1180px) { body.has-side .wrap { margin-left: max(446px, calc(50vw - 430px + 138px)); margin-right: auto; } .wrap > .brand { visibility: hidden; height: 0; margin: 0; } }
   @media (max-width: 1179px) {
     .side { transform: translateX(-105%); transition: transform .2s ease; visibility: hidden; }
     body.side-open .side { transform: none; visibility: visible; box-shadow: 4px 0 24px rgba(31,35,48,.2); }
@@ -307,15 +320,21 @@
       var waiting = data.others.filter(function (o) { return o.status !== "signed"; }).map(function (o) { return o.name; });
       return box("You've signed", waiting.length ? "Waiting for: " + waiting.join(", ") + ". You'll get the finished copy by email when everyone has signed." : "You'll get the finished copy by email.");
     }
+    var nameParts = (function () { var parts = String(me.name || "").trim().split(/\s+/); return [parts.shift() || "", parts.join(" ")]; })();
     main.innerHTML =
       '<div class="doc-head"><h1>' + esc(d.title) + '</h1>' +
       '<p class="from">' + esc(data.sender.name) + (isTemplate ? ' asks you to sign this.' : ' sent you this to sign.') + '</p>' +
       (d.message.trim() ? '<p class="msg">' + esc(d.message.trim()) + '</p>' : '') +
-      '<p class="steps"><strong>How it works:</strong> press Start at the top left. It takes you to each gold box that needs you. Tap the box to sign or fill it in. At the end, type your name' + (isTemplate ? ' and email' : '') + ', tick the box and press Finish.</p></div>' +
+      '<p class="steps"><strong>How it works:</strong> fill in your details, then press Start. It takes you to each gold box that needs you. Tap the box to sign or fill it in. At the end, tick the box and press Finish.</p></div>' +
+      '<div class="mine"><h2>Your details</h2><div class="mine-grid">' +
+      '<div><label for="first">First name</label><input type="text" id="first" autocomplete="given-name" maxlength="60" value="' + esc(nameParts[0]) + '"></div>' +
+      '<div><label for="last">Last name</label><input type="text" id="last" autocomplete="family-name" maxlength="60" value="' + esc(nameParts[1]) + '"></div>' +
+      (isTemplate ? '<div><label for="email">Email <span class="hint">(your signed copy is sent here)</span></label><input type="text" inputmode="email" id="email" autocomplete="email" maxlength="200" autocapitalize="off" spellcheck="false"></div>' : '') +
+      '<div><label for="phone">Cell phone <span class="hint">(optional)</span></label><input type="tel" id="phone" autocomplete="tel" maxlength="30"></div>' +
+      '</div><p class="err" id="whoErr" role="alert"></p></div>' +
       '<div class="nextbar"><button type="button" id="nextBtn">Start</button></div>' +
       '<div id="pages"><p class="status">Loading the document…</p></div>' +
-      '<div class="bar"><label for="fullname">Your full name</label><input type="text" id="fullname" autocomplete="name" maxlength="120" value="' + esc(me.name) + '">' +
-      (isTemplate ? '<label for="email" style="margin-top:10px">Your email (your signed copy is sent here)</label><input type="text" inputmode="email" id="email" autocomplete="email" maxlength="200" autocapitalize="off" spellcheck="false">' : '') +
+      '<div class="bar">' +
       '<label class="agree"><input type="checkbox" id="agree"><span>I agree to sign this document electronically. My electronic signature has the same effect as signing on paper.</span></label>' +
       '<p class="err" id="err" role="alert"></p>' +
       '<div class="row' + (isTemplate ? ' single' : '') + '"><button class="btn" type="button" id="finish">Finish and sign</button>' + (isTemplate ? '' : '<button class="btn out" type="button" id="decline">Decline to sign</button>') + '</div></div>';
@@ -330,7 +349,8 @@
     });
     document.getElementById("finish").addEventListener("click", finish);
     if (!isTemplate) document.getElementById("decline").addEventListener("click", declineIt);
-    document.getElementById("fullname").addEventListener("input", refreshAuto);
+    document.getElementById("first").addEventListener("input", refreshAuto);
+    document.getElementById("last").addEventListener("input", refreshAuto);
     drawPdf();
   }
 
@@ -397,9 +417,23 @@
   }
   window.addEventListener("resize", fitText);
 
+  /** First and last name as one name (what the document shows). */
+  function fullName() {
+    var f = document.getElementById("first"), l = document.getElementById("last");
+    return ((f ? f.value : "").trim() + " " + (l ? l.value : "").trim()).replace(/\s+/g, " ").trim();
+  }
+  /** Sends the signer to the details at the top with a message, when a name is still missing. */
+  function askName() {
+    var f = document.getElementById("first"), l = document.getElementById("last");
+    document.getElementById("whoErr").textContent = "Please type your first and last name.";
+    document.querySelector(".mine").scrollIntoView({ behavior: "smooth", block: "center" });
+    (f.value.trim() ? l : f).focus({ preventScroll: true });
+  }
+  function haveName() { return document.getElementById("first").value.trim().length > 0 && document.getElementById("last").value.trim().length > 0; }
   function initialsOf(name) { return name.trim().split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 6).toUpperCase(); }
   function refreshAuto() {
-    var name = (document.getElementById("fullname") || {}).value || "";
+    var name = fullName();
+    var we = document.getElementById("whoErr"); if (we && haveName()) we.textContent = "";
     document.querySelectorAll(".fld").forEach(function (el) {
       var k = el.dataset.kind;
       if (k === "name") { el.textContent = name.trim() || LABEL.name; el.classList.toggle("done", !!name.trim()); }
@@ -440,8 +474,8 @@
     applied[el.dataset.id] = true; showSignature(el); advance();
   }
   function initialBox(el) {
-    var name = document.getElementById("fullname").value.trim();
-    if (name.length < 2) { document.getElementById("err").textContent = REASONS.name_needed; document.querySelector(".bar").scrollIntoView({ behavior: "smooth", block: "center" }); document.getElementById("fullname").focus({ preventScroll: true }); return; }
+    if (!haveName()) return askName();
+    var name = fullName();
     applied[el.dataset.id] = true; el.textContent = initialsOf(name); el.classList.add("done"); advance();
   }
 
@@ -465,7 +499,7 @@
     function setMode(m) {
       mode = m; pad.hidden = m !== "draw"; typed.hidden = m !== "type";
       back.querySelector("#tabDraw").setAttribute("aria-pressed", m === "draw"); back.querySelector("#tabType").setAttribute("aria-pressed", m === "type");
-      if (m === "type") { if (!typed.value) typed.value = (document.getElementById("fullname").value || "").trim(); typed.focus(); }
+      if (m === "type") { if (!typed.value) typed.value = fullName(); typed.focus(); }
     }
     back.querySelector("#tabDraw").addEventListener("click", function () { setMode("draw"); });
     back.querySelector("#tabType").addEventListener("click", function () { setMode("type"); });
@@ -512,17 +546,21 @@
 
   function finish() {
     if (busy) return;
-    var err = document.getElementById("err"), name = document.getElementById("fullname").value.trim();
+    var err = document.getElementById("err"), name = fullName();
     err.textContent = "";
     var pending = markNext();
     if (pending) { err.textContent = pending.dataset.kind === "signature" ? "Please sign in every Sign here box (" + document.querySelectorAll('.fld[data-kind="signature"]').length + " in this document)." : REASONS.field_needed; scrollToNext(); return; }
     if (!signature) { err.textContent = REASONS.signature_needed; return; }
-    if (name.length < 2) { err.textContent = REASONS.name_needed; return; }
+    if (!haveName()) { err.textContent = "Please type your first and last name at the top."; askName(); return; }
     var email = isTemplate ? document.getElementById("email").value.trim() : "";
-    if (isTemplate && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { err.textContent = REASONS.email_needed; return; }
+    if (isTemplate && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      err.textContent = REASONS.email_needed; document.getElementById("whoErr").textContent = REASONS.email_needed;
+      document.querySelector(".mine").scrollIntoView({ behavior: "smooth", block: "center" }); document.getElementById("email").focus({ preventScroll: true }); return;
+    }
     if (!document.getElementById("agree").checked) { err.textContent = REASONS.consent_needed; return; }
     busy = true; var b = document.getElementById("finish"); b.disabled = true; b.textContent = "Signing…";
-    var payload = { action: isTemplate ? "sign_template" : "sign", consent: true, typed_name: name, signature: signature, values: values, date: today(), initials: initialsOf(name) };
+    var payload = { action: isTemplate ? "sign_template" : "sign", consent: true, typed_name: name, signature: signature, values: values, date: today(), initials: initialsOf(name),
+      first_name: document.getElementById("first").value.trim(), last_name: document.getElementById("last").value.trim(), phone: document.getElementById("phone").value.trim() };
     if (isTemplate) { payload.public = pub; payload.email = email; } else payload.token = token;
     call(payload).then(function (res) {
       busy = false;
