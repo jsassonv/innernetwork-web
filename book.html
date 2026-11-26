@@ -77,6 +77,9 @@
   var params = new URLSearchParams(location.search);
   var handle = (params.get("h") || "").toLowerCase(), wanted = (params.get("t") || "").toLowerCase(), token = (params.get("b") || "").toLowerCase();
   var test = params.get("test") === "1";
+  // Text reminders for booked meetings stay off until the carrier registration's wording is confirmed to cover them
+  // (Docs/2.0_Scheduling_Plan.md, open points). Email reminders and the calendar invite always go out.
+  var TEXTS = false;
   var FN = "https://" + (test ? "eanaccexbjiebxqlouzb" : "dwfuvfcjptvycqyedetb") + ".supabase.co/functions/v1/booking";
   var main = document.getElementById("main");
   var zone = "America/New_York";
@@ -153,7 +156,7 @@
       '<div class="two"><div><label for="phone">Phone <span class="hint">(optional)</span></label><input id="phone" type="tel" autocomplete="tel" maxlength="30"></div>' +
       '<div><label for="company">Company <span class="hint">(optional)</span></label><input id="company" autocomplete="organization" maxlength="120"></div></div>' +
       '<label for="message">Anything ' + esc(owner.name.split(" ")[0]) + ' should know? <span class="hint">(optional)</span></label><textarea id="message" maxlength="2000"></textarea>' +
-      '<label class="check" style="margin-top:14px"><input type="checkbox" id="sms"><span>Text me a reminder about this meeting from Inner Network (1 or 2 texts). Msg &amp; data rates may apply. Reply HELP for help or STOP to opt out. Consent is not a condition of booking.</span></label>' +
+      (TEXTS ? '<label class="check" style="margin-top:14px"><input type="checkbox" id="sms"><span>Text me a reminder about this meeting from Inner Network (1 or 2 texts). Msg &amp; data rates may apply. Reply HELP for help or STOP to opt out. Consent is not a condition of booking.</span></label>' : '') +
       '<label class="check"><input type="checkbox" id="consent"><span>I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>. My details go to ' + esc(owner.name) + ' so they can meet with me.</span></label>' +
       '<div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" type="text" tabindex="-1" autocomplete="off"></div>' +
       '<p class="err" id="err" role="alert"></p>' +
@@ -199,7 +202,7 @@
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val("email"))) { err.textContent = REASONS.email_needed; document.getElementById("email").focus(); return; }
         if (!document.getElementById("consent").checked) { err.textContent = REASONS.consent_needed; return; }
         var body = { action: "book", type_id: ty.id, first_name: val("first"), last_name: val("last"), email: val("email"), phone: val("phone"), company: val("company"),
-          message: val("message"), timezone: zone, sms_opt_in: document.getElementById("sms").checked, consent: true, website: val("website") };
+          message: val("message"), timezone: zone, sms_opt_in: !!(document.getElementById("sms") && document.getElementById("sms").checked), consent: true, website: val("website") };
         if (picked) body.starts_at = picked;
         else {
           body.preferred = ["p1", "p2", "p3"].map(val).filter(Boolean).map(function (v) { return new Date(v).toISOString(); });
