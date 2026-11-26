@@ -709,6 +709,12 @@
         window.location.replace("/i.html?t=" + inviteMatch[1].toLowerCase() + window.location.search.replace(/^\?/, "&"));
         return;
       }
+      // Scheduling: a member's booking page, innernetwork.app/<handle>/book, and one meeting type, /<handle>/book/<type>.
+      var bookMatch = window.location.pathname.match(/^\/([a-zA-Z0-9](?:[a-zA-Z0-9-]{1,28})[a-zA-Z0-9])\/book(?:\/([a-zA-Z0-9-]{1,40}))?\/?$/);
+      if (bookMatch) {
+        window.location.replace("/book.html?h=" + encodeURIComponent(bookMatch[1].toLowerCase()) + (bookMatch[2] ? "&t=" + encodeURIComponent(bookMatch[2].toLowerCase()) : "") + window.location.search.replace(/^\?/, "&"));
+        return;
+      }
       var hostedMatch = window.location.pathname.match(/^\/h\/([0-9a-fA-F-]{36})\/?$/);
       if (hostedMatch) {
         window.location.replace("/h.html?id=" + hostedMatch[1].toLowerCase());

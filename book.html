@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co https://eanaccexbjiebxqlouzb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="referrer" content="no-referrer" />
+<title>Book a meeting · Inner Network</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="stylesheet" href="/assets/hosted.css?v=7">
+<!--
+  Scheduling (App-2.0 booking function, migration 2105, Docs/2.0_Scheduling_Plan.md).
+    innernetwork.app/<handle>/book            a member's meeting types      (book.html?h=<handle>)
+    innernetwork.app/<handle>/book/<type>     one meeting type              (book.html?h=<handle>&t=<type>)
+    book.html?b=<code>                        the guest's own booking: move it or cancel it
+  "Book instantly" types show the member's free times in the visitor's own time zone. "Ask first" types take up to
+  three preferred times and the member answers. &test=1 talks to the 2.0 test server.
+-->
+<style>
+  .wrap { max-width: 640px; }
+  .card { background: #fff; border-radius: 18px; box-shadow: 0 1px 6px rgba(31,35,48,.16); padding: 20px; margin-bottom: 14px; }
+  .card h1 { font-size: 26px; margin: 0 0 6px; }
+  .card h2 { font-size: 18px; margin: 0 0 10px; }
+  .who { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+  .who img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
+  .muted { color: #5B6170; }
+  .small { font-size: 14px; }
+  .types { display: grid; gap: 10px; }
+  .types button { text-align: left; background: #fff; border: 1px solid #D9D3C7; border-radius: 14px; padding: 14px; font: inherit; cursor: pointer; display: grid; gap: 4px; }
+  .types button:hover { border-color: #B08D57; }
+  .types small { color: #5B6170; font-size: 14px; }
+  .day { margin: 14px 0 6px; font-weight: 600; }
+  .slots { display: flex; flex-wrap: wrap; gap: 8px; }
+  .slots button { min-width: 92px; min-height: 44px; border-radius: 999px; border: 1px solid #B08D57; background: #fff; color: #1F2330; font: inherit; font-weight: 600; cursor: pointer; }
+  .slots button:hover, .slots button[aria-pressed="true"] { background: #B08D57; color: #fff; }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 4px; }
+  label .hint { font-weight: 400; color: #5B6170; }
+  input, textarea, select { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid #D9D3C7; border-radius: 12px; font: inherit; font-size: 16px; background: #fff; }
+  textarea { min-height: 90px; resize: vertical; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  @media (max-width: 480px) { .two { grid-template-columns: 1fr; } }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; font-size: 14px; }
+  .check input { width: 20px; height: 20px; flex: none; margin-top: 1px; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .link { background: none; border: 0; padding: 0; color: #8A6A36; font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; }
+  .tz { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 14px; color: #5B6170; margin-top: 4px; }
+  .tz select { width: auto; padding: 6px 10px; font-size: 14px; }
+  .promo { margin: 24px 0 0; padding: 18px; background: #fff; border-radius: 18px; text-align: center; box-shadow: 0 1px 6px rgba(31,35,48,.10); }
+  .promo p { margin: 0 0 8px; }
+  .promo .promo-head { font-size: 17px; line-height: 1.35; text-wrap: balance; }
+  .promo .promo-text { color: #5B6170; font-size: 14px; line-height: 1.45; max-width: 460px; margin-left: auto; margin-right: auto; }
+  .promo .promo-badges { margin: 12px 0 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .promo img { height: 46px; width: auto; display: block; }
+  .promo .promo-web { margin: 14px 0 0; font-size: 14px; color: #5B6170; }
+  .promo .promo-web a { font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/"><img src="/assets/home/mark.png" alt="" width="13" height="34">Inner Network</a>
+  <main id="main"><p class="status">Loading…</p></main>
+  <aside class="promo" aria-label="About Inner Network">
+    <p class="promo-head"><strong>Know where to go. Know who to meet. Know what it's worth.</strong></p>
+    <p class="promo-text">Inner Network is the networking platform for professionals, business owners and salespeople. Find events worth your time, share your digital card with a tap, keep every contact organized, and sign documents, all in one place.</p>
+    <p class="promo-badges">
+      <a href="https://apps.apple.com/app/id6804337610" target="_blank" rel="noopener"><img src="/assets/badges/app-store.svg" alt="Download on the App Store"></a>
+      <a href="https://play.google.com/store/apps/details?id=com.innernetwork.app" target="_blank" rel="noopener"><img src="/assets/badges/google-play-tight.png" alt="Get it on Google Play"></a>
+    </p>
+    <p class="promo-web">Or try it now in your browser: <a href="https://app.innernetwork.app/?join=1" target="_blank" rel="noopener">innernetwork.app</a></p>
+  </aside>
+  <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
+</div>
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var handle = (params.get("h") || "").toLowerCase(), wanted = (params.get("t") || "").toLowerCase(), token = (params.get("b") || "").toLowerCase();
+  var test = params.get("test") === "1";
+  var FN = "https://" + (test ? "eanaccexbjiebxqlouzb" : "dwfuvfcjptvycqyedetb") + ".supabase.co/functions/v1/booking";
+  var main = document.getElementById("main");
+  var zone = "America/New_York";
+  try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || zone; } catch (e) { /* keep the default */ }
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function call(body) {
+    return fetch(FN, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); });
+  }
+  function box(title, text) { main.innerHTML = '<div class="card" style="text-align:center"><h1>' + esc(title) + '</h1><p class="muted" style="margin:0">' + esc(text) + '</p></div>'; }
+  function fmt(iso, opts) { opts.timeZone = zone; return new Intl.DateTimeFormat("en-US", opts).format(new Date(iso)).replace(/[  ]/g, " "); }
+  var dayText = function (iso) { return fmt(iso, { weekday: "long", month: "long", day: "numeric" }); };
+  var timeText = function (iso) { return fmt(iso, { hour: "numeric", minute: "2-digit" }); };
+  var fullText = function (iso) { return fmt(iso, { weekday: "long", month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" }); };
+  function today() { var d = new Date(Date.now() - 86400000); return d.toISOString().slice(0, 10); }   // a day early, so no zone misses "today"
+  function place(ty) {
+    if (ty.location_kind === "video") return "Video call. The link comes in your confirmation email.";
+    if (ty.location_kind === "phone") return "Phone call";
+    return [ty.venue_name, ty.venue_address].filter(Boolean).join(", ") || "In person";
+  }
+  function ownerHtml(o) {
+    return '<div class="who">' + (o.photo && /^https:\/\//.test(o.photo) ? '<img src="' + esc(o.photo) + '" alt="">' : '') +
+      '<div><strong>' + esc(o.name) + '</strong><div class="muted small">' + esc([o.title, o.company].filter(Boolean).join(" · ")) + '</div></div></div>';
+  }
+  function zoneHtml() {
+    var zones = [];
+    try { zones = Intl.supportedValuesOf("timeZone"); } catch (e) { zones = ["America/New_York", "America/Chicago", "America/Denver", "America/Phoenix", "America/Los_Angeles", "America/Anchorage", "Pacific/Honolulu", "America/Puerto_Rico", "Europe/London", "Europe/Madrid"]; }
+    if (zones.indexOf(zone) < 0) zones.unshift(zone);
+    return '<div class="tz"><label for="tz" style="margin:0;font-weight:400">Times shown in</label><select id="tz">' +
+      zones.map(function (z) { return '<option' + (z === zone ? " selected" : "") + '>' + esc(z) + '</option>'; }).join("") + '</select></div>';
+  }
+
+  // ---- Choosing a time (instant types, and moving a booking) ----
+  function slotPicker(ty, opts) {
+    var from = today(), all = [], chosen = null, more = true;
+    var host = document.createElement("div");
+    function load() {
+      host.querySelector("#slotbox").insertAdjacentHTML("beforeend", '<p class="muted small" id="loading">Loading times…</p>');
+      call({ action: "slots", type_id: ty.id, from: from, days: 14, token: opts.token || undefined }).then(function (r) {
+        var got = (r.ok && r.body.slots) || [];
+        all = all.concat(got.filter(function (s) { return all.indexOf(s) < 0; }));
+        var next = new Date(from + "T00:00:00Z"); next.setUTCDate(next.getUTCDate() + 14); from = next.toISOString().slice(0, 10);
+        more = (new Date(from) - new Date()) / 86400000 < 180;
+        draw();
+      }).catch(function () { host.querySelector("#slotbox").innerHTML = '<p class="err">Check your connection and try again.</p>'; });
+    }
+    function draw() {
+      var days = {}, order = [];
+      all.forEach(function (s) { var d = dayText(s); if (!days[d]) { days[d] = []; order.push(d); } days[d].push(s); });
+      host.innerHTML = zoneHtml() + '<div id="slotbox">' +
+        (order.length ? order.map(function (d) {
+          return '<p class="day">' + esc(d) + '</p><div class="slots">' + days[d].map(function (s) {
+            return '<button type="button" data-s="' + esc(s) + '" aria-pressed="' + (s === chosen) + '">' + esc(timeText(s)) + '</button>'; }).join("") + '</div>';
+        }).join("") : '<p class="muted">No open times in the next two weeks.</p>') + '</div>' +
+        (more ? '<p style="margin:16px 0 0"><button type="button" class="link" id="more">Show later dates</button></p>' : '');
+      host.querySelector("#tz").addEventListener("change", function (e) { zone = e.target.value; draw(); });
+      var m = host.querySelector("#more"); if (m) m.addEventListener("click", load);
+      host.querySelectorAll(".slots button").forEach(function (b) {
+        b.addEventListener("click", function () { chosen = b.getAttribute("data-s"); draw(); opts.onPick(chosen); });
+      });
+    }
+    host.innerHTML = '<div id="slotbox"></div>';
+    load();
+    return host;
+  }
+
+  // ---- The visitor's details ----
+  function detailsForm(ty, owner, picked, preferredHtml) {
+    return '<form id="form" novalidate>' + (preferredHtml || '') +
+      '<div class="two"><div><label for="first">First name</label><input id="first" autocomplete="given-name" maxlength="80" required></div>' +
+      '<div><label for="last">Last name</label><input id="last" autocomplete="family-name" maxlength="80"></div></div>' +
+      '<label for="email">Email</label><input id="email" type="text" inputmode="email" autocomplete="email" maxlength="200" autocapitalize="off" spellcheck="false" required>' +
+      '<div class="two"><div><label for="phone">Phone <span class="hint">(optional)</span></label><input id="phone" type="tel" autocomplete="tel" maxlength="30"></div>' +
+      '<div><label for="company">Company <span class="hint">(optional)</span></label><input id="company" autocomplete="organization" maxlength="120"></div></div>' +
+      '<label for="message">Anything ' + esc(owner.name.split(" ")[0]) + ' should know? <span class="hint">(optional)</span></label><textarea id="message" maxlength="2000"></textarea>' +
+      '<label class="check" style="margin-top:14px"><input type="checkbox" id="sms"><span>Text me a reminder about this meeting from Inner Network (1 or 2 texts). Msg &amp; data rates may apply. Reply HELP for help or STOP to opt out. Consent is not a condition of booking.</span></label>' +
+      '<label class="check"><input type="checkbox" id="consent"><span>I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>. My details go to ' + esc(owner.name) + ' so they can meet with me.</span></label>' +
+      '<div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" type="text" tabindex="-1" autocomplete="off"></div>' +
+      '<p class="err" id="err" role="alert"></p>' +
+      '<button class="btn" type="submit" id="send" style="width:100%">' + (picked ? "Confirm booking" : "Send request") + '</button></form>';
+  }
+  var val = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; };
+  var REASONS = { consent_needed: "Please tick the box to agree.", name_needed: "Please type your first name.", email_needed: "Please type your email address.",
+    phone_invalid: "That phone number doesn't look right.", time_needed: "Please choose a time.", slot_taken: "Someone just took that time. Please pick another.",
+    check_details: "Please check your details and try again.", not_found: "This meeting type is no longer available." };
+  function errorText(r) {
+    var e = r.body && r.body.error;
+    return e && e.code === "RATE_LIMITED" ? "Too many tries. Please wait a while and try again." : (e && REASONS[e.reason]) || "That didn't work. Please try again.";
+  }
+
+  // ---- One meeting type ----
+  function showType(ty, owner, types) {
+    document.title = ty.name + " · " + owner.name;
+    var picked = null;
+    main.innerHTML = '<div class="card">' + ownerHtml(owner) + '<h1>' + esc(ty.name) + '</h1>' +
+      '<p class="muted" style="margin:0 0 6px">' + esc(ty.duration_minutes) + ' minutes · ' + esc(place(ty)) + '</p>' +
+      (ty.description ? '<p style="margin:0;white-space:pre-line">' + esc(ty.description) + '</p>' : '') +
+      (types.length > 1 ? '<p style="margin:12px 0 0"><button type="button" class="link" id="back">See all meeting types</button></p>' : '') + '</div>' +
+      '<div class="card" id="step"></div>';
+    var back = document.getElementById("back"); if (back) back.addEventListener("click", function () { showList(owner, types); });
+    var step = document.getElementById("step");
+
+    function askDetails() {
+      var pref = "";
+      if (ty.mode !== "instant") {
+        var min = new Date(Date.now() + (ty.lead_days || 0) * 86400000).toISOString().slice(0, 10) + "T08:00";
+        pref = '<h2>When works for you?</h2><p class="muted small" style="margin:0">Give up to three times. ' + esc(owner.name.split(" ")[0]) + ' will confirm one.</p>' +
+          [1, 2, 3].map(function (i) { return '<label for="p' + i + '">' + (i === 1 ? "First choice" : i === 2 ? "Second choice" : "Third choice") + (i > 1 ? ' <span class="hint">(optional)</span>' : '') + '</label><input id="p' + i + '" type="datetime-local" min="' + min + '">'; }).join("");
+      }
+      step.innerHTML = (picked ? '<h2>' + esc(fullText(picked)) + '</h2><p style="margin:0 0 6px"><button type="button" class="link" id="change">Choose another time</button></p>' : '') + detailsForm(ty, owner, picked, pref);
+      var ch = document.getElementById("change"); if (ch) ch.addEventListener("click", pickTime);
+      var busy = false;
+      document.getElementById("form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (busy) return;
+        var err = document.getElementById("err"), btn = document.getElementById("send");
+        err.textContent = "";
+        if (val("first").length < 1) { err.textContent = REASONS.name_needed; document.getElementById("first").focus(); return; }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val("email"))) { err.textContent = REASONS.email_needed; document.getElementById("email").focus(); return; }
+        if (!document.getElementById("consent").checked) { err.textContent = REASONS.consent_needed; return; }
+        var body = { action: "book", type_id: ty.id, first_name: val("first"), last_name: val("last"), email: val("email"), phone: val("phone"), company: val("company"),
+          message: val("message"), timezone: zone, sms_opt_in: document.getElementById("sms").checked, consent: true, website: val("website") };
+        if (picked) body.starts_at = picked;
+        else {
+          body.preferred = ["p1", "p2", "p3"].map(val).filter(Boolean).map(function (v) { return new Date(v).toISOString(); });
+          if (!body.preferred.length) { err.textContent = REASONS.time_needed; return; }
+        }
+        busy = true; btn.disabled = true; btn.textContent = "Sending…";
+        call(body).then(function (r) {
+          busy = false;
+          if (!r.ok) {
+            btn.disabled = false; btn.textContent = picked ? "Confirm booking" : "Send request";
+            err.textContent = errorText(r);
+            if (r.body && r.body.error && r.body.error.reason === "slot_taken") pickTime();
+            return;
+          }
+          if (r.body.booked) {
+            var manage = "/book.html?b=" + encodeURIComponent(r.body.token) + (test ? "&test=1" : "");
+            step.innerHTML = '<h2>You\'re booked</h2><p style="margin:0 0 6px"><strong>' + esc(fullText(picked)) + '</strong></p>' +
+              '<p class="muted" style="margin:0 0 6px">' + esc(ty.name) + ' with ' + esc(owner.name) + ' · ' + esc(place(ty)) + '</p>' +
+              '<p class="muted small" style="margin:0">A confirmation with a calendar invite is on its way to ' + esc(body.email) + '.</p>' +
+              '<div class="row">' + (r.body.guest_token ? '<a class="btn" href="/i.html?t=' + encodeURIComponent(r.body.guest_token) + (test ? "&test=1" : "") + '">Details and add to calendar</a>' : '') +
+              '<a class="btn out" href="' + manage + '">Change or cancel</a></div>';
+          } else {
+            step.innerHTML = '<h2>Request sent</h2><p class="muted" style="margin:0">' + esc(owner.name) + ' will confirm a time by email.</p>';
+          }
+          step.scrollIntoView({ block: "start", behavior: "smooth" });
+        }).catch(function () { busy = false; btn.disabled = false; btn.textContent = picked ? "Confirm booking" : "Send request"; err.textContent = "Check your connection and try again."; });
+      });
+    }
+    function pickTime() {
+      picked = null;
+      step.innerHTML = '<h2>Pick a time</h2>';
+      step.appendChild(slotPicker(ty, { onPick: function (s) { picked = s; askDetails(); step.scrollIntoView({ block: "start", behavior: "smooth" }); } }));
+    }
+    if (ty.mode === "instant") pickTime(); else askDetails();
+  }
+
+  // ---- All of a member's meeting types ----
+  function showList(owner, types) {
+    document.title = "Book a meeting · " + owner.name;
+    main.innerHTML = '<div class="card">' + ownerHtml(owner) + '<h1>Book a meeting</h1><div class="types">' +
+      types.map(function (ty, i) {
+        return '<button type="button" data-i="' + i + '"><strong>' + esc(ty.name) + '</strong><small>' + esc(ty.duration_minutes) + ' minutes · ' +
+          esc(ty.location_kind === "video" ? "Video call" : ty.location_kind === "phone" ? "Phone call" : "In person") + (ty.mode === "instant" ? '' : ' · By request') + '</small>' +
+          (ty.description ? '<small>' + esc(ty.description) + '</small>' : '') + '</button>';
+      }).join("") + '</div></div>';
+    main.querySelectorAll(".types button").forEach(function (b) { b.addEventListener("click", function () { showType(types[+b.getAttribute("data-i")], owner, types); }); });
+  }
+
+  // ---- The guest's own booking: move it or cancel it ----
+  function showBooking() {
+    call({ action: "booking", token: token }).then(function (r) {
+      if (!r.ok) return box("Booking not found", "Check the link in your confirmation email.");
+      var b = r.body, ty = b.type, owner = b.owner || { name: "your host" };
+      document.title = ty.name + " · Inner Network";
+      var gone = b.status !== "accepted", past = new Date(b.starts_at) < new Date();
+      main.innerHTML = '<div class="card">' + (b.owner ? ownerHtml(b.owner) : '') + '<h1>' + esc(ty.name) + '</h1>' +
+        '<p style="margin:0 0 6px"><strong>' + esc(fullText(b.starts_at)) + '</strong></p>' +
+        '<p class="muted" style="margin:0">' + esc(ty.duration_minutes) + ' minutes · ' + esc(place(ty)) + '</p>' +
+        (gone ? '<p class="err" style="margin-top:12px">This booking was cancelled.</p>' : past ? '<p class="muted" style="margin-top:12px">This meeting has already happened.</p>' :
+          (ty.cancellation_policy ? '<p class="muted small" style="margin-top:10px">Cancellation policy: ' + esc(ty.cancellation_policy) + '</p>' : '') +
+          '<div class="row"><button type="button" class="btn" id="move">Pick a new time</button><button type="button" class="btn out" id="cancel">Cancel booking</button></div>') +
+        '<p class="err" id="err" role="alert"></p></div><div id="step"></div>';
+      if (gone || past) return;
+      var step = document.getElementById("step"), err = document.getElementById("err");
+      document.getElementById("move").addEventListener("click", function () {
+        step.innerHTML = '<div class="card"><h2>Pick a new time</h2></div>';
+        step.firstChild.appendChild(slotPicker(ty, { token: token, onPick: function (s) {
+          if (!window.confirm("Move your booking to " + fullText(s) + "?")) return;
+          call({ action: "reschedule", token: token, starts_at: s }).then(function (x) { if (x.ok) showBooking(); else err.textContent = errorText(x); });
+        } }));
+        step.scrollIntoView({ block: "start", behavior: "smooth" });
+      });
+      document.getElementById("cancel").addEventListener("click", function () {
+        if (!window.confirm("Cancel this booking? " + owner.name + " will be told.")) return;
+        call({ action: "cancel", token: token }).then(function (x) { if (x.ok) showBooking(); else err.textContent = errorText(x); });
+      });
+    }).catch(function () { box("We couldn't open this booking", "Check your connection and try again."); });
+  }
+
+  if (/^[0-9a-f]{36}$/.test(token)) return showBooking();
+  if (!/^[a-z0-9][a-z0-9-]{1,29}$/.test(handle)) return box("Page not found", "Check the link and try again.");
+  call({ action: "page", handle: handle }).then(function (r) {
+    if (!r.ok || !r.body.types || !r.body.types.length) return box("Nothing to book yet", "This member hasn't opened their calendar for bookings.");
+    var types = r.body.types, one = types.filter(function (ty) { return ty.slug && ty.slug === wanted; })[0];
+    if (one) showType(one, r.body.owner, types); else if (types.length === 1) showType(types[0], r.body.owner, types); else showList(r.body.owner, types);
+  }).catch(function () { box("We couldn't open this page", "Check your connection and try again."); });
+})();
+</script>
+</body>
+</html>
