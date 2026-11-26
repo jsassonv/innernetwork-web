@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src https://dwfuvfcjptvycqyedetb.supabase.co https://eanaccexbjiebxqlouzb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="referrer" content="no-referrer" />
+<title>Contact form · Inner Network</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="stylesheet" href="/assets/hosted.css?v=7">
+<!--
+  A member's web form (App-2.0 crm-form function, migration 2103): innernetwork.app/f.html?f=<code>. Whoever fills it in
+  becomes a lead in that member's Contacts & CRM. It can be opened as a page or put inside another site in a frame
+  (add &embed=1 to hide the header and the Inner Network card). &test=1 talks to the 2.0 test server.
+-->
+<style>
+  .wrap { max-width: 560px; }
+  .form-card { background: #fff; border-radius: 18px; box-shadow: 0 1px 6px rgba(31,35,48,.16); padding: 20px; }
+  .form-card h1 { font-size: 26px; margin: 0 0 6px; }
+  .form-card .from { margin: 0 0 10px; color: #5B6170; }
+  .form-card .intro { margin: 0 0 14px; white-space: pre-line; }
+  .form-card label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 4px; }
+  .form-card .hint { font-weight: 400; color: #5B6170; }
+  .form-card input, .form-card textarea { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid #D9D3C7; border-radius: 12px; font: inherit; font-size: 16px; }
+  .form-card textarea { min-height: 110px; resize: vertical; }
+  .form-card .btn { display: block; width: 100%; margin-top: 16px; min-height: 48px; text-align: center; }
+  .form-card .btn[disabled] { opacity: .5; cursor: not-allowed; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .promo { margin: 24px 0 0; padding: 18px; background: #fff; border-radius: 18px; text-align: center; box-shadow: 0 1px 6px rgba(31,35,48,.10); }
+  .promo p { margin: 0 0 8px; }
+  .promo .promo-head { font-size: 17px; line-height: 1.35; text-wrap: balance; }
+  .promo .promo-text { color: #5B6170; font-size: 14px; line-height: 1.45; max-width: 460px; margin-left: auto; margin-right: auto; }
+  .promo .promo-badges { margin: 12px 0 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .promo img { height: 46px; width: auto; display: block; }
+  .promo .promo-web { margin: 14px 0 0; font-size: 14px; color: #5B6170; }
+  .promo .promo-web a { font-weight: 600; }
+  body.embed { background: transparent; }
+  body.embed .wrap { padding: 4px; }
+  body.embed .brand, body.embed footer, body.embed .promo { display: none; }
+  body.embed .powered { display: block; }
+  .powered { display: none; text-align: center; font-size: 12px; margin: 10px 0 0; color: #5B6170; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/"><img src="/assets/home/mark.png" alt="" width="13" height="34">Inner Network</a>
+  <main id="main"><p class="status">Loading…</p></main>
+  <p class="powered">Powered by <a href="https://innernetwork.app" target="_blank" rel="noopener">Inner Network</a></p>
+  <aside class="promo" aria-label="About Inner Network">
+    <p class="promo-head"><strong>Know where to go. Know who to meet. Know what it's worth.</strong></p>
+    <p class="promo-text">Inner Network is the networking platform for professionals, business owners and salespeople. Find events worth your time, share your digital card with a tap, keep every contact organized, and sign documents, all in one place.</p>
+    <p class="promo-badges">
+      <a href="https://apps.apple.com/app/id6804337610" target="_blank" rel="noopener"><img src="/assets/badges/app-store.svg" alt="Download on the App Store"></a>
+      <a href="https://play.google.com/store/apps/details?id=com.innernetwork.app" target="_blank" rel="noopener"><img src="/assets/badges/google-play-tight.png" alt="Get it on Google Play"></a>
+    </p>
+    <p class="promo-web">Or try it now in your browser: <a href="https://app.innernetwork.app/?join=1" target="_blank" rel="noopener">innernetwork.app</a></p>
+  </aside>
+  <footer>&copy; 2026 WAVECODE LLC · <a href="/privacy-policy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
+</div>
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var code = (params.get("f") || "").toLowerCase();
+  if (params.get("embed") === "1") document.body.classList.add("embed");
+  var FN = "https://" + (params.get("test") === "1" ? "eanaccexbjiebxqlouzb" : "dwfuvfcjptvycqyedetb") + ".supabase.co/functions/v1/crm-form";
+  var main = document.getElementById("main");
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function box(title, text) { main.innerHTML = '<div class="form-card" style="text-align:center"><h1>' + esc(title) + '</h1><p class="from" style="margin:0">' + esc(text) + '</p></div>'; }
+  function call(body) {
+    return fetch(FN, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); });
+  }
+  if (!/^[0-9a-f]{18}$/.test(code)) return box("Form not found", "Check the link and try again.");
+
+  call({ action: "view", code: code }).then(function (res) {
+    if (!res.ok) return box("Form not found", "Check the link and try again.");
+    var f = res.body;
+    if (!f.active) return box("This form is closed", f.from.name + " is not taking answers on it right now.");
+    document.title = f.title + " · Inner Network";
+    main.innerHTML = '<form class="form-card" id="form" novalidate>' +
+      '<h1>' + esc(f.title) + '</h1>' +
+      '<p class="from">' + esc(f.from.name) + (f.from.company ? ", " + esc(f.from.company) : "") + '</p>' +
+      (f.intro ? '<p class="intro">' + esc(f.intro) + '</p>' : '') +
+      '<label for="name">Your name</label><input id="name" type="text" autocomplete="name" maxlength="120" required>' +
+      '<label for="email">Email</label><input id="email" type="text" inputmode="email" autocomplete="email" maxlength="200" autocapitalize="off" spellcheck="false" required>' +
+      (f.ask_phone ? '<label for="phone">Phone <span class="hint">(optional)</span></label><input id="phone" type="tel" autocomplete="tel" maxlength="30">' : '') +
+      (f.ask_company ? '<label for="company">Company <span class="hint">(optional)</span></label><input id="company" type="text" autocomplete="organization" maxlength="160">' : '') +
+      (f.ask_message ? '<label for="message">Message <span class="hint">(optional)</span></label><textarea id="message" maxlength="1500"></textarea>' : '') +
+      '<div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" type="text" tabindex="-1" autocomplete="off"></div>' +
+      '<p class="err" id="err" role="alert"></p>' +
+      '<button class="btn" type="submit" id="send">Send</button>' +
+      '<p class="note" style="margin:10px 0 0">Your details go to ' + esc(f.from.name) + ' so they can get back to you. <a href="/privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a></p></form>';
+    var form = document.getElementById("form"), busy = false;
+    function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (busy) return;
+      var err = document.getElementById("err"), btn = document.getElementById("send");
+      err.textContent = "";
+      if (val("name").length < 2) { err.textContent = "Please type your name."; document.getElementById("name").focus(); return; }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val("email"))) { err.textContent = "Please type your email address."; document.getElementById("email").focus(); return; }
+      busy = true; btn.disabled = true; btn.textContent = "Sending…";
+      call({ action: "submit", code: code, name: val("name"), email: val("email"), phone: val("phone"), company: val("company"), message: val("message"), website: val("website") }).then(function (r) {
+        busy = false;
+        if (!r.ok) {
+          btn.disabled = false; btn.textContent = "Send";
+          var e2 = r.body && r.body.error;
+          err.textContent = e2 && e2.code === "RATE_LIMITED" ? "Too many tries. Please wait a while and try again." : e2 && e2.reason === "closed" ? "This form is closed." : "That didn't work. Please try again.";
+          return;
+        }
+        box("Thank you", r.body.thanks || (f.from.name + " got your details and will be in touch."));
+      }).catch(function () { busy = false; btn.disabled = false; btn.textContent = "Send"; err.textContent = "Check your connection and try again."; });
+    });
+  }).catch(function () { box("We couldn't open this form", "Check your connection and try again."); });
+})();
+</script>
+</body>
+</html>
