@@ -165,6 +165,8 @@
   .yrs { font: 500 12.5px Inter, sans-serif; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
   .yrs i { width: 1px; height: 16px; display: block; }
   .bio { font: 400 15px/1.28 "EB Garamond", serif; margin: 0; text-wrap: pretty; overflow: hidden; }
+  .bio-more { background: none; border: 0; padding: 0 2px; margin: 0; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+  .bio-more:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 3px; }
   .ct { display: flex; flex-direction: column; gap: 7px; }
   .ct a, .ct div { display: flex; align-items: center; gap: 10px; font: 500 13.5px Inter, sans-serif; text-decoration: none; min-width: 0; }
   .ct span.t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -357,6 +359,24 @@
     }
 
     // Counts a tap on one of the card's links (only the key, nothing about the visitor).
+    // The part of a long description shown before "Read more": about 240 characters, cut at the end of a word.
+    // Returns null when the text is short enough to show whole (up to 280 characters).
+    function shortBio(text) {
+      if (text.length <= 280) return null;
+      var cut = text.slice(0, 240), space = cut.lastIndexOf(" ");
+      if (space > 160) cut = cut.slice(0, space);
+      return cut.replace(/[\s.,;:!?-]+$/, "");
+    }
+    document.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest(".bio-more") : null;
+      if (!btn) return;
+      var p = btn.parentNode, open = btn.getAttribute("aria-expanded") !== "true";
+      p.querySelector(".bio-short").hidden = open;
+      p.querySelector(".bio-full").hidden = !open;
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.textContent = t(open ? "Read less" : "Read more");
+    });
+
     function trackLinkTaps(container, id, profile) {
       if (!profile.insights || !navigator.sendBeacon) return;
       container.addEventListener("click", function (e) {
@@ -639,7 +659,11 @@
         (years > 0 ? '<div class="yrs" style="color:' + ink2 + '"><i style="background:' + metal + '"></i>' + esc(years === 1 ? t("1 year in the industry") : t("{n} years in the industry", null, years)) + '</div>' : '') +
         '</div>';
 
-      var bio = cardText(profile, "bio") ? '<p class="bio" style="color:' + ink + '">' + esc(cardText(profile, "bio")) + '</p>' : '';
+      // A long description shows its first lines with "Read more", so every card keeps a similar shape.
+      var bioText = (cardText(profile, "bio") || "").trim(), bioShort = shortBio(bioText);
+      var bio = !bioText ? '' : bioShort === null ? '<p class="bio" style="color:' + ink + '">' + esc(bioText) + '</p>'
+        : '<p class="bio" style="color:' + ink + '"><span class="bio-short">' + esc(bioShort) + '… </span><span class="bio-full" hidden>' + esc(bioText) + ' </span>' +
+          '<button type="button" class="bio-more" aria-expanded="false" style="color:' + ink + '">' + esc(t("Read more")) + '</button></p>';
 
       // Contact rows with the member's chosen icon look.
       function iconStyle() {
@@ -766,6 +790,7 @@
       "Get the Inner Network app": "Descarga la app Inner Network",
       "Download": "Descargar",
       "Add to Contacts": "Agregar a Contactos",
+      "Read more": "Leer más", "Read less": "Leer menos",
       "Loading…": "Cargando…",
       "Privacy Policy": "Política de Privacidad",
       "Terms of Service": "Términos de Servicio",
