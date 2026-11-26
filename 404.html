@@ -716,7 +716,7 @@
       // A trackable link (migration 2046): /q/<code> counts the scan, then the server forwards to the member's address.
       var goMatch = window.location.pathname.match(/^\/q\/([a-zA-Z0-9]{5,12})\/?$/);
       if (goMatch) {
-        window.location.replace("https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card?format=go&slug=" + encodeURIComponent(goMatch[1].toLowerCase()));
+        window.location.replace("https://dwfuvfcjptvycqyedetb.supabase.co/functions/v1/public-profile-card?format=go&slug=" + encodeURIComponent(goMatch[1].toLowerCase()) + refParam);
         return;
       }
       // Hosted events (Docs/2.0_Hosted_Events_Plan.md): a guest's invitation /i/<token>, a public or unlisted event
