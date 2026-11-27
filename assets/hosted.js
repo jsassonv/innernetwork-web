@@ -8,7 +8,7 @@
     "Stop event emails": "Dejar de recibir correos de eventos", "Enter your email and we'll send a link to confirm. After that, no Inner Network host can email you about events at this address.": "Escribe tu correo y te enviaremos un enlace para confirmar. Después, ningún anfitrión de Inner Network podrá escribirte sobre eventos a esta dirección.",
     "Send the link": "Enviar el enlace", "To stop texts, reply STOP to any text from us.": "Para dejar de recibir mensajes de texto, responde STOP a cualquiera de ellos.",
     "Check your email": "Revisa tu correo", "Open the link we sent to finish.": "Abre el enlace que te enviamos para terminar.", "Yes": "Sí", "No": "No", "Read the waiver": "Leer la exención de responsabilidad", "I have read and accept the waiver.": "Leí y acepto la exención de responsabilidad.",
-    "Tap OK to accept the waiver.": "Toca Aceptar para aceptar la exención de responsabilidad.", "Who's going": "Quién va", "{n} going": "{n} asistirán",
+    "Tap OK to accept the waiver.": "Toca Aceptar para aceptar la exención de responsabilidad.", "Who's going": "Quién va", "Speakers": "Ponentes", "Agenda": "Agenda", "{n} going": "{n} asistirán",
     "Give my ticket to someone else": "Dar mi entrada a otra persona", "Their first name": "Su nombre", "Their last name": "Su apellido", "Their email": "Su correo",
     "Done. They'll get the confirmation by email, and this link no longer works.": "Listo. Recibirá la confirmación por correo, y este enlace ya no funciona.",
     "Please answer the required questions.": "Por favor responde las preguntas obligatorias.", "Please read and accept the waiver.": "Por favor lee y acepta la exención de responsabilidad.",
@@ -216,8 +216,21 @@
       (e.parking_info ? '<p class="text" style="margin-top:10px"><strong>' + t("Parking") + ':</strong> ' + esc(e.parking_info) + '</p>' : '') +
       '</section>' : '');
   }
+  /** Speakers and agenda (2113), in the host's order. Nothing shows when the event has neither. */
+  function program(e) {
+    var people = (Array.isArray(e.speakers) ? e.speakers : []).filter(function (p) { return p && p.name; });
+    var lines = (Array.isArray(e.agenda) ? e.agenda : []).filter(function (a) { return a && a.title; });
+    return (people.length ? '<section class="panel"><h2>' + t("Speakers") + '</h2><ul class="program">' + people.map(function (p) {
+        var sub = [p.title, p.company].filter(Boolean).join(", ");
+        return '<li><strong>' + esc(p.name) + '</strong>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</li>';
+      }).join("") + '</ul></section>' : '') +
+      (lines.length ? '<section class="panel"><h2>' + t("Agenda") + '</h2><ul class="program">' + lines.map(function (a) {
+        return '<li>' + (a.time ? '<small class="when">' + esc(a.time) + '</small>' : '') + '<strong>' + esc(a.title) + '</strong>' +
+          (a.who ? '<small>' + esc(a.who) + '</small>' : '') + (a.detail ? '<p>' + esc(a.detail) + '</p>' : '') + '</li>';
+      }).join("") + '</ul></section>' : '');
+  }
   function details(e) {
-    return where(e) + (e.description ? '<section class="panel"><h2>' + t("Details") + '</h2><p class="text">' + esc(e.description) + '</p></section>' : '') +
+    return where(e) + (e.description ? '<section class="panel"><h2>' + t("Details") + '</h2><p class="text">' + esc(e.description) + '</p></section>' : '') + program(e) +
       (e.requirements ? '<section class="panel"><h2>' + t("What to know") + '</h2><p class="text">' + esc(e.requirements) + '</p>' +
         (e.cancellation_policy ? '<p class="note" style="margin-top:10px">' + t("Cancellation policy") + ': ' + esc(e.cancellation_policy) + '</p>' : '') + '</section>' : '');
   }

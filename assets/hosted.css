@@ -91,3 +91,8 @@ ul.going { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8p
 ul.going li { display: flex; gap: 10px; align-items: center; }
 ul.going img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 ul.going small { display: block; color: #6b7080; }
+.program { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.program li { display: grid; gap: 2px; overflow-wrap: anywhere; min-width: 0; }
+.program small { color: var(--muted); }
+.program .when { font-weight: 700; }
+.program p { margin: 2px 0 0; white-space: pre-wrap; font-size: 14px; }
