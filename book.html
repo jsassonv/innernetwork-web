@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
 <link rel="stylesheet" href="/assets/hosted.css?v=7">
 <!--
-  Scheduling (App-2.0 booking function, migration 2105, Docs/2.0_Scheduling_Plan.md).
+  Scheduling (App-2.0 booking function, migration 2105, Docs/IN | Product/CRM and Meetings/2.0_Scheduling_Plan.md).
     innernetwork.app/<handle>/book            a member's meeting types      (book.html?h=<handle>)
     innernetwork.app/<handle>/book/<type>     one meeting type              (book.html?h=<handle>&t=<type>)
     book.html?b=<code>                        the guest's own booking: move it or cancel it
@@ -78,7 +78,7 @@
   var handle = (params.get("h") || "").toLowerCase(), wanted = (params.get("t") || "").toLowerCase(), token = (params.get("b") || "").toLowerCase();
   var test = params.get("test") === "1";
   // Text reminders for booked meetings stay off until the carrier registration's wording is confirmed to cover them
-  // (Docs/2.0_Scheduling_Plan.md, open points). Email reminders and the calendar invite always go out.
+  // (Docs/IN | Product/CRM and Meetings/2.0_Scheduling_Plan.md, open points). Email reminders and the calendar invite always go out.
   var TEXTS = false;
   var FN = "https://" + (test ? "eanaccexbjiebxqlouzb" : "dwfuvfcjptvycqyedetb") + ".supabase.co/functions/v1/booking";
   var main = document.getElementById("main");
