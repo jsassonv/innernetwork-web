@@ -10,6 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
 <link rel="stylesheet" href="/assets/hosted.css?v=7">
 <!--
+  Also the landing page for Contacts & CRM unsubscribe links (?done=crm, ?done=crm-all; migration 2122).
   Stop all event emails (2081): for people who aren't members and got invitations from Inner Network hosts. We email a
   confirmation link to the address, so nobody can opt out someone else. Texts stop with a STOP reply.
 -->
@@ -25,7 +26,15 @@
 (function () {
   var H = window.HOSTED, t = H.t, esc = H.esc;
   var main = document.getElementById("main");
-  if (new URLSearchParams(location.search).get("done") === "1") {
+  // Contacts & CRM emails (2122): crm-mail records the opt-out from a signed link, then sends the browser here.
+  var done = new URLSearchParams(location.search).get("done");
+  if (done === "crm" || done === "crm-all") {
+    main.innerHTML = '<section class="panel"><h1>' + t("You're unsubscribed") + '</h1><p class="text">' + t(done === "crm"
+      ? "That member can't email you through Inner Network anymore."
+      : "No Inner Network member can email you through Inner Network at this address anymore.") + '</p><p class="note">' + t("Emails a member sends from their own email account aren't sent by us; ask them directly to stop those.") + '</p></section>';
+    return;
+  }
+  if (done === "1") {
     main.innerHTML = '<section class="panel"><h1>' + t("You're opted out") + '</h1><p class="text">' + t("You won't get event emails from any Inner Network host at this address.") + '</p></section>';
     return;
   }
