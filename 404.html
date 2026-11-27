@@ -734,7 +734,8 @@
       }
       var hostedMatch = window.location.pathname.match(/^\/h\/([0-9a-fA-F-]{36})\/?$/);
       if (hostedMatch) {
-        window.location.replace("/h.html?id=" + hostedMatch[1].toLowerCase());
+        // Keep what follows the address: the link's tag (?src=), a promo code (?code=) and the language.
+        window.location.replace("/h.html?id=" + hostedMatch[1].toLowerCase() + window.location.search.replace(/^\?/, "&"));
         return;
       }
       var requestMatch = window.location.pathname.match(/^\/([a-zA-Z0-9](?:[a-zA-Z0-9-]{1,28})[a-zA-Z0-9])\/request\/?$/);
